@@ -4,11 +4,10 @@
 #include <stdio.h>
 #include <unistd.h>
 
-// rows and columns of the terminal
+// rows, columns and aspect ratio of the terminal
 int g_rows;
 int g_cols;
-// aspect ratio of the terminal
-float aspRatio;
+float g_aspRatio;
 
 void drawInit() {
     // start the curses mode
@@ -19,8 +18,8 @@ void drawInit() {
     // find terminal window's aspect ratio
     struct winsize wsize;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
-    aspRatio = (float)wsize.ws_col/wsize.ws_row;
-    //printf("h = %d, w = %d, %.2f\n", wsize.ws_row, wsize.ws_col, aspRatio);
+    g_aspRatio = (float)wsize.ws_col/wsize.ws_row;
+    //printf("h = %d, w = %d, %.2f\n", wsize.ws_row, wsize.ws_col, g_aspRatio);
 }
 
 /* Uses the following coordinate system:
@@ -36,7 +35,7 @@ void drawInit() {
  *         v z
  */
 void drawPixel(int x, int y, char c) {
-    mvaddch(-y + g_rows/2, aspRatio*x + g_cols/2, c);
+    mvaddch(-y + g_rows/2, g_aspRatio*x + g_cols/2, c);
 }
 
 void drawEnd() {
