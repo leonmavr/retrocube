@@ -5,19 +5,34 @@
 #include <stdlib.h>
 
 
-#define DEBUG
+//#define DEBUG
+
 
 int main(char** argv, int argc) {
-        Cube* cube = cubeNew(0, 0, 0, 12);
         drawInit();
 #ifndef DEBUG
-#endif 
+        Cube* cube = cubeNew(0, 0, 20, 6);
         Ray* ray = rayNew(10, 5, 2);
-        printf("%.2f\n", ray->dir->x); 
-        printf("%.2f\n", ray->dir->y); 
-        printf("%.2f\n", ray->dir->z); 
-        drawPixel(0, 0, 'o');
-        drawPixel(-10, -10, '#');
+        drawPixel(0, 0, 'O');
+        drawPixel(1, 0, '#');
+        drawPixel(2, 0, '#');
+        drawPixel(3, 0, '#');
+        drawPixel(40, 0, '#');
+        drawPixel(40, 40, '#');
+#endif 
+#ifndef DEBUG
+#if 0
+        for (int i = -g_rows/2-1; i < g_rows/2; ++i) {
+            for (int j = -g_cols/2-1; j < g_cols/2; ++j) {
+                Vec3i pt = (Vec3i) {j, i, 20};
+                rayPointTo(ray, j, i, 20);
+                Vec3i inters = rayPlaneIntersection(ray, cube->vertices[4], cube->vertices[5], cube->vertices[6], cube->vertices[7]);
+                if ((inters.x != 0) && (inters.y != 0) && (inters.z != 0))
+                    drawPixel(j, i, '#');
+            }
+        }
+#endif
+#endif
         printf("(Debugging mode)\n");
 
 #ifndef DEBUG
