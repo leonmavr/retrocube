@@ -1,6 +1,8 @@
 #ifndef OBJECTS_H
 #define OBJECTS_H 
 
+#include <stdbool.h>
+
 typedef struct Vec3i {
     int x, y, z;
 } Vec3i;
@@ -8,6 +10,10 @@ typedef struct Vec3i {
 typedef struct Vec3f {
     float x, y, z;
 } Vec3f;
+
+typedef struct vec3_t {
+    float x, y, z;
+} vec3_t;
 
 typedef struct Cube {
     Vec3i** vertices;
@@ -34,6 +40,7 @@ Ray* rayNew(int x, int y, int z);
 void rayPointTo(Ray* ray, int x, int y, int z); 
 void raySetColor(Ray* ray, char color);
 Vec3i rayPlaneIntersection(Ray* ray, Vec3i* p0, Vec3i* p1, Vec3i* p2, Vec3i* p3);
+bool vec3_areEqual(vec3_t* vec, float x, float y, float z);
 
 
 #endif /* OBJECTS_H */

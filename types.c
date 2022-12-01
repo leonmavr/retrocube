@@ -5,7 +5,8 @@
 
 #define SQRT_TWO 1.414213
 #define HALF_SQRT_TWO 0.7071065 
-
+// square root tolerance distance when comparing vectors 
+#define SQRT_TOL 1e-2
 
 
 Vec3i* vec3iNew(int x, int y, int z) {
@@ -145,4 +146,8 @@ void rayPointTo(Ray* ray, int x, int y, int z) {
     ray->dir->y = y;
     ray->dir->z = z;
     vec3fMakeUnit(ray->dir);
+}
+
+bool vec3_areEqual(vec3_t* vec, float x, float y, float z) {
+    return (vec->x - x)*(vec->x - x) + (vec->y - y)*(vec->y - y) + (vec->z - z)*(vec->z - z) < SQRT_TOL*SQRT_TOL;
 }
