@@ -1,3 +1,4 @@
+
 #include "types.h"
 #include <math.h>
 #include <stdlib.h>
@@ -63,8 +64,9 @@ Cube* cubeNew(int cx, int cy, int cz, int side) {
 Ray* rayNew(int x, int y, int z) {
     Ray* new = malloc(sizeof(Ray));
     new->orig = vec3iNew(0, 0, 0);
-    new->dir = vec3fNew(x, y, z);
-    vec3fMakeUnit(new->dir);
+    new->end = vec3iNew(x, y, z);
+    //new->dir = vec3fNew(x, y, z);
+    //vec3fMakeUnit(new->dir);
     return new;
 }
 
@@ -116,6 +118,7 @@ static inline bool pointInRec(Vec3i* m, Vec3i* a, Vec3i* b, Vec3i* c, Vec3i* d) 
 }
 
 Vec3i rayPlaneIntersection(Ray* ray, Vec3i* p0, Vec3i* p1, Vec3i* p2, Vec3i* p3) {
+#if 0
     // find the equation of the plane defined by p0, p1, p2
     Vec3i p1p0 = (Vec3i) {p1->x - p0->x, p1->y - p0->y, p1->z - p0->z};
     Vec3i p2p0 = (Vec3i) {p2->x - p0->x, p2->y - p0->y, p2->z - p0->z};
@@ -137,17 +140,145 @@ Vec3i rayPlaneIntersection(Ray* ray, Vec3i* p0, Vec3i* p1, Vec3i* p2, Vec3i* p3)
                          round(a.z + t*(b.z - a.z))};
     // TODO: if ret in p0p1p2p3, return ret, else return (0, 0, 0)
     if (!pointInRec(&ret, p0, p1, p2, p3) && t > 0.0)
-        ret = (Vec3i) {0, 0, 0}; 
+#endif
+    
+    Vec3i ret = (Vec3i) {0, 0, 0}; 
     return ret;
 }
 
-void rayPointTo(Ray* ray, int x, int y, int z) {
-    ray->dir->x = x;
-    ray->dir->y = y;
-    ray->dir->z = z;
-    vec3fMakeUnit(ray->dir);
+void raySend(Ray* ray, int x, int y, int z) {
+    ray->end->x = x;
+    ray->end->y = y;
+    ray->end->z = z;
+}
+
+vec3_t* vec3_new(float x, float y, float z) {
+    vec3_t* new = malloc(sizeof(vec3_t));
+    new->x = x;
+    new->y = y;
+    new->z = z;
+    return new;
 }
 
 bool vec3_areEqual(vec3_t* vec, float x, float y, float z) {
     return (vec->x - x)*(vec->x - x) + (vec->y - y)*(vec->y - y) + (vec->z - z)*(vec->z - z) < SQRT_TOL*SQRT_TOL;
+}
+
+
+void vec3_add(vec3_t* dest, vec3_t* src1, vec3_t* src2) {
+    dest->x = src1->x + src2->x;
+    dest->y = src1->y + src2->y;
+    dest->z = src1->z + src2->z;
+}
+
+
+void vec3_sub(vec3_t* dest, vec3_t* src1, vec3_t* src2) {
+    dest->x = src1->x - src2->x;
+    dest->y = src1->y - src2->y;
+    dest->z = src1->z - src2->z;
+}
+
+float vec3_dotprod(vec3_t* src1, vec3_t* src2) {
+    return src1->x*src2->x + src1->y*src2->y + src1->z*src2->z;
+}
+
+void vec3_crossprod(vec3_t* dest, vec3_t* src1, vec3_t* src2) {
+    vec3_t* a = src1;
+    vec3_t* b = src2;
+    dest->x = a->y*b->z - a->z*b->y;
+    dest->y = -a->x*b->z + a->z*b->x;
+    dest->z = a->x*b->y - a->y*b->x;
+}
+
+vec3i_t* vec3i_new(int x, int y, int z) {
+    vec3i_t* new = malloc(sizeof(vec3i_t));
+    new->x = x;
+    new->y = y;
+    new->z = z;
+    return new;
+}
+
+bool vec3i_areEqual(vec3i_t* vec, int x, int y, int z) {
+    return (vec->x == x) && (vec->y == y) && (vec->z == z); 
+}
+
+void vec3i_add(vec3i_t* dest, vec3i_t* src1, vec3i_t* src2) {
+    dest->x = src1->x + src2->x;
+    dest->y = src1->y + src2->y;
+    dest->z = src1->z + src2->z;
+}
+
+void vec3i_sub(vec3i_t* dest, vec3i_t* src1, vec3i_t* src2) {
+    dest->x = src1->x - src2->x;
+    dest->y = src1->y - src2->y;
+    dest->z = src1->z - src2->z;
+}
+
+int vec3i_dotprod(vec3i_t* src1, vec3i_t* src2) {
+    return src1->x*src2->x + src1->y*src2->y + src1->z*src2->z;
+}
+
+void vec3i_crossprod(vec3i_t* dest, vec3i_t* src1, vec3i_t* src2) {
+    vec3i_t* a = src1;
+    vec3i_t* b = src2;
+    dest->x =  a->y*b->z - a->z*b->y;
+    dest->y = -a->x*b->z + a->z*b->x;
+    dest->z =  a->x*b->y - a->y*b->x;
+}
+
+Plane* plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
+/*
+ * Determine the plane through 3 3D points p0, p1, p2 by determining:
+ *     1. the normal vector
+ *     2. the offset
+ *
+ *                                     normal
+ *                                       ^
+ *                                      /
+ *                    +----------------/----------+
+ *                   /     *p0        /           /
+ *                  /       <_       /           /
+ *                 /          \__   /           /
+ *                /              \ /           /
+ *               /               *p1          /
+ *              /             _/             / 
+ *             /           _/               /
+ *            /           <                /
+ *           /         p2*                /
+ *          /                            /
+ *         +----------------------------+
+ * If p0, p1, p2 are co-planar, then the normal through p1 is
+ * perpendicular to both * p1p2 = p2 - p1 and p1p0 = p0 - p1.
+ * Thererefore it's determined as the cross product of the two:
+ * normal = p1p2 x p1p0 = (p2 - p1) x (p0 - p1)
+ *
+ *                                    normal
+ *                                    ^
+ *                                   /     
+ *                  +---------------/-----------+
+ *                 /               /           /
+ *                /               /           /
+ *               /              *p1          /
+ *              /              /            / 
+ *             /           ___/            /
+ *            /           /               /
+ *           /       * <_/               /
+ *          /        x                  /
+ *         +----------------------------+
+ * If x = (x,y,z) is any point on the plane, then the normal
+ * through p1 is perpendicular to p1x = x - p1 therefore their
+ * dot product is zero:
+ * n.(x - p1) = 0 => 
+ * n.x - n.p1 = 0
+ * -n.p1 is the offset from the origin 
+*/
+    Plane* new = malloc(sizeof(Plane));
+    new->normal = malloc(sizeof(vec3_t));
+    vec3i_t p1p2;
+    vec3i_t p1p0;
+    vec3i_sub(&p1p2, p2, p1);
+    vec3i_sub(&p1p0, p0, p1);
+    vec3i_crossprod(new->normal, &p1p2, &p1p0);
+    new->offset = -vec3i_dotprod(new->normal, p1);
+    return new;
 }
