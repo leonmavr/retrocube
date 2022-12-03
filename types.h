@@ -36,8 +36,10 @@ typedef struct Ray {
 /* 
  * plane in 3D
  * assuming its equation is:
- * ax + by + cz + offset = 0
+ * ax + by + cz + d = 0
+ * or n.X + d = 0
  * , where n = (a, b, c) is the normal
+ * and d is the offset from the origin
  */
 typedef struct Plane {
     int offset;
@@ -60,6 +62,7 @@ vec3_t*  vec3_new           (float x, float y, float z);
 bool     vec3_areEqual      (vec3_t* vec, float x, float y, float z);
 void     vec3_add           (vec3_t* dest, vec3_t* src1, vec3_t* src2);
 void     vec3_sub           (vec3_t* dest, vec3_t* src1, vec3_t* src2);
+void     vec3_mul           (vec3_t* dest, vec3_t* src, float scalar);
 float    vec3_dotprod       (vec3_t* src1, vec3_t* src2);
 void     vec3_crossprod     (vec3_t* dest, vec3_t* src1, vec3_t* src2);
 // basic operations between integral vectors
@@ -67,10 +70,12 @@ vec3i_t* vec3i_new          (int x, int y, int z);
 bool     vec3i_areEqual     (vec3i_t* vec, int x, int y, int z);
 void     vec3i_add          (vec3i_t* dest, vec3i_t* src1, vec3i_t* src2);
 void     vec3i_sub          (vec3i_t* dest, vec3i_t* src1, vec3i_t* src2);
+void     vec3i_mul          (vec3i_t* dest, vec3i_t* src, float scalar);
 int      vec3i_dotprod      (vec3i_t* src1, vec3i_t* src2);
 void     vec3i_crossprod    (vec3i_t* dest, vec3i_t* src1, vec3i_t* src2);
 // planar oparations
 Plane*   plane_new          (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
+vec3i_t  plane_intersectRay (Plane* plane, Ray* ray);
 
 
 #endif /* OBJECTS_H */

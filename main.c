@@ -20,11 +20,14 @@ int main(char** argv, int argc) {
         drawPixel(40, 0, '#');
         drawPixel(40, 40, '#');
 #else
+        Ray* ray = rayNew(1, 50, 20);
         vec3i_t* p0 = vec3i_new(-1, 1, 2);
         vec3i_t* p1 = vec3i_new(-4, 2, 2);
         vec3i_t* p2 = vec3i_new(-2, 1, 5);
         Plane* pl = plane_new(p0, p1, p2);
         printf("%d, %d, %d, %d\n", pl->normal->x, pl->normal->y, pl->normal->z, pl->offset);
+        vec3i_t inters = plane_intersectRay(pl, ray);
+        printf("%d, %d, %d\n", inters.x, inters.y, inters.z);
         printf("(Debugging mode)\n");
 #endif
 #ifndef DEBUG

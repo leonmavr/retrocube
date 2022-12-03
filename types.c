@@ -226,6 +226,18 @@ void vec3i_crossprod(vec3i_t* dest, vec3i_t* src1, vec3i_t* src2) {
     dest->z =  a->x*b->y - a->y*b->x;
 }
 
+void vec3_mul (vec3_t* dest, vec3_t* src, float scalar) {
+    dest->x = scalar*src->x;
+    dest->y = scalar*src->y;
+    dest->z = scalar*src->z;
+}
+
+void vec3i_mul (vec3i_t* dest, vec3i_t* src, float scalar) {
+    dest->x = scalar*src->x;
+    dest->y = scalar*src->y;
+    dest->z = scalar*src->z;
+}
+
 Plane* plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
 /*
  * Determine the plane through 3 3D points p0, p1, p2 by determining:
@@ -281,4 +293,36 @@ Plane* plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
     vec3i_crossprod(new->normal, &p1p2, &p1p0);
     new->offset = -vec3i_dotprod(new->normal, p1);
     return new;
+}
+
+
+vec3i_t plane_intersectRay(Plane* plane, Ray* ray) {
+/*
+ * The parametric line of a ray from from the origin through 
+ * point B ('end' of the ray) is:
+ * R(t) = 0 + t(B - 0) = tB
+ * This ray meets the plane for some t=t0 at:
+ * R(t0) = B*t0
+ * Therefore R(t0) validates the equation of the plane.
+ * For the plane we know the normal vector n and the offset
+ * from the origin d. Any point X on the plane validates its
+ * equation, which is:
+ * n*X = d
+ * Since R(t0) lies on the plane:
+ * n.R(t0) = d =>
+ * n.B*t0 = d =>
+ * t0 = d/(n.B)
+ * Finally, the ray meets the plane at point
+ * R(t0) = (d/(n.B))*B
+ * This is what this function returns.
+ */
+    int normalDotEnd = vec3i_dotprod(plane->normal, ray->end);
+    float t0 = ((float)plane->offset/normalDotEnd);
+    // only interested in interersections along the positive directoin
+    (t0 < 0.0) ? -t0 : t0 ;
+    vec3i_t rayAtIntersection;
+    rayAtIntersection.x = round(t0*ray->end->x);
+    rayAtIntersection.y = round(t0*ray->end->y);
+    rayAtIntersection.z = round(t0*ray->end->z);
+    return rayAtIntersection;
 }
