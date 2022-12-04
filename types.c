@@ -92,7 +92,7 @@ static inline float vec3iDotprod(Vec3i* v1, Vec3i* v2) {
     return v1->x*v2->x + v1->y*v2->y + v1->z*v2->z;
 }
 
-static inline bool pointInRec(Vec3i* m, Vec3i* a, Vec3i* b, Vec3i* c, Vec3i* d) {
+static inline bool pointInRec(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d) {
 /* 
  * The diagram below visualises the conditions for M to be inside rectangle ABCD:
  *
@@ -110,11 +110,11 @@ static inline bool pointInRec(Vec3i* m, Vec3i* a, Vec3i* b, Vec3i* c, Vec3i* d) 
  *                  D                            C
  *
  */
-    Vec3i ab = (Vec3i) {b->x - a->x, b->y - a->y, b->z - a->z};
-    Vec3i ad = (Vec3i) {d->x - a->x, d->y - a->y, d->z - a->z};
-    Vec3i am = (Vec3i) {m->x - a->x, m->y - a->y, m->z - a->z};
-    return (0 < vec3iDotprod(&am, &ad)) && (vec3iDotprod(&am, &ab) < vec3iDotprod(&ab, &ab)) &&
-           (0 < vec3iDotprod(&am, &ad)) && (vec3iDotprod(&am, &ad) < vec3iDotprod(&ad, &ad));
+    vec3i_t ab = (vec3i_t) {b->x - a->x, b->y - a->y, b->z - a->z};
+    vec3i_t ad = (vec3i_t) {d->x - a->x, d->y - a->y, d->z - a->z};
+    vec3i_t am = (vec3i_t) {m->x - a->x, m->y - a->y, m->z - a->z};
+    return (0 < vec3i_dotprod(&am, &ad)) && (vec3i_dotprod(&am, &ab) < vec3i_dotprod(&ab, &ab)) &&
+           (0 < vec3i_dotprod(&am, &ad)) && (vec3i_dotprod(&am, &ad) < vec3i_dotprod(&ad, &ad));
 }
 
 Vec3i rayPlaneIntersection(Ray* ray, Vec3i* p0, Vec3i* p1, Vec3i* p2, Vec3i* p3) {
@@ -247,7 +247,7 @@ Plane* plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
  *                                     normal
  *                                       ^
  *                                      /
- *                    +----------------/----------+
+ *                    +----------------/-----------+
  *                   /     *p0        /           /
  *                  /       <_       /           /
  *                 /          \__   /           /
@@ -276,7 +276,7 @@ Plane* plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
  *            /           /               /
  *           /       * <_/               /
  *          /        x                  /
- *         +----------------------------+
+ *         +---------------------------+
  * If x = (x,y,z) is any point on the plane, then the normal
  * through p1 is perpendicular to p1x = x - p1 therefore their
  * dot product is zero:
@@ -298,16 +298,16 @@ Plane* plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
 
 vec3i_t plane_intersectRay(Plane* plane, Ray* ray) {
 /*
- * The parametric line of a ray from from the origin through 
+ * The parametric line of a ray from from the origin O through 
  * point B ('end' of the ray) is:
- * R(t) = 0 + t(B - 0) = tB
- * This ray meets the plane for some t=t0 at:
+ * R(t) = O + t(B - O) = tB
+ * This ray meets the plane for some t=t0 such that:
  * R(t0) = B*t0
  * Therefore R(t0) validates the equation of the plane.
  * For the plane we know the normal vector n and the offset
  * from the origin d. Any point X on the plane validates its
  * equation, which is:
- * n*X = d
+ * n.X = d
  * Since R(t0) lies on the plane:
  * n.R(t0) = d =>
  * n.B*t0 = d =>
@@ -318,11 +318,23 @@ vec3i_t plane_intersectRay(Plane* plane, Ray* ray) {
  */
     int normalDotEnd = vec3i_dotprod(plane->normal, ray->end);
     float t0 = ((float)plane->offset/normalDotEnd);
-    // only interested in interersections along the positive directoin
+    // only interested in intersections along the positive direction
     (t0 < 0.0) ? -t0 : t0 ;
     vec3i_t rayAtIntersection;
     rayAtIntersection.x = round(t0*ray->end->x);
     rayAtIntersection.y = round(t0*ray->end->y);
     rayAtIntersection.z = round(t0*ray->end->z);
     return rayAtIntersection;
+}
+
+
+bool plane_rayHitsSurface(Ray* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3) {
+    // find the intersection between the ray and the plane segment
+    // defined by p0, p1, p2, p3 and if the intersection is whithin
+    // that segment, return true
+    Plane* plane = plane_new(p0, p1, p2);
+    vec3i_t rayPlaneInters = plane_intersectRay(plane, ray);
+    if (pointInRec(&rayPlaneInters, p0, p1, p2, p3))
+        return true;
+    return false;
 }

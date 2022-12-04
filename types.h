@@ -76,6 +76,7 @@ void     vec3i_crossprod    (vec3i_t* dest, vec3i_t* src1, vec3i_t* src2);
 // planar oparations
 Plane*   plane_new          (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
 vec3i_t  plane_intersectRay (Plane* plane, Ray* ray);
+bool     plane_rayHitsSurface(Ray* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3);
 
 
 #endif /* OBJECTS_H */

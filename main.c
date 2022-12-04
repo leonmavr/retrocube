@@ -5,20 +5,18 @@
 #include <stdlib.h>
 
 
-#define DEBUG
+//#define DEBUG
 
 
-int main(char** argv, int argc) {
+int main() {
         drawInit();
 #ifndef DEBUG
+        printf("starting\n");
         Cube* cube = cubeNew(0, 0, 20, 6);
         Ray* ray = rayNew(10, 5, 2);
-        drawPixel(0, 0, 'O');
-        drawPixel(1, 0, '#');
-        drawPixel(2, 0, '#');
-        drawPixel(3, 0, '#');
-        drawPixel(40, 0, '#');
-        drawPixel(40, 40, '#');
+        Plane* plane = plane_new(cube->vertices[0], cube->vertices[1], cube->vertices[2]);
+        drawPixel(2, 10, '#');
+        drawPixel(0, 0, '#');
 #else
         Ray* ray = rayNew(1, 50, 20);
         vec3i_t* p0 = vec3i_new(-1, 1, 2);
