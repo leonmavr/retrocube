@@ -75,8 +75,8 @@ static inline bool pointInRec(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, ve
     vec3i_t ab = (vec3i_t) {b->x - a->x, b->y - a->y, b->z - a->z};
     vec3i_t ad = (vec3i_t) {d->x - a->x, d->y - a->y, d->z - a->z};
     vec3i_t am = (vec3i_t) {m->x - a->x, m->y - a->y, m->z - a->z};
-    return (0 < vec3i_dotprod(&am, &ad)) && (vec3i_dotprod(&am, &ab) < vec3i_dotprod(&ab, &ab)) &&
-           (0 < vec3i_dotprod(&am, &ad)) && (vec3i_dotprod(&am, &ad) < vec3i_dotprod(&ad, &ad));
+    return (0 <= vec3i_dotprod(&am, &ab)) && (vec3i_dotprod(&am, &ab) <= vec3i_dotprod(&ab, &ab)) &&
+           (0 <= vec3i_dotprod(&am, &ad)) && (vec3i_dotprod(&am, &ad) <= vec3i_dotprod(&ad, &ad));
 }
 
 vec3i_t rayPlaneIntersection(Ray* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3) {
