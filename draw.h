@@ -4,6 +4,7 @@
 extern int g_rows;
 extern int g_cols;
 
+
 void drawInit();
 void drawPixel(int x, int y, char c);
 void drawEnd();

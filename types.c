@@ -10,63 +10,39 @@
 #define SQRT_TOL 1e-2
 
 
-Vec3i* vec3iNew(int x, int y, int z) {
-    Vec3i* new = malloc(sizeof(Vec3i));
-    new->x = x;
-    new->y = y;
-    new->z = z;
-    return new;
-}
-
-Vec3f* vec3fNew(int x, int y, int z) {
-    Vec3f* new = malloc(sizeof(Vec3f));
-    new->x = x;
-    new->y = y;
-    new->z = z;
-    return new;
-}
-
-void vec3iCopy(Vec3i* dest, Vec3i* src) {
+void vec3i_copy(vec3i_t* dest, vec3i_t* src) {
     dest->x = src->x;
     dest->y = src->y;
     dest->z = src->z;
 }
 
-void vec3fCopy(Vec3f* dest, Vec3f* src) {
+void vec3_copy(vec3f_t* dest, vec3f_t* src) {
     dest->x = src->x;
     dest->y = src->y;
     dest->z = src->z;
 }
 
-void vec3fMakeUnit(Vec3f* vec) {
-    float norm = sqrt(vec->x*vec->x + vec->y*vec->y + vec->z*vec->z);
-    vec->x /= norm;
-    vec->y /= norm;
-    vec->z /= norm;
-}
 
 Cube* cubeNew(int cx, int cy, int cz, int side) {
         Cube* new = malloc(sizeof(Cube));
-        new->center = vec3iNew(cx, cy, cz);
-        new->vertices = (Vec3i**) malloc(sizeof(Vec3i*) * 8);
+        new->center = vec3i_new(cx, cy, cz);
+        new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
         int diag = round(HALF_SQRT_TWO * side); 
-        new->vertices[0] = vec3iNew(-diag, -diag, -diag);
-        new->vertices[1] = vec3iNew(+diag, -diag, -diag);
-        new->vertices[2] = vec3iNew(+diag, +diag, -diag);
-        new->vertices[3] = vec3iNew(-diag, +diag, -diag);
-        new->vertices[4] = vec3iNew(-diag, -diag, +diag);
-        new->vertices[5] = vec3iNew(+diag, -diag, +diag);
-        new->vertices[6] = vec3iNew(+diag, +diag, +diag);
-        new->vertices[7] = vec3iNew(-diag, +diag, +diag);
+        new->vertices[0] = vec3i_new(-diag, -diag, -diag);
+        new->vertices[1] = vec3i_new(+diag, -diag, -diag);
+        new->vertices[2] = vec3i_new(+diag, +diag, -diag);
+        new->vertices[3] = vec3i_new(-diag, +diag, -diag);
+        new->vertices[4] = vec3i_new(-diag, -diag, +diag);
+        new->vertices[5] = vec3i_new(+diag, -diag, +diag);
+        new->vertices[6] = vec3i_new(+diag, +diag, +diag);
+        new->vertices[7] = vec3i_new(-diag, +diag, +diag);
         return new;
 }
 
 Ray* rayNew(int x, int y, int z) {
     Ray* new = malloc(sizeof(Ray));
-    new->orig = vec3iNew(0, 0, 0);
-    new->end = vec3iNew(x, y, z);
-    //new->dir = vec3fNew(x, y, z);
-    //vec3fMakeUnit(new->dir);
+    new->orig = vec3i_new(0, 0, 0);
+    new->end = vec3i_new(x, y, z);
     return new;
 }
 
@@ -76,21 +52,7 @@ void raySetColor(Ray* ray, char color) {
 }
 
 
-static inline Vec3f vec3fCrossProd(Vec3i* v1, Vec3i* v2) {
-    Vec3f ret;
-    ret.x = v1->y*v2->z - v1->z*v2->y;  
-    ret.y = v1->z*v2->x - v1->x*v2->z;
-    ret.z = v1->x*v2->y - v1->y*v1->x; 
-    return ret;
-}
 
-static inline float vec3fDotprod(Vec3f* v1, Vec3f* v2) {
-    return v1->x*v2->x + v1->y*v2->y + v1->z*v2->z;
-}
-
-static inline float vec3iDotprod(Vec3i* v1, Vec3i* v2) {
-    return v1->x*v2->x + v1->y*v2->y + v1->z*v2->z;
-}
 
 static inline bool pointInRec(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d) {
 /* 
@@ -117,11 +79,11 @@ static inline bool pointInRec(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, ve
            (0 < vec3i_dotprod(&am, &ad)) && (vec3i_dotprod(&am, &ad) < vec3i_dotprod(&ad, &ad));
 }
 
-Vec3i rayPlaneIntersection(Ray* ray, Vec3i* p0, Vec3i* p1, Vec3i* p2, Vec3i* p3) {
+vec3i_t rayPlaneIntersection(Ray* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3) {
 #if 0
     // find the equation of the plane defined by p0, p1, p2
-    Vec3i p1p0 = (Vec3i) {p1->x - p0->x, p1->y - p0->y, p1->z - p0->z};
-    Vec3i p2p0 = (Vec3i) {p2->x - p0->x, p2->y - p0->y, p2->z - p0->z};
+    vec3i_t p1p0 = (vec3i_t) {p1->x - p0->x, p1->y - p0->y, p1->z - p0->z};
+    vec3i_t p2p0 = (vec3i_t) {p2->x - p0->x, p2->y - p0->y, p2->z - p0->z};
     // normal vector to the plane 
     Vec3f n = vec3fCrossProd(&p1p0, &p2p0);
     // see https://9to5science.com/line-and-plane-intersection-in-3d for the intersection derivation
@@ -135,14 +97,14 @@ Vec3i rayPlaneIntersection(Ray* ray, Vec3i* p0, Vec3i* p1, Vec3i* p2, Vec3i* p3)
     float t = (vec3fDotprod(&n, &fp0) - vec3fDotprod(&n, &a)) /
         (vec3fDotprod(&n, &b) - vec3fDotprod(&n, &a)); 
     // return the point r(t0) on the ray for the interesection t0: r(t0) = a + t0*(b-a)
-    Vec3i ret = (Vec3i) {round(a.x + t*(b.x - a.x)), 
+    vec3i_t ret = (vec3i_t) {round(a.x + t*(b.x - a.x)), 
                          round(a.y + t*(b.y - a.y)), 
                          round(a.z + t*(b.z - a.z))};
     // TODO: if ret in p0p1p2p3, return ret, else return (0, 0, 0)
     if (!pointInRec(&ret, p0, p1, p2, p3) && t > 0.0)
 #endif
     
-    Vec3i ret = (Vec3i) {0, 0, 0}; 
+    vec3i_t ret = (vec3i_t) {0, 0, 0}; 
     return ret;
 }
 
