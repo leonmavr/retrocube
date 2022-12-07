@@ -102,6 +102,7 @@ vec3i_t rayPlaneIntersection(Ray* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, ve
                          round(a.z + t*(b.z - a.z))};
     // TODO: if ret in p0p1p2p3, return ret, else return (0, 0, 0)
     if (!pointInRec(&ret, p0, p1, p2, p3) && t > 0.0)
+        return ret
 #endif
     
     vec3i_t ret = (vec3i_t) {0, 0, 0}; 
