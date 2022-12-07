@@ -8,6 +8,10 @@
 // rows, columns and aspect ratio of the terminal
 int g_rows;
 int g_cols;
+int g_minRows;
+int g_maxRows;
+int g_minCols;
+int g_maxCols;
 float g_aspRatioScreen;
 // aspect ratio of each character
 float g_aspRatioChar;
@@ -19,6 +23,10 @@ void drawInit() {
     curs_set(0);
     // get the number of rows and columns
     getmaxyx(stdscr, g_rows, g_cols);
+    g_minRows = -g_rows-2;
+    g_maxRows = g_rows;
+    g_minCols = -g_cols/2;
+    g_maxCols = g_cols/2-2;
     // find terminal window's aspect ratio
     struct winsize wsize;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
@@ -42,7 +50,7 @@ void drawInit() {
  */
 void drawPixel(int x, int y, char c) {
     int yScaled = y/(g_aspRatioScreen/g_aspRatioChar);
-    mvaddch(-yScaled + g_rows/2, x + g_cols/2, c);
+    mvaddch(yScaled+g_rows/2, x+g_cols/2, c);
 }
 
 void drawEnd() {
