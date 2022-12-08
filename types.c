@@ -8,36 +8,7 @@
 #define HALF_SQRT_TWO 0.7071065 
 
 
-cube_t* obj__cube_new(int cx, int cy, int cz, int side) {
-        cube_t* new = malloc(sizeof(cube_t));
-        new->center = vec__vec3i_new(cx, cy, cz);
-        new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
-        int diag = round(HALF_SQRT_TWO * side); 
-        new->vertices[0] = vec__vec3i_new(-diag, -diag, -diag);
-        new->vertices[1] = vec__vec3i_new(+diag, -diag, -diag);
-        new->vertices[2] = vec__vec3i_new(+diag, +diag, -diag);
-        new->vertices[3] = vec__vec3i_new(-diag, +diag, -diag);
-        new->vertices[4] = vec__vec3i_new(-diag, -diag, +diag);
-        new->vertices[5] = vec__vec3i_new(+diag, -diag, +diag);
-        new->vertices[6] = vec__vec3i_new(+diag, +diag, +diag);
-        new->vertices[7] = vec__vec3i_new(-diag, +diag, +diag);
-        return new;
-}
-
-ray_t* obj__ray_new(int x, int y, int z) {
-    ray_t* new = malloc(sizeof(ray_t));
-    new->orig = vec__vec3i_new(0, 0, 0);
-    new->end = vec__vec3i_new(x, y, z);
-    return new;
-}
-
-
-void obj__ray_set_color(ray_t* ray, char color) {
-    ray->color = color;
-}
-
-
-static inline bool pointInRec(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d) {
+static inline bool is_point_in_rec(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d) {
 /* 
  * The diagram below visualises the conditions for M to be inside rectangle ABCD:
  *
@@ -62,11 +33,54 @@ static inline bool pointInRec(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, ve
            (0 <= vec__vec3i_dotprod(&am, &ad)) && (vec__vec3i_dotprod(&am, &ad) <= vec__vec3i_dotprod(&ad, &ad));
 }
 
+
+//----------------------------------------------------------------------------------------------------------
+// Cube
+//----------------------------------------------------------------------------------------------------------
+cube_t* obj__cube_new(int cx, int cy, int cz, int side) {
+        cube_t* new = malloc(sizeof(cube_t));
+        new->center = vec__vec3i_new(cx, cy, cz);
+        new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
+        int diag = round(HALF_SQRT_TWO * side); 
+        new->vertices[0] = vec__vec3i_new(-diag, -diag, -diag);
+        new->vertices[1] = vec__vec3i_new(+diag, -diag, -diag);
+        new->vertices[2] = vec__vec3i_new(+diag, +diag, -diag);
+        new->vertices[3] = vec__vec3i_new(-diag, +diag, -diag);
+        new->vertices[4] = vec__vec3i_new(-diag, -diag, +diag);
+        new->vertices[5] = vec__vec3i_new(+diag, -diag, +diag);
+        new->vertices[6] = vec__vec3i_new(+diag, +diag, +diag);
+        new->vertices[7] = vec__vec3i_new(-diag, +diag, +diag);
+        return new;
+}
+
+void obj__cube_rotate (float angle_x_deg, float angle_y_deg, float angle_z_deg) {
+    // TODO: rotate all vertices
+}
+
+//----------------------------------------------------------------------------------------------------------
+// Ray
+//----------------------------------------------------------------------------------------------------------
+ray_t* obj__ray_new(int x, int y, int z) {
+    ray_t* new = malloc(sizeof(ray_t));
+    new->orig = vec__vec3i_new(0, 0, 0);
+    new->end = vec__vec3i_new(x, y, z);
+    return new;
+}
+
+void obj__ray_set_color(ray_t* ray, char color) {
+    ray->color = color;
+}
+
+
 void obj__ray_send(ray_t* ray, int x, int y, int z) {
     ray->end->x = x;
     ray->end->y = y;
     ray->end->z = z;
 }
+
+//----------------------------------------------------------------------------------------------------------
+// Plane
+//----------------------------------------------------------------------------------------------------------
 
 plane_t* obj__plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
 /*
@@ -146,29 +160,24 @@ vec3i_t obj__ray_plane_intersection(plane_t* plane, ray_t* ray) {
  * R(t0) = (d/(n.B))*B
  * This is what this function returns.
  */
-    int normalDotEnd = vec__vec3i_dotprod(plane->normal, ray->end);
-    float t0 = ((float)plane->offset/normalDotEnd);
+    int nornmal_dot_rayend = vec__vec3i_dotprod(plane->normal, ray->end);
+    float t0 = ((float)plane->offset/nornmal_dot_rayend);
     // only interested in intersections along the positive direction
     (t0 < 0.0) ? -t0 : t0 ;
-    vec3i_t rayAtIntersection;
-    rayAtIntersection.x = round(t0*ray->end->x);
-    rayAtIntersection.y = round(t0*ray->end->y);
-    rayAtIntersection.z = round(t0*ray->end->z);
-    return rayAtIntersection;
+    vec3i_t ray_at_intersection;
+    ray_at_intersection.x = round(t0*ray->end->x);
+    ray_at_intersection.y = round(t0*ray->end->y);
+    ray_at_intersection.z = round(t0*ray->end->z);
+    return ray_at_intersection;
 }
-
 
 bool obj__ray_hits_rectangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3) {
     // find the intersection between the ray and the plane segment
     // defined by p0, p1, p2, p3 and if the intersection is whithin
     // that segment, return true
     plane_t* plane = obj__plane_new(p0, p1, p2);
-    vec3i_t rayplane_tInters = obj__ray_plane_intersection(plane, ray);
-    if (pointInRec(&rayplane_tInters, p0, p1, p2, p3))
+    vec3i_t ray_plane_intersection = obj__ray_plane_intersection(plane, ray);
+    if (is_point_in_rec(&ray_plane_intersection, p0, p1, p2, p3))
         return true;
     return false;
-}
-
-void obj__cube_rotate (float angle_x_deg, float angle_y_deg, float angle_z_deg) {
-    // TODO: rotate all vertices
 }

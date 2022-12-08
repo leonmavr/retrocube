@@ -16,12 +16,11 @@ int main() {
         ray_t* ray = obj__ray_new(10, 5, 2);
         plane_t* plane = obj__plane_new(cube->vertices[0], cube->vertices[1], cube->vertices[2]);
         //draw__pixel(-g_rows/2, -g_cols/2, '*');
-        draw__pixel(0, 0, 'O');
-        draw__pixel(-10, -10, '*');
-        draw__pixel(-g_cols/2, g_rows/1, 'M');
+        //draw__pixel(0, 0, 'O');
+        //draw__pixel(-10, -10, '*');
 #if 1
-        for (int i = g_minRows; i <= g_maxRows; ++i) {
-            for (int j = g_minCols; j <= g_maxCols; ++j) {
+        for (int i = g_min_rows; i <= g_max_rows; ++i) {
+            for (int j = g_min_cols; j <= g_max_cols; ++j) {
                 obj__ray_send(ray, j, i, 20);
                 if (obj__ray_hits_rectangle(ray, cube->vertices[0], cube->vertices[1], cube->vertices[2], cube->vertices[3]))
                     draw__pixel(j, i, '#');

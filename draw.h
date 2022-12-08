@@ -3,10 +3,10 @@
 
 extern int g_rows;
 extern int g_cols;
-extern int g_minRows;
-extern int g_maxRows;
-extern int g_minCols;
-extern int g_maxCols;
+extern int g_min_rows;
+extern int g_max_rows;
+extern int g_min_cols;
+extern int g_max_cols;
 
 
 void draw__init();
