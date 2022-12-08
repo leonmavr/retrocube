@@ -9,8 +9,8 @@ extern int g_minCols;
 extern int g_maxCols;
 
 
-void drawInit();
-void drawPixel(int x, int y, char c);
-void drawEnd();
+void draw__init();
+void draw__pixel(int x, int y, char c);
+void draw__end();
 
 #endif /* DRAW_H */

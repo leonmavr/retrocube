@@ -31,16 +31,23 @@ typedef struct plane {
     vec3i_t* normal;
 } plane_t;
 
-cube_t* cubeNew(int cx, int cy, int cz, int size);
+//----------------------------------------------------------------------------------------------------------
+// Cube
+//----------------------------------------------------------------------------------------------------------
+cube_t*     obj__cube_new               (int cx, int cy, int cz, int size);
+void        obj__cube_rotate            (float angle_x_deg, float angle_y_deg, float angle_z_deg);
+//----------------------------------------------------------------------------------------------------------
+// Ray
+//----------------------------------------------------------------------------------------------------------
 // the pixel in the screen where the ray points to
-ray_t* rayNew(int x, int y, int z);
-void raySend(ray_t* ray, int x, int y, int z); 
-void raySetColor(ray_t* ray, char color);
-vec3i_t rayplane_tIntersection(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3);
-// planar oparations
-plane_t*   plane_new          (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
-vec3i_t  plane_intersectray_t (plane_t* plane, ray_t* ray);
-bool     plane_rayHitsSurface(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3);
-
+ray_t*      obj__ray_new                (int x, int y, int z);
+void        obj__ray_send               (ray_t* ray, int x, int y, int z); 
+void        obj__ray_set_color          (ray_t* ray, char color);
+//----------------------------------------------------------------------------------------------------------
+// Plane
+//----------------------------------------------------------------------------------------------------------
+plane_t*    obj__plane_new              (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
+vec3i_t     obj__ray_plane_intersection (plane_t* plane, ray_t* ray);
+bool        obj__ray_hits_rectangle     (ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3);
 
 #endif /* OBJECTS_H */

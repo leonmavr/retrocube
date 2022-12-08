@@ -17,7 +17,7 @@ float g_aspRatioScreen;
 float g_aspRatioChar;
 
 
-void drawInit() {
+void draw__init() {
     // start the curses mode
     initscr();
     curs_set(0);
@@ -48,12 +48,12 @@ void drawInit() {
  *        \
  *         v z
  */
-void drawPixel(int x, int y, char c) {
+void draw__pixel(int x, int y, char c) {
     int yScaled = y/(g_aspRatioScreen/g_aspRatioChar);
     mvaddch(yScaled+g_rows/2, x+g_cols/2, c);
 }
 
-void drawEnd() {
+void draw__end() {
     getch();
     endwin();
 }

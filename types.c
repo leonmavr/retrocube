@@ -8,31 +8,31 @@
 #define HALF_SQRT_TWO 0.7071065 
 
 
-cube_t* cubeNew(int cx, int cy, int cz, int side) {
+cube_t* obj__cube_new(int cx, int cy, int cz, int side) {
         cube_t* new = malloc(sizeof(cube_t));
-        new->center = vec3i_new(cx, cy, cz);
+        new->center = vec__vec3i_new(cx, cy, cz);
         new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
         int diag = round(HALF_SQRT_TWO * side); 
-        new->vertices[0] = vec3i_new(-diag, -diag, -diag);
-        new->vertices[1] = vec3i_new(+diag, -diag, -diag);
-        new->vertices[2] = vec3i_new(+diag, +diag, -diag);
-        new->vertices[3] = vec3i_new(-diag, +diag, -diag);
-        new->vertices[4] = vec3i_new(-diag, -diag, +diag);
-        new->vertices[5] = vec3i_new(+diag, -diag, +diag);
-        new->vertices[6] = vec3i_new(+diag, +diag, +diag);
-        new->vertices[7] = vec3i_new(-diag, +diag, +diag);
+        new->vertices[0] = vec__vec3i_new(-diag, -diag, -diag);
+        new->vertices[1] = vec__vec3i_new(+diag, -diag, -diag);
+        new->vertices[2] = vec__vec3i_new(+diag, +diag, -diag);
+        new->vertices[3] = vec__vec3i_new(-diag, +diag, -diag);
+        new->vertices[4] = vec__vec3i_new(-diag, -diag, +diag);
+        new->vertices[5] = vec__vec3i_new(+diag, -diag, +diag);
+        new->vertices[6] = vec__vec3i_new(+diag, +diag, +diag);
+        new->vertices[7] = vec__vec3i_new(-diag, +diag, +diag);
         return new;
 }
 
-ray_t* rayNew(int x, int y, int z) {
+ray_t* obj__ray_new(int x, int y, int z) {
     ray_t* new = malloc(sizeof(ray_t));
-    new->orig = vec3i_new(0, 0, 0);
-    new->end = vec3i_new(x, y, z);
+    new->orig = vec__vec3i_new(0, 0, 0);
+    new->end = vec__vec3i_new(x, y, z);
     return new;
 }
 
 
-void raySetColor(ray_t* ray, char color) {
+void obj__ray_set_color(ray_t* ray, char color) {
     ray->color = color;
 }
 
@@ -58,55 +58,17 @@ static inline bool pointInRec(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, ve
     vec3i_t ab = (vec3i_t) {b->x - a->x, b->y - a->y, b->z - a->z};
     vec3i_t ad = (vec3i_t) {d->x - a->x, d->y - a->y, d->z - a->z};
     vec3i_t am = (vec3i_t) {m->x - a->x, m->y - a->y, m->z - a->z};
-    return (0 <= vec3i_dotprod(&am, &ab)) && (vec3i_dotprod(&am, &ab) <= vec3i_dotprod(&ab, &ab)) &&
-           (0 <= vec3i_dotprod(&am, &ad)) && (vec3i_dotprod(&am, &ad) <= vec3i_dotprod(&ad, &ad));
+    return (0 <= vec__vec3i_dotprod(&am, &ab)) && (vec__vec3i_dotprod(&am, &ab) <= vec__vec3i_dotprod(&ab, &ab)) &&
+           (0 <= vec__vec3i_dotprod(&am, &ad)) && (vec__vec3i_dotprod(&am, &ad) <= vec__vec3i_dotprod(&ad, &ad));
 }
 
-vec3i_t rayplane_tIntersection(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3) {
-#if 0
-    // find the equation of the plane defined by p0, p1, p2
-    vec3i_t p1p0 = (vec3i_t) {p1->x - p0->x, p1->y - p0->y, p1->z - p0->z};
-    vec3i_t p2p0 = (vec3i_t) {p2->x - p0->x, p2->y - p0->y, p2->z - p0->z};
-    // normal vector to the plane 
-    Vec3f n = vec3fCrossProd(&p1p0, &p2p0);
-    // see https://9to5science.com/line-and-plane-intersection-in-3d for the intersection derivation
-    // ray's origin
-    Vec3f a = (Vec3f) {ray->orig->x, ray->orig->y, ray->orig->z};
-    // ray's direction
-    Vec3f b = (Vec3f) {ray->dir->x, ray->dir->y, ray->dir->z};
-    Vec3f ba = (Vec3f) {b.x - a.x, b.y - a.y, b.z - a.z};
-    Vec3f fp0 = (Vec3f) {p0->x, p0->y, p0->z};
-    // intersection of parametric ray: r(t) = a + t(b-a)
-    float t = (vec3fDotprod(&n, &fp0) - vec3fDotprod(&n, &a)) /
-        (vec3fDotprod(&n, &b) - vec3fDotprod(&n, &a)); 
-    // return the point r(t0) on the ray for the interesection t0: r(t0) = a + t0*(b-a)
-    vec3i_t ret = (vec3i_t) {round(a.x + t*(b.x - a.x)), 
-                         round(a.y + t*(b.y - a.y)), 
-                         round(a.z + t*(b.z - a.z))};
-    // TODO: if ret in p0p1p2p3, return ret, else return (0, 0, 0)
-    if (!pointInRec(&ret, p0, p1, p2, p3) && t > 0.0)
-        return ret
-#endif
-    
-    vec3i_t ret = (vec3i_t) {0, 0, 0}; 
-    return ret;
-}
-
-void raySend(ray_t* ray, int x, int y, int z) {
+void obj__ray_send(ray_t* ray, int x, int y, int z) {
     ray->end->x = x;
     ray->end->y = y;
     ray->end->z = z;
 }
 
-vec3_t* vec3_new(float x, float y, float z) {
-    vec3_t* new = malloc(sizeof(vec3_t));
-    new->x = x;
-    new->y = y;
-    new->z = z;
-    return new;
-}
-
-plane_t* plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
+plane_t* obj__plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
 /*
  * Determine the plane through 3 3D points p0, p1, p2 by determining:
  *     1. the normal vector
@@ -156,15 +118,15 @@ plane_t* plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
     new->normal = malloc(sizeof(vec3_t));
     vec3i_t p1p2;
     vec3i_t p1p0;
-    vec3i_sub(&p1p2, p2, p1);
-    vec3i_sub(&p1p0, p0, p1);
-    vec3i_crossprod(new->normal, &p1p2, &p1p0);
-    new->offset = -vec3i_dotprod(new->normal, p1);
+    vec__vec3i_sub(&p1p2, p2, p1);
+    vec__vec3i_sub(&p1p0, p0, p1);
+    vec__vec3i_crossprod(new->normal, &p1p2, &p1p0);
+    new->offset = -vec__vec3i_dotprod(new->normal, p1);
     return new;
 }
 
 
-vec3i_t plane_intersectray_t(plane_t* plane, ray_t* ray) {
+vec3i_t obj__ray_plane_intersection(plane_t* plane, ray_t* ray) {
 /*
  * The parametric line of a ray from from the origin O through 
  * point B ('end' of the ray) is:
@@ -184,7 +146,7 @@ vec3i_t plane_intersectray_t(plane_t* plane, ray_t* ray) {
  * R(t0) = (d/(n.B))*B
  * This is what this function returns.
  */
-    int normalDotEnd = vec3i_dotprod(plane->normal, ray->end);
+    int normalDotEnd = vec__vec3i_dotprod(plane->normal, ray->end);
     float t0 = ((float)plane->offset/normalDotEnd);
     // only interested in intersections along the positive direction
     (t0 < 0.0) ? -t0 : t0 ;
@@ -196,13 +158,17 @@ vec3i_t plane_intersectray_t(plane_t* plane, ray_t* ray) {
 }
 
 
-bool plane_rayHitsSurface(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3) {
+bool obj__ray_hits_rectangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3) {
     // find the intersection between the ray and the plane segment
     // defined by p0, p1, p2, p3 and if the intersection is whithin
     // that segment, return true
-    plane_t* plane = plane_new(p0, p1, p2);
-    vec3i_t rayplane_tInters = plane_intersectray_t(plane, ray);
+    plane_t* plane = obj__plane_new(p0, p1, p2);
+    vec3i_t rayplane_tInters = obj__ray_plane_intersection(plane, ray);
     if (pointInRec(&rayplane_tInters, p0, p1, p2, p3))
         return true;
     return false;
+}
+
+void obj__cube_rotate (float angle_x_deg, float angle_y_deg, float angle_z_deg) {
+    // TODO: rotate all vertices
 }
