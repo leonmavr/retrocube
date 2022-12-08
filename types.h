@@ -4,19 +4,19 @@
 #include "vector.h"
 #include <stdbool.h>
 
-typedef struct Cube {
+typedef struct cube {
     vec3i_t** vertices;
     vec3i_t* center;
-} Cube;
+} cube_t;
 
-typedef struct Ray {
+typedef struct ray {
     // origin is the centre of perspective in pinhole camera model
     // for now it is always set to (0, 0, 0)
     vec3i_t* orig;
     vec3i_t* end;
     // pixel color encoded as a character
     char color;
-} Ray;
+} ray_t;
 
 /* 
  * plane in 3D
@@ -26,21 +26,21 @@ typedef struct Ray {
  * , where n = (a, b, c) is the normal
  * and d is the offset from the origin
  */
-typedef struct Plane {
+typedef struct plane {
     int offset;
     vec3i_t* normal;
-} Plane;
+} plane_t;
 
-Cube* cubeNew(int cx, int cy, int cz, int size);
+cube_t* cubeNew(int cx, int cy, int cz, int size);
 // the pixel in the screen where the ray points to
-Ray* rayNew(int x, int y, int z);
-void raySend(Ray* ray, int x, int y, int z); 
-void raySetColor(Ray* ray, char color);
-vec3i_t rayPlaneIntersection(Ray* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3);
+ray_t* rayNew(int x, int y, int z);
+void raySend(ray_t* ray, int x, int y, int z); 
+void raySetColor(ray_t* ray, char color);
+vec3i_t rayplane_tIntersection(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3);
 // planar oparations
-Plane*   plane_new          (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
-vec3i_t  plane_intersectRay (Plane* plane, Ray* ray);
-bool     plane_rayHitsSurface(Ray* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3);
+plane_t*   plane_new          (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
+vec3i_t  plane_intersectray_t (plane_t* plane, ray_t* ray);
+bool     plane_rayHitsSurface(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3);
 
 
 #endif /* OBJECTS_H */

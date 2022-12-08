@@ -8,8 +8,8 @@
 #define HALF_SQRT_TWO 0.7071065 
 
 
-Cube* cubeNew(int cx, int cy, int cz, int side) {
-        Cube* new = malloc(sizeof(Cube));
+cube_t* cubeNew(int cx, int cy, int cz, int side) {
+        cube_t* new = malloc(sizeof(cube_t));
         new->center = vec3i_new(cx, cy, cz);
         new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
         int diag = round(HALF_SQRT_TWO * side); 
@@ -24,15 +24,15 @@ Cube* cubeNew(int cx, int cy, int cz, int side) {
         return new;
 }
 
-Ray* rayNew(int x, int y, int z) {
-    Ray* new = malloc(sizeof(Ray));
+ray_t* rayNew(int x, int y, int z) {
+    ray_t* new = malloc(sizeof(ray_t));
     new->orig = vec3i_new(0, 0, 0);
     new->end = vec3i_new(x, y, z);
     return new;
 }
 
 
-void raySetColor(Ray* ray, char color) {
+void raySetColor(ray_t* ray, char color) {
     ray->color = color;
 }
 
@@ -62,7 +62,7 @@ static inline bool pointInRec(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, ve
            (0 <= vec3i_dotprod(&am, &ad)) && (vec3i_dotprod(&am, &ad) <= vec3i_dotprod(&ad, &ad));
 }
 
-vec3i_t rayPlaneIntersection(Ray* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3) {
+vec3i_t rayplane_tIntersection(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3) {
 #if 0
     // find the equation of the plane defined by p0, p1, p2
     vec3i_t p1p0 = (vec3i_t) {p1->x - p0->x, p1->y - p0->y, p1->z - p0->z};
@@ -92,7 +92,7 @@ vec3i_t rayPlaneIntersection(Ray* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, ve
     return ret;
 }
 
-void raySend(Ray* ray, int x, int y, int z) {
+void raySend(ray_t* ray, int x, int y, int z) {
     ray->end->x = x;
     ray->end->y = y;
     ray->end->z = z;
@@ -106,7 +106,7 @@ vec3_t* vec3_new(float x, float y, float z) {
     return new;
 }
 
-Plane* plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
+plane_t* plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
 /*
  * Determine the plane through 3 3D points p0, p1, p2 by determining:
  *     1. the normal vector
@@ -152,7 +152,7 @@ Plane* plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
  * n.x - n.p1 = 0
  * -n.p1 is the offset from the origin 
 */
-    Plane* new = malloc(sizeof(Plane));
+    plane_t* new = malloc(sizeof(plane_t));
     new->normal = malloc(sizeof(vec3_t));
     vec3i_t p1p2;
     vec3i_t p1p0;
@@ -164,7 +164,7 @@ Plane* plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
 }
 
 
-vec3i_t plane_intersectRay(Plane* plane, Ray* ray) {
+vec3i_t plane_intersectray_t(plane_t* plane, ray_t* ray) {
 /*
  * The parametric line of a ray from from the origin O through 
  * point B ('end' of the ray) is:
@@ -196,13 +196,13 @@ vec3i_t plane_intersectRay(Plane* plane, Ray* ray) {
 }
 
 
-bool plane_rayHitsSurface(Ray* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3) {
+bool plane_rayHitsSurface(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3) {
     // find the intersection between the ray and the plane segment
     // defined by p0, p1, p2, p3 and if the intersection is whithin
     // that segment, return true
-    Plane* plane = plane_new(p0, p1, p2);
-    vec3i_t rayPlaneInters = plane_intersectRay(plane, ray);
-    if (pointInRec(&rayPlaneInters, p0, p1, p2, p3))
+    plane_t* plane = plane_new(p0, p1, p2);
+    vec3i_t rayplane_tInters = plane_intersectray_t(plane, ray);
+    if (pointInRec(&rayplane_tInters, p0, p1, p2, p3))
         return true;
     return false;
 }

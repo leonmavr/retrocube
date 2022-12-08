@@ -3,11 +3,11 @@
 
 #include <stdbool.h>
 
-typedef struct vec3i_t {
+typedef struct vec3i {
     int x, y, z;
 } vec3i_t;
 
-typedef struct vec3f_t {
+typedef struct vec3f {
     float x, y, z;
 } vec3f_t;
 
