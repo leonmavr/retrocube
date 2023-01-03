@@ -35,7 +35,7 @@ typedef struct plane {
 // Cube
 //----------------------------------------------------------------------------------------------------------
 cube_t*     obj__cube_new               (int cx, int cy, int cz, int size);
-void        obj__cube_rotate            (float angle_x_deg, float angle_y_deg, float angle_z_deg);
+void obj__cube_rotate (cube_t* cube, float angle_x_deg, float angle_y_deg, float angle_z_deg);
 //----------------------------------------------------------------------------------------------------------
 // Ray
 //----------------------------------------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-#include "types.h"
+#include "objects.h"
 #include <ncurses.h>
 #include <sys/ioctl.h>
 #include <stdio.h>

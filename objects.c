@@ -1,8 +1,9 @@
 #include "vector.h"
-#include "types.h"
+#include "objects.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #define SQRT_TWO 1.414213
 #define HALF_SQRT_TWO 0.7071065 
@@ -29,8 +30,8 @@ static inline bool is_point_in_rec(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* 
     vec3i_t ab = (vec3i_t) {b->x - a->x, b->y - a->y, b->z - a->z};
     vec3i_t ad = (vec3i_t) {d->x - a->x, d->y - a->y, d->z - a->z};
     vec3i_t am = (vec3i_t) {m->x - a->x, m->y - a->y, m->z - a->z};
-    return (0 <= vec__vec3i_dotprod(&am, &ab)) && (vec__vec3i_dotprod(&am, &ab) <= vec__vec3i_dotprod(&ab, &ab)) &&
-           (0 <= vec__vec3i_dotprod(&am, &ad)) && (vec__vec3i_dotprod(&am, &ad) <= vec__vec3i_dotprod(&ad, &ad));
+    return (0 < vec__vec3i_dotprod(&am, &ab)) && (vec__vec3i_dotprod(&am, &ab) < vec__vec3i_dotprod(&ab, &ab)) &&
+           (0 < vec__vec3i_dotprod(&am, &ad)) && (vec__vec3i_dotprod(&am, &ad) < vec__vec3i_dotprod(&ad, &ad));
 }
 
 
@@ -53,8 +54,24 @@ cube_t* obj__cube_new(int cx, int cy, int cz, int side) {
         return new;
 }
 
-void obj__cube_rotate (float angle_x_deg, float angle_y_deg, float angle_z_deg) {
-    // TODO: rotate all vertices
+void obj__cube_rotate (cube_t* cube, float angle_x_deg, float angle_y_deg, float angle_z_deg) {
+    // to be consistent with wiki article: https://en.wikipedia.org/wiki/Rotation_matrix
+    float a = angle_z_deg, b = angle_y_deg, c = angle_x_deg;
+    float ca = cos(a), cb = cos(b), cc = cos(c);
+    float sa = sin(a), sb = sin(b), sc = sin(c);
+    float rotMatrix[3][3] = {
+        {cb*cc, sa*sb*cc - ca*sc, ca*sb*cc + sa*sc},
+        {cb*sc, sa*sb*sc + ca*cc, ca*sb*sc - sa*cc},
+        {-sb  , sa*cb           , ca*cb}
+    };
+    for (int i = 0; i < 8; ++i) {
+        cube->vertices[i]->x = round(rotMatrix[0][0]*cube->vertices[i]->x + rotMatrix[0][1]*cube->vertices[i]->y + rotMatrix[0][2]*cube->vertices[i]->z);
+#if 1
+        cube->vertices[i]->y = round(rotMatrix[1][0]*cube->vertices[i]->x + rotMatrix[1][1]*cube->vertices[i]->y + rotMatrix[1][2]*cube->vertices[i]->z);
+        cube->vertices[i]->z = round(rotMatrix[2][0]*cube->vertices[i]->x + rotMatrix[2][1]*cube->vertices[i]->y + rotMatrix[2][2]*cube->vertices[i]->z);
+        printf("v: %d, %d, %d\n", cube->vertices[i]->x,  cube->vertices[i]->y, cube->vertices[i]->z);
+#endif
+    }
 }
 
 //----------------------------------------------------------------------------------------------------------

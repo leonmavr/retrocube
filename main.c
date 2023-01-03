@@ -1,5 +1,5 @@
 #include "draw.h"
-#include "types.h"
+#include "objects.h"
 #include <ncurses.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,22 +12,26 @@ int main() {
         draw__init();
 #ifndef DEBUG
         printf("starting\n");
-        cube_t* cube = obj__cube_new(0, 0, 20, 6);
+        int x = 0, y = 0, z = 6;
+        cube_t* cube = obj__cube_new(x, y, z, 56);
         ray_t* ray = obj__ray_new(10, 5, 2);
         plane_t* plane = obj__plane_new(cube->vertices[0], cube->vertices[1], cube->vertices[2]);
+        obj__cube_rotate(cube, 0.1, 0.1, 0.1); 
         //draw__pixel(-g_rows/2, -g_cols/2, '*');
         //draw__pixel(0, 0, 'O');
         //draw__pixel(-10, -10, '*');
 #if 1
         for (int i = g_min_rows; i <= g_max_rows; ++i) {
             for (int j = g_min_cols; j <= g_max_cols; ++j) {
-                obj__ray_send(ray, j, i, 20);
+                obj__ray_send(ray, j, i, z);
                 if (obj__ray_hits_rectangle(ray, cube->vertices[0], cube->vertices[1], cube->vertices[2], cube->vertices[3]))
                     draw__pixel(j, i, '#');
             }
         }
 #endif
 #else
+        cube_t* cube = obj__cube_new(0, 0, 20, 10);
+        obj__cube_rotate(cube, 0.1, 0.1, 0.05); 
         ray_t* ray = obj__ray_new(1, 50, 20);
         vec3i_t* p0 = vec__vec3i_new(-1, 1, 2);
         vec3i_t* p1 = vec__vec3i_new(-4, 2, 2);
