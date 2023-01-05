@@ -23,10 +23,10 @@ void draw__init() {
     curs_set(0);
     // get the number of rows and columns
     getmaxyx(stdscr, g_rows, g_cols);
-    g_min_rows = -g_rows-2;
+    g_min_rows = -g_rows;
     g_max_rows = g_rows;
-    g_min_cols = -g_cols/2;
-    g_max_cols = g_cols/2-2;
+    g_min_cols = -g_cols/2 + 1;
+    g_max_cols = g_cols/2;
     // find terminal window's aspect ratio
     struct winsize wsize;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
