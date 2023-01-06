@@ -3,7 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <stdio.h>
+//#include <stdio.h>
 
 #define SQRT_TWO 1.414213
 #define HALF_SQRT_TWO 0.7071065 
@@ -42,6 +42,7 @@ cube_t* obj__cube_new(int cx, int cy, int cz, int side) {
         cube_t* new = malloc(sizeof(cube_t));
         new->center = vec__vec3i_new(cx, cy, cz);
         new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
+        // TODO: centre vertices around (cx, cy, cz)
         int diag = round(HALF_SQRT_TWO * side); 
         new->vertices[0] = vec__vec3i_new(-diag, -diag, -diag);
         new->vertices[1] = vec__vec3i_new(+diag, -diag, -diag);
@@ -69,7 +70,7 @@ void obj__cube_rotate (cube_t* cube, float angle_x_deg, float angle_y_deg, float
 #if 1
         cube->vertices[i]->y = round(rotMatrix[1][0]*cube->vertices[i]->x + rotMatrix[1][1]*cube->vertices[i]->y + rotMatrix[1][2]*cube->vertices[i]->z);
         cube->vertices[i]->z = round(rotMatrix[2][0]*cube->vertices[i]->x + rotMatrix[2][1]*cube->vertices[i]->y + rotMatrix[2][2]*cube->vertices[i]->z);
-        printf("v: %d, %d, %d\n", cube->vertices[i]->x,  cube->vertices[i]->y, cube->vertices[i]->z);
+        //printf("v: %d, %d, %d\n", cube->vertices[i]->x,  cube->vertices[i]->y, cube->vertices[i]->z);
 #endif
     }
 }
@@ -153,6 +154,11 @@ plane_t* obj__plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
     vec__vec3i_sub(&p1p0, p0, p1);
     vec__vec3i_crossprod(new->normal, &p1p2, &p1p0);
     new->offset = -vec__vec3i_dotprod(new->normal, p1);
+    // store plane coefficients
+    new->a = new->normal->x;
+    new->b = new->normal->y;
+    new->c = new->normal->z;
+    new->d = new->offset;
     return new;
 }
 
