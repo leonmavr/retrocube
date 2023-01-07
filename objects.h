@@ -53,5 +53,7 @@ void        obj__ray_set_color          (ray_t* ray, char color);
 plane_t*    obj__plane_new              (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
 vec3i_t     obj__ray_plane_intersection (plane_t* plane, ray_t* ray);
 bool        obj__ray_hits_rectangle     (ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3);
+// TODO: if plane is ax + by + cz + d = 0, solve for z and use it!
+inline int  obj__plane_z_at_xy          (plane_t* plane, int x, int y);
 
 #endif /* OBJECTS_H */
