@@ -154,11 +154,6 @@ plane_t* obj__plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
     vec__vec3i_sub(&p1p0, p0, p1);
     vec__vec3i_crossprod(new->normal, &p1p2, &p1p0);
     new->offset = -vec__vec3i_dotprod(new->normal, p1);
-    // store plane coefficients
-    new->a = new->normal->x;
-    new->b = new->normal->y;
-    new->c = new->normal->z;
-    new->d = new->offset;
     return new;
 }
 

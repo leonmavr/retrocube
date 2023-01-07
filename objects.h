@@ -21,9 +21,10 @@ typedef struct ray {
 /* 
  * plane in 3D
  * assuming its equation is:
- * ax + by + cz + d = 0 (1)
- * or n.X + d = 0       (2)
+ * n_x*x + n_y*y + n_z*z + d = 0 (1)
+ * or n.X + d = 0                (2)
  * , where n = (a, b, c) is the normal
+ * , X = (x, y, y)
  * and d is the offset from the origin
  */
 typedef struct plane {
@@ -31,8 +32,6 @@ typedef struct plane {
     int offset;
     // n from eq. (2)
     vec3i_t* normal;
-    // coefficients of plane eq. (1)
-    float a, b, c, d;
 } plane_t;
 
 //----------------------------------------------------------------------------------------------------------
