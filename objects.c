@@ -44,14 +44,14 @@ cube_t* obj__cube_new(int cx, int cy, int cz, int side) {
         new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
         // TODO: centre vertices around (cx, cy, cz)
         int diag = round(HALF_SQRT_TWO * side); 
-        new->vertices[0] = vec__vec3i_new(-diag, -diag, -diag);
-        new->vertices[1] = vec__vec3i_new(+diag, -diag, -diag);
-        new->vertices[2] = vec__vec3i_new(+diag, +diag, -diag);
-        new->vertices[3] = vec__vec3i_new(-diag, +diag, -diag);
-        new->vertices[4] = vec__vec3i_new(-diag, -diag, +diag);
-        new->vertices[5] = vec__vec3i_new(+diag, -diag, +diag);
-        new->vertices[6] = vec__vec3i_new(+diag, +diag, +diag);
-        new->vertices[7] = vec__vec3i_new(-diag, +diag, +diag);
+        new->vertices[0] = vec__vec3i_new(cx-diag, cy-diag, cz-diag);
+        new->vertices[1] = vec__vec3i_new(cx+diag, cy-diag, cz-diag);
+        new->vertices[2] = vec__vec3i_new(cx+diag, cy+diag, cz-diag);
+        new->vertices[3] = vec__vec3i_new(cx-diag, cy+diag, cz-diag);
+        new->vertices[4] = vec__vec3i_new(cx-diag, cy-diag, cz+diag);
+        new->vertices[5] = vec__vec3i_new(cx+diag, cy-diag, cz+diag);
+        new->vertices[6] = vec__vec3i_new(cx+diag, cy+diag, cz+diag);
+        new->vertices[7] = vec__vec3i_new(cx-diag, cy+diag, cz+diag);
         return new;
 }
 
@@ -66,11 +66,17 @@ void obj__cube_rotate (cube_t* cube, float angle_x_deg, float angle_y_deg, float
         {-sb  , sa*cb           , ca*cb}
     };
     for (int i = 0; i < 8; ++i) {
+        cube->vertices[i]->x -= cube->center->x;
+        cube->vertices[i]->y -= cube->center->y;
+        cube->vertices[i]->z -= cube->center->z;
         cube->vertices[i]->x = round(rotMatrix[0][0]*cube->vertices[i]->x + rotMatrix[0][1]*cube->vertices[i]->y + rotMatrix[0][2]*cube->vertices[i]->z);
 #if 1
         cube->vertices[i]->y = round(rotMatrix[1][0]*cube->vertices[i]->x + rotMatrix[1][1]*cube->vertices[i]->y + rotMatrix[1][2]*cube->vertices[i]->z);
         cube->vertices[i]->z = round(rotMatrix[2][0]*cube->vertices[i]->x + rotMatrix[2][1]*cube->vertices[i]->y + rotMatrix[2][2]*cube->vertices[i]->z);
         //printf("v: %d, %d, %d\n", cube->vertices[i]->x,  cube->vertices[i]->y, cube->vertices[i]->z);
+        cube->vertices[i]->x += cube->center->x;
+        cube->vertices[i]->y += cube->center->y;
+        cube->vertices[i]->z += cube->center->z;
 #endif
     }
 }
@@ -181,7 +187,9 @@ vec3i_t obj__ray_plane_intersection(plane_t* plane, ray_t* ray) {
     int nornmal_dot_rayend = vec__vec3i_dotprod(plane->normal, ray->end);
     float t0 = ((float)plane->offset/nornmal_dot_rayend);
     // only interested in intersections along the positive direction
-    (t0 < 0.0) ? -t0 : t0 ;
+    t0 = (t0 < 0.0) ? -t0 : t0 ;
+    //if (t0 < 0)
+    //    t0 = -t0;
     vec3i_t ray_at_intersection;
     ray_at_intersection.x = round(t0*ray->end->x);
     ray_at_intersection.y = round(t0*ray->end->y);

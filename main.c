@@ -13,20 +13,19 @@ int main() {
         draw__init();
 #ifndef DEBUG
         printf("starting\n");
-        int x = 0, y = 0, z = 0;
-        cube_t* cube = obj__cube_new(x, y, z, 20);
+        int x = 0, y = 20, z = 20;
+        cube_t* cube = obj__cube_new(x, y, z, 10);
         ray_t* ray = obj__ray_new(0, 0, 0);
         plane_t* plane = obj__plane_new(cube->vertices[0], cube->vertices[1], cube->vertices[2]);
-        obj__cube_rotate(cube, .3, .2, .0); 
+        obj__cube_rotate(cube, 9.9, 8.6, 7.3);
         draw__pixel(g_min_cols, g_min_rows, '*');
-        draw__pixel(g_max_cols, g_max_rows, '*');
+        draw__pixel(g_max_cols, g_max_rows-1, '*');
         draw__pixel(0, 0, 'O');
         //draw__pixel(-10, -10, '*');
 #if 1
         for (int i = g_min_rows; i <= g_max_rows; ++i) {
             for (int j = g_min_cols; j <= g_max_cols; ++j) {
                 z = obj__plane_z_at_xy(plane, j, i);
-                // TODO: if plane is ax + by + cz + d = 0, solve for z and use it!
                 obj__ray_send(ray, j, i, z);
                 if (obj__ray_hits_rectangle(ray, cube->vertices[0], cube->vertices[1], cube->vertices[2], cube->vertices[3])) {
                     draw__pixel(j, i, '#');
