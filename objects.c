@@ -7,6 +7,8 @@
 
 #define SQRT_TWO 1.414213
 #define HALF_SQRT_TWO 0.7071065 
+#define PI M_PI
+#define RAD_TO_DEG(angle_rad) ((angle_rad) * 180.0 / PI)
 
 
 static inline bool is_point_in_rec(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d) {

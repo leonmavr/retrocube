@@ -57,3 +57,7 @@ void draw__end() {
     getch();
     endwin();
 }
+
+void draw__cube(int x, int y, int z, int side) {
+
+}
