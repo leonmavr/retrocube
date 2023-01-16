@@ -6,7 +6,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <unistd.h>
-char g_colors[8] = {'#', 'O', '%', '.', 'X', '&', '*', 'W'};
+// colors for each face of the cube
+char g_colors[6] = {'#', '.', '=', '+', 'o', 'H'};
 
 // rows, columns and aspect ratio of the terminal
 int g_rows;
