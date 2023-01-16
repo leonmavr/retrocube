@@ -14,11 +14,11 @@ int main() {
     draw__init();
 #ifndef DEBUG
     printf("starting\n");
-    int x = 0, y = 0, z = 40;
+    int x = 20, y = 20, z = 40;
     cube_t* cube = obj__cube_new(x, y, z, 14);
     ray_t* ray = obj__ray_new(0, 0, 0);
     plane_t* plane = obj__plane_new(cube->vertices[0], cube->vertices[1], cube->vertices[2]);
-    obj__cube_rotate(cube, 0.3, 0.4, 0.3);
+    obj__cube_rotate(cube, 4.8, 3.2, 5.7);
     draw__pixel(g_min_cols, g_min_rows, '*');
     draw__pixel(g_max_cols, g_max_rows-1, '*');
     draw__pixel(0, 0, 'O');

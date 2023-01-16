@@ -48,12 +48,12 @@ cube_t* obj__cube_new(int cx, int cy, int cz, int side) {
  *           |    \              |    \                  ^y
  *           |      \  p7        |       \               |
  *           |         +-------------------+ p6          |
- *           |         |         |         |             |
+ *           |         |         .         |             |
  *           |         |*(cx,xy,cz)        |             o-------> x
- *           |         |         |         |              \
- *           |         |         |         |               \
- *           |         |         |         |                v z
- *        p0 +---------|---------+ p1      |
+ *           |         |         .         |              \
+ *           |         |         .         |               \
+ *           |         |         .         |                v z
+ *        p0 +---------|.........+ p1      |
  *            \        |           \       |
  *              \      |             \     |
  *                 \   |                \  |
@@ -80,24 +80,51 @@ void obj__cube_rotate (cube_t* cube, float angle_x_deg, float angle_y_deg, float
     float a = angle_z_deg, b = angle_y_deg, c = angle_x_deg;
     float ca = cos(a), cb = cos(b), cc = cos(c);
     float sa = sin(a), sb = sin(b), sc = sin(c);
-    float rotMatrix[3][3] = {
-        {cb*cc, sa*sb*cc - ca*sc, ca*sb*cc + sa*sc},
-        {cb*sc, sa*sb*sc + ca*cc, ca*sb*sc - sa*cc},
-        {-sb  , sa*cb           , ca*cb}
+    float matrix_rotx[3][3] = {
+        {1, 0, 0},
+        {0, ca, -sa},
+        {0, sa, ca},
+    };
+    float matrix_roty[3][3] = {
+        {cb, 0, sb},
+        {0, 1, 0},
+        {-sb, 0, cb},
+    };
+    float matrix_rotz[3][3] = {
+        {cc, -sc, 0},
+        {sc, cc, 0},
+        {0, 0, 1},
     };
     for (int i = 0; i < 8; ++i) {
         cube->vertices[i]->x -= cube->center->x;
         cube->vertices[i]->y -= cube->center->y;
         cube->vertices[i]->z -= cube->center->z;
-        cube->vertices[i]->x = round(rotMatrix[0][0]*cube->vertices[i]->x + rotMatrix[0][1]*cube->vertices[i]->y + rotMatrix[0][2]*cube->vertices[i]->z);
 #if 1
-        cube->vertices[i]->y = round(rotMatrix[1][0]*cube->vertices[i]->x + rotMatrix[1][1]*cube->vertices[i]->y + rotMatrix[1][2]*cube->vertices[i]->z);
-        cube->vertices[i]->z = round(rotMatrix[2][0]*cube->vertices[i]->x + rotMatrix[2][1]*cube->vertices[i]->y + rotMatrix[2][2]*cube->vertices[i]->z);
-        //printf("v: %d, %d, %d\n", cube->vertices[i]->x,  cube->vertices[i]->y, cube->vertices[i]->z);
+        int x = cube->vertices[i]->x;
+        int y = cube->vertices[i]->y;
+        int z = cube->vertices[i]->z;
+        // Rx
+        cube->vertices[i]->x = round(matrix_rotx[0][0]*x + matrix_rotx[0][1]*y + matrix_rotx[0][2]*z);
+        cube->vertices[i]->y = round(matrix_rotx[1][0]*x + matrix_rotx[1][1]*y + matrix_rotx[1][2]*z);
+        cube->vertices[i]->z = round(matrix_rotx[2][0]*x + matrix_rotx[2][1]*y + matrix_rotx[2][2]*z);
+        // Ry
+        x = cube->vertices[i]->x;
+        y = cube->vertices[i]->y;
+        z = cube->vertices[i]->z;
+        cube->vertices[i]->x = round(matrix_roty[0][0]*x + matrix_roty[0][1]*y + matrix_roty[0][2]*z);
+        cube->vertices[i]->y = round(matrix_roty[1][0]*x + matrix_roty[1][1]*y + matrix_roty[1][2]*z);
+        cube->vertices[i]->z = round(matrix_roty[2][0]*x + matrix_roty[2][1]*y + matrix_roty[2][2]*z);
+        // Rz
+        x = cube->vertices[i]->x;
+        y = cube->vertices[i]->y;
+        z = cube->vertices[i]->z;
+        cube->vertices[i]->x = round(matrix_rotz[0][0]*x + matrix_rotz[0][1]*y + matrix_rotz[0][2]*z);
+        cube->vertices[i]->y = round(matrix_rotz[1][0]*x + matrix_rotz[1][1]*y + matrix_rotz[1][2]*z);
+        cube->vertices[i]->z = round(matrix_rotz[2][0]*x + matrix_rotz[2][1]*y + matrix_rotz[2][2]*z);
+#endif
         cube->vertices[i]->x += cube->center->x;
         cube->vertices[i]->y += cube->center->y;
         cube->vertices[i]->z += cube->center->z;
-#endif
     }
 }
 
