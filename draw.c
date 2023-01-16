@@ -1,3 +1,4 @@
+#include "vector.h"
 #include "objects.h"
 #include <ncurses.h>
 #include <sys/ioctl.h>
@@ -56,6 +57,24 @@ void draw__pixel(int x, int y, char c) {
 void draw__end() {
     getch();
     endwin();
+}
+
+// TODO: static
+void draw__surface(vec3i_t* pt1, vec3i_t* pt2, vec3i_t* pt3, vec3i_t* pt4) {
+    int z;
+    ray_t* ray = obj__ray_new(0, 0, 0);
+    plane_t* plane = obj__plane_new(pt1, pt2, pt3);
+    for (int i = g_min_rows; i <= g_max_rows; ++i) {
+        for (int j = g_min_cols; j <= g_max_cols; ++j) {
+            // which z the ray hits the plane
+            z = obj__plane_z_at_xy(plane, j, i);
+            obj__ray_send(ray, j, i, z);
+            if (obj__ray_hits_rectangle(ray, pt1, pt2, pt3, pt4)) {
+                draw__pixel(j, i, '#');
+            }
+        }
+    }
+
 }
 
 void draw__cube(int x, int y, int z, int side) {
