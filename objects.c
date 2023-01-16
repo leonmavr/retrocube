@@ -232,5 +232,5 @@ extern inline int obj__plane_z_at_xy (plane_t* plane, int x, int y) {
     // solve for z in plane's eq/n: n.x*x + n.y*y + n.z*z + offset = 0
     vec3i_t coeffs = (vec3i_t) {plane->normal->x, plane->normal->y, plane->offset};
     vec3i_t xyz = (vec3i_t) {x, y, 1};
-    return 1.0/plane->normal->z*(-vec__vec3i_dotprod(&coeffs, &xyz));
+    return round(1.0/plane->normal->z*(-vec__vec3i_dotprod(&coeffs, &xyz)));
 }

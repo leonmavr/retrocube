@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <unistd.h>
-char g_colors[8] = {'#', 'O', 'H', '~', 'X', '&', '*', 'W'};
+char g_colors[8] = {'#', 'O', '%', '.', 'X', '&', '*', 'W'};
 
 // rows, columns and aspect ratio of the terminal
 int g_rows;
@@ -118,62 +118,64 @@ void draw__cube(cube_t* cube) {
             size_t hit_count = 0;
             char rendered_color;
             int z_hit = -999999999;
+            int z;
+            plane_t* plane = obj__plane_new(p0, p1, p2);
+            z = obj__plane_z_at_xy(plane, j, i);
+            obj__ray_send(ray, j, i, z);
+            //draw__pixel(10, 10, g_colors[0]);
             if (obj__ray_hits_rectangle(ray, p0, p1, p2, p3)) {
                 draw__pixel(10, 10, g_colors[0]);
-                plane_t* plane = obj__plane_new(p0, p1, p2);
-                int z = obj__plane_z_at_xy(plane, j, i);
                 // which z the ray hits the plane
-                obj__ray_send(ray, j, i, z);
                 if (z > z_hit) {
                     draw__pixel(j, i, g_colors[0]);
                     z_hit = z;
                 }
             }
+            plane = obj__plane_new(p0, p4, p7);
+            z = obj__plane_z_at_xy(plane, j, i);
+            obj__ray_send(ray, j, i, z);
             if (obj__ray_hits_rectangle(ray, p0, p4, p7, p3)) {
-                plane_t* plane = obj__plane_new(p0, p4, p7);
-                int z = obj__plane_z_at_xy(plane, j, i);
                 // which z the ray hits the plane
-                obj__ray_send(ray, j, i, z);
                 if (z > z_hit) {
                     draw__pixel(j, i, g_colors[1]);
                     z_hit = z;
                 }
             }
+            plane = obj__plane_new(p4, p5, p6);
+            z = obj__plane_z_at_xy(plane, j, i);
+            obj__ray_send(ray, j, i, z);
             if (obj__ray_hits_rectangle(ray, p4, p5, p6, p7)) {
-                plane_t* plane = obj__plane_new(p4, p5, p6);
-                int z = obj__plane_z_at_xy(plane, j, i);
                 // which z the ray hits the plane
-                obj__ray_send(ray, j, i, z);
                 if (z > z_hit) {
                     draw__pixel(j, i, g_colors[2]);
                     z_hit = z;
                 }
             }
+            plane = obj__plane_new(p5, p1, p2);
+            z = obj__plane_z_at_xy(plane, j, i);
+            obj__ray_send(ray, j, i, z);
             if (obj__ray_hits_rectangle(ray, p5, p1, p2, p6)) {
-                plane_t* plane = obj__plane_new(p5, p1, p2);
-                int z = obj__plane_z_at_xy(plane, j, i);
                 // which z the ray hits the plane
-                obj__ray_send(ray, j, i, z);
                 if (z > z_hit) {
                     draw__pixel(j, i, g_colors[3]);
                     z_hit = z;
                 }
             }
+            plane = obj__plane_new(p7, p6, p2);
+            z = obj__plane_z_at_xy(plane, j, i);
+            obj__ray_send(ray, j, i, z);
             if (obj__ray_hits_rectangle(ray, p7, p6, p2, p3)) {
-                plane_t* plane = obj__plane_new(p7, p6, p2);
-                int z = obj__plane_z_at_xy(plane, j, i);
                 // which z the ray hits the plane
-                obj__ray_send(ray, j, i, z);
                 if (z > z_hit) {
                     draw__pixel(j, i, g_colors[4]);
                     z_hit = z;
                 }
             } 
+            plane = obj__plane_new(p0, p4, p5);
+            z = obj__plane_z_at_xy(plane, j, i);
+            obj__ray_send(ray, j, i, z);
             if (obj__ray_hits_rectangle(ray, p0, p4, p5, p1)) {
-                plane_t* plane = obj__plane_new(p0, p4, p5);
-                int z = obj__plane_z_at_xy(plane, j, i);
                 // which z the ray hits the plane
-                obj__ray_send(ray, j, i, z);
                 if (z > z_hit) {
                     draw__pixel(j, i, g_colors[5]);
                     z_hit = z;
