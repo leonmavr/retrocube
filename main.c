@@ -23,7 +23,8 @@ int main() {
     draw__pixel(g_max_cols, g_max_rows-1, '*');
     draw__pixel(0, 0, 'O');
     //draw__pixel(-10, -10, '*');
-    draw__surface(cube->vertices[0], cube->vertices[1], cube->vertices[2], cube->vertices[3]);
+    //draw__surface(cube->vertices[0], cube->vertices[1], cube->vertices[2], cube->vertices[3], 'O');
+    draw__cube(cube);
 #else
     printf("r = %d, c = %d\n", g_min_rows, g_min_cols);
     cube_t* cube = obj__cube_new(0, 0, 20, 10);

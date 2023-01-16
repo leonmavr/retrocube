@@ -41,10 +41,28 @@ static inline bool is_point_in_rec(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* 
 // Cube
 //----------------------------------------------------------------------------------------------------------
 cube_t* obj__cube_new(int cx, int cy, int cz, int side) {
+/*
+ *          p3                  p2 
+ *           +-------------------+
+ *           | \                 | \
+ *           |    \              |    \                  ^y
+ *           |      \  p7        |       \               |
+ *           |         +-------------------+ p6          |
+ *           |         |         |         |             |
+ *           |         |*(cx,xy,cz)        |             o-------> x
+ *           |         |         |         |              \
+ *           |         |         |         |               \
+ *           |         |         |         |                v z
+ *        p0 +---------|---------+ p1      |
+ *            \        |           \       |
+ *              \      |             \     |
+ *                 \   |                \  |
+ *                    \+-------------------+
+ *                     p4                   p5
+ */
         cube_t* new = malloc(sizeof(cube_t));
         new->center = vec__vec3i_new(cx, cy, cz);
         new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
-        // TODO: centre vertices around (cx, cy, cz)
         int diag = round(HALF_SQRT_TWO * side); 
         new->vertices[0] = vec__vec3i_new(cx-diag, cy-diag, cz-diag);
         new->vertices[1] = vec__vec3i_new(cx+diag, cy-diag, cz-diag);
