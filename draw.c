@@ -6,8 +6,9 @@
 #include <stdio.h>
 #include <math.h>
 #include <unistd.h>
+
 // colors for each face of the cube
-char g_colors[6] = {'#', '.', '=', '+', 'o', 'H'};
+char g_colors[6] = {'#', '.', '=', '+', 'o', 'I'};
 
 // rows, columns and aspect ratio of the terminal
 int g_rows;
@@ -62,8 +63,7 @@ void draw__end() {
     endwin();
 }
 
-// TODO: static
-void draw__surface(vec3i_t* pt1, vec3i_t* pt2, vec3i_t* pt3, vec3i_t* pt4, char color) {
+static void draw__surface(vec3i_t* pt1, vec3i_t* pt2, vec3i_t* pt3, vec3i_t* pt4, char color) {
     ray_t* ray = obj__ray_new(0, 0, 0);
     plane_t* plane = obj__plane_new(pt1, pt2, pt3);
     for (int i = g_min_rows; i <= g_max_rows; ++i) {
