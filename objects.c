@@ -32,15 +32,15 @@ static inline bool is_point_in_rec(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* 
     vec3i_t ab = (vec3i_t) {b->x - a->x, b->y - a->y, b->z - a->z};
     vec3i_t ad = (vec3i_t) {d->x - a->x, d->y - a->y, d->z - a->z};
     vec3i_t am = (vec3i_t) {m->x - a->x, m->y - a->y, m->z - a->z};
-    return (0 < vec__vec3i_dotprod(&am, &ab)) && (vec__vec3i_dotprod(&am, &ab) < vec__vec3i_dotprod(&ab, &ab)) &&
-           (0 < vec__vec3i_dotprod(&am, &ad)) && (vec__vec3i_dotprod(&am, &ad) < vec__vec3i_dotprod(&ad, &ad));
+    return (0 < vec_vec3i_dotprod(&am, &ab)) && (vec_vec3i_dotprod(&am, &ab) < vec_vec3i_dotprod(&ab, &ab)) &&
+           (0 < vec_vec3i_dotprod(&am, &ad)) && (vec_vec3i_dotprod(&am, &ad) < vec_vec3i_dotprod(&ad, &ad));
 }
 
 
 //----------------------------------------------------------------------------------------------------------
 // Cube
 //----------------------------------------------------------------------------------------------------------
-cube_t* obj__cube_new(int cx, int cy, int cz, int side) {
+cube_t* obj_cube_new(int cx, int cy, int cz, int side) {
 /*
  *          p3                  p2 
  *           +-------------------+
@@ -61,34 +61,34 @@ cube_t* obj__cube_new(int cx, int cy, int cz, int side) {
  *                     p4                   p5
  */
         cube_t* new = malloc(sizeof(cube_t));
-        new->center = vec__vec3i_new(cx, cy, cz);
+        new->center = vec_vec3i_new(cx, cy, cz);
         new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
         new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
         int diag = round(HALF_SQRT_TWO * side); 
-        new->vertices[0] = vec__vec3i_new(cx-diag, cy-diag, cz-diag);
-        new->vertices[1] = vec__vec3i_new(cx+diag, cy-diag, cz-diag);
-        new->vertices[2] = vec__vec3i_new(cx+diag, cy+diag, cz-diag);
-        new->vertices[3] = vec__vec3i_new(cx-diag, cy+diag, cz-diag);
-        new->vertices[4] = vec__vec3i_new(cx-diag, cy-diag, cz+diag);
-        new->vertices[5] = vec__vec3i_new(cx+diag, cy-diag, cz+diag);
-        new->vertices[6] = vec__vec3i_new(cx+diag, cy+diag, cz+diag);
-        new->vertices[7] = vec__vec3i_new(cx-diag, cy+diag, cz+diag);
+        new->vertices[0] = vec_vec3i_new(cx-diag, cy-diag, cz-diag);
+        new->vertices[1] = vec_vec3i_new(cx+diag, cy-diag, cz-diag);
+        new->vertices[2] = vec_vec3i_new(cx+diag, cy+diag, cz-diag);
+        new->vertices[3] = vec_vec3i_new(cx-diag, cy+diag, cz-diag);
+        new->vertices[4] = vec_vec3i_new(cx-diag, cy-diag, cz+diag);
+        new->vertices[5] = vec_vec3i_new(cx+diag, cy-diag, cz+diag);
+        new->vertices[6] = vec_vec3i_new(cx+diag, cy+diag, cz+diag);
+        new->vertices[7] = vec_vec3i_new(cx-diag, cy+diag, cz+diag);
         // back them up
-        new->vertices_backup[0] = vec__vec3i_new(cx-diag, cy-diag, cz-diag);
-        new->vertices_backup[1] = vec__vec3i_new(cx+diag, cy-diag, cz-diag);
-        new->vertices_backup[2] = vec__vec3i_new(cx+diag, cy+diag, cz-diag);
-        new->vertices_backup[3] = vec__vec3i_new(cx-diag, cy+diag, cz-diag);
-        new->vertices_backup[4] = vec__vec3i_new(cx-diag, cy-diag, cz+diag);
-        new->vertices_backup[5] = vec__vec3i_new(cx+diag, cy-diag, cz+diag);
-        new->vertices_backup[6] = vec__vec3i_new(cx+diag, cy+diag, cz+diag);
-        new->vertices_backup[7] = vec__vec3i_new(cx-diag, cy+diag, cz+diag);
+        new->vertices_backup[0] = vec_vec3i_new(cx-diag, cy-diag, cz-diag);
+        new->vertices_backup[1] = vec_vec3i_new(cx+diag, cy-diag, cz-diag);
+        new->vertices_backup[2] = vec_vec3i_new(cx+diag, cy+diag, cz-diag);
+        new->vertices_backup[3] = vec_vec3i_new(cx-diag, cy+diag, cz-diag);
+        new->vertices_backup[4] = vec_vec3i_new(cx-diag, cy-diag, cz+diag);
+        new->vertices_backup[5] = vec_vec3i_new(cx+diag, cy-diag, cz+diag);
+        new->vertices_backup[6] = vec_vec3i_new(cx+diag, cy+diag, cz+diag);
+        new->vertices_backup[7] = vec_vec3i_new(cx-diag, cy+diag, cz+diag);
         return new;
 }
 
-void obj__cube_rotate (cube_t* cube, float angle_x_deg, float angle_y_deg, float angle_z_deg) {
+void obj_cube_rotate (cube_t* cube, float angle_x_deg, float angle_y_deg, float angle_z_deg) {
     // first, reset the vertices so no floating point error is accumulated
     for (int i = 0; i < 8; ++i) {
-        vec__vec3i_copy(cube->vertices[i], cube->vertices_backup[i]);
+        vec_vec3i_copy(cube->vertices[i], cube->vertices_backup[i]);
     }
 
     // to be consistent with wiki article: https://en.wikipedia.org/wiki/Rotation_matrix
@@ -146,25 +146,25 @@ void obj__cube_rotate (cube_t* cube, float angle_x_deg, float angle_y_deg, float
 //----------------------------------------------------------------------------------------------------------
 // Ray
 //----------------------------------------------------------------------------------------------------------
-ray_t* obj__ray_new(int x, int y, int z) {
+ray_t* obj_ray_new(int x, int y, int z) {
     ray_t* new = malloc(sizeof(ray_t));
-    new->orig = vec__vec3i_new(0, 0, 0);
-    new->end = vec__vec3i_new(x, y, z);
+    new->orig = vec_vec3i_new(0, 0, 0);
+    new->end = vec_vec3i_new(x, y, z);
     return new;
 }
 
-void obj__ray_set_color(ray_t* ray, char color) {
+void obj_ray_set_color(ray_t* ray, char color) {
     ray->color = color;
 }
 
 
-void obj__ray_send(ray_t* ray, int x, int y, int z) {
+void obj_ray_send(ray_t* ray, int x, int y, int z) {
     ray->end->x = x;
     ray->end->y = y;
     ray->end->z = z;
 }
 
-void obj__ray_free(ray_t* ray) {
+void obj_ray_free(ray_t* ray) {
     free(ray->orig);
     free(ray->end); 
     free(ray);
@@ -173,7 +173,7 @@ void obj__ray_free(ray_t* ray) {
 // Plane
 //----------------------------------------------------------------------------------------------------------
 
-plane_t* obj__plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
+plane_t* obj_plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
 /*
  * Determine the plane through 3 3D points p0, p1, p2 by determining:
  *     1. the normal vector
@@ -223,15 +223,15 @@ plane_t* obj__plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
     new->normal = malloc(sizeof(vec3_t));
     vec3i_t p1p2;
     vec3i_t p1p0;
-    vec__vec3i_sub(&p1p2, p2, p1);
-    vec__vec3i_sub(&p1p0, p0, p1);
-    vec__vec3i_crossprod(new->normal, &p1p2, &p1p0);
-    new->offset = -vec__vec3i_dotprod(new->normal, p1);
+    vec_vec3i_sub(&p1p2, p2, p1);
+    vec_vec3i_sub(&p1p0, p0, p1);
+    vec_vec3i_crossprod(new->normal, &p1p2, &p1p0);
+    new->offset = -vec_vec3i_dotprod(new->normal, p1);
     return new;
 }
 
 
-vec3i_t obj__ray_plane_intersection(plane_t* plane, ray_t* ray) {
+vec3i_t obj_ray_plane_intersection(plane_t* plane, ray_t* ray) {
 /*
  * The parametric line of a ray from from the origin O through 
  * point B ('end' of the ray) is:
@@ -251,7 +251,7 @@ vec3i_t obj__ray_plane_intersection(plane_t* plane, ray_t* ray) {
  * R(t0) = (d/(n.B))*B
  * This is what this function returns.
  */
-    int nornmal_dot_rayend = vec__vec3i_dotprod(plane->normal, ray->end);
+    int nornmal_dot_rayend = vec_vec3i_dotprod(plane->normal, ray->end);
     float t0 = ((float)plane->offset/nornmal_dot_rayend);
     // only interested in intersections along the positive direction
     t0 = (t0 < 0.0) ? -t0 : t0 ;
@@ -264,38 +264,38 @@ vec3i_t obj__ray_plane_intersection(plane_t* plane, ray_t* ray) {
     return ray_at_intersection;
 }
 
-bool obj__ray_hits_rectangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3) {
+bool obj_ray_hits_rectangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3) {
     // find the intersection between the ray and the plane segment
     // defined by p0, p1, p2, p3 and if the intersection is whithin
     // that segment, return true
-    plane_t* plane = obj__plane_new(p0, p1, p2);
-    vec3i_t ray_plane_intersection = obj__ray_plane_intersection(plane, ray);
+    plane_t* plane = obj_plane_new(p0, p1, p2);
+    vec3i_t ray_plane_intersection = obj_ray_plane_intersection(plane, ray);
     bool ret = false;
     if (is_point_in_rec(&ray_plane_intersection, p0, p1, p2, p3))
         ret = true;;
-    obj__plane_free(plane);
+    obj_plane_free(plane);
     return ret;
 }
 
-extern inline int obj__plane_z_at_xy (plane_t* plane, int x, int y) {
+extern inline int obj_plane_z_at_xy (plane_t* plane, int x, int y) {
     // solve for z in plane's eq/n: n.x*x + n.y*y + n.z*z + offset = 0
     vec3i_t coeffs = (vec3i_t) {plane->normal->x, plane->normal->y, plane->offset};
     vec3i_t xyz = (vec3i_t) {x, y, 1};
-    return round(1.0/plane->normal->z*(-vec__vec3i_dotprod(&coeffs, &xyz)));
+    return round(1.0/plane->normal->z*(-vec_vec3i_dotprod(&coeffs, &xyz)));
 }
 
 
-void obj__plane_set(plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
-    // reset plane's normal and offset like obj__plane_new function computes them
+void obj_plane_set(plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
+    // reset plane's normal and offset like obj_plane_new function computes them
     vec3i_t p1p2;
     vec3i_t p1p0;
-    vec__vec3i_sub(&p1p2, p2, p1);
-    vec__vec3i_sub(&p1p0, p0, p1);
-    vec__vec3i_crossprod(plane->normal, &p1p2, &p1p0);
-    plane->offset = -vec__vec3i_dotprod(plane->normal, p1);
+    vec_vec3i_sub(&p1p2, p2, p1);
+    vec_vec3i_sub(&p1p0, p0, p1);
+    vec_vec3i_crossprod(plane->normal, &p1p2, &p1p0);
+    plane->offset = -vec_vec3i_dotprod(plane->normal, p1);
 }
 
-void obj__plane_free (plane_t* plane) {
+void obj_plane_free (plane_t* plane) {
     free(plane->normal);
     free(plane); 
 }

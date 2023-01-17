@@ -38,24 +38,24 @@ typedef struct plane {
 //----------------------------------------------------------------------------------------------------------
 // Cube
 //----------------------------------------------------------------------------------------------------------
-cube_t*     obj__cube_new               (int cx, int cy, int cz, int size);
-void obj__cube_rotate (cube_t* cube, float angle_x_deg, float angle_y_deg, float angle_z_deg);
+cube_t*     obj_cube_new               (int cx, int cy, int cz, int size);
+void obj_cube_rotate (cube_t* cube, float angle_x_deg, float angle_y_deg, float angle_z_deg);
 //----------------------------------------------------------------------------------------------------------
 // Ray
 //----------------------------------------------------------------------------------------------------------
 // the pixel in the screen where the ray points to
-ray_t*      obj__ray_new                (int x, int y, int z);
-void        obj__ray_send               (ray_t* ray, int x, int y, int z); 
-void        obj__ray_set_color          (ray_t* ray, char color);
-void        obj__ray_free               (ray_t* ray);
+ray_t*      obj_ray_new                (int x, int y, int z);
+void        obj_ray_send               (ray_t* ray, int x, int y, int z); 
+void        obj_ray_set_color          (ray_t* ray, char color);
+void        obj_ray_free               (ray_t* ray);
 //----------------------------------------------------------------------------------------------------------
 // Plane
 //----------------------------------------------------------------------------------------------------------
-plane_t*    obj__plane_new              (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
-vec3i_t     obj__ray_plane_intersection (plane_t* plane, ray_t* ray);
-bool        obj__ray_hits_rectangle     (ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3);
-inline int  obj__plane_z_at_xy          (plane_t* plane, int x, int y);
-void        obj__plane_set              (plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
-void        obj__plane_free             (plane_t* plane);
+plane_t*    obj_plane_new              (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
+vec3i_t     obj_ray_plane_intersection (plane_t* plane, ray_t* ray);
+bool        obj_ray_hits_rectangle     (ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3);
+inline int  obj_plane_z_at_xy          (plane_t* plane, int x, int y);
+void        obj_plane_set              (plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
+void        obj_plane_free             (plane_t* plane);
 
 #endif /* OBJECTS_H */
