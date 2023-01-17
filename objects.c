@@ -164,6 +164,11 @@ void obj__ray_send(ray_t* ray, int x, int y, int z) {
     ray->end->z = z;
 }
 
+void obj__ray_free(ray_t* ray) {
+    free(ray->orig);
+    free(ray->end); 
+    free(ray);
+}
 //----------------------------------------------------------------------------------------------------------
 // Plane
 //----------------------------------------------------------------------------------------------------------
@@ -265,9 +270,11 @@ bool obj__ray_hits_rectangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, 
     // that segment, return true
     plane_t* plane = obj__plane_new(p0, p1, p2);
     vec3i_t ray_plane_intersection = obj__ray_plane_intersection(plane, ray);
+    bool ret = false;
     if (is_point_in_rec(&ray_plane_intersection, p0, p1, p2, p3))
-        return true;
-    return false;
+        ret = true;;
+    obj__plane_free(plane);
+    return ret;
 }
 
 extern inline int obj__plane_z_at_xy (plane_t* plane, int x, int y) {
@@ -286,4 +293,9 @@ void obj__plane_set(plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
     vec__vec3i_sub(&p1p0, p0, p1);
     vec__vec3i_crossprod(plane->normal, &p1p2, &p1p0);
     plane->offset = -vec__vec3i_dotprod(plane->normal, p1);
+}
+
+void obj__plane_free (plane_t* plane) {
+    free(plane->normal);
+    free(plane); 
 }

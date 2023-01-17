@@ -47,6 +47,7 @@ void obj__cube_rotate (cube_t* cube, float angle_x_deg, float angle_y_deg, float
 ray_t*      obj__ray_new                (int x, int y, int z);
 void        obj__ray_send               (ray_t* ray, int x, int y, int z); 
 void        obj__ray_set_color          (ray_t* ray, char color);
+void        obj__ray_free               (ray_t* ray);
 //----------------------------------------------------------------------------------------------------------
 // Plane
 //----------------------------------------------------------------------------------------------------------
@@ -55,5 +56,6 @@ vec3i_t     obj__ray_plane_intersection (plane_t* plane, ray_t* ray);
 bool        obj__ray_hits_rectangle     (ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3);
 inline int  obj__plane_z_at_xy          (plane_t* plane, int x, int y);
 void        obj__plane_set              (plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
+void        obj__plane_free             (plane_t* plane);
 
 #endif /* OBJECTS_H */

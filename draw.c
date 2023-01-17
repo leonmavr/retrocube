@@ -185,6 +185,8 @@ void draw__cube(cube_t* cube) {
                 draw__pixel(j, i, g_colors[5]);
                 z_rendered = z_hit;
             }
-        }
-    }
+            obj__plane_free(plane);
+        } // for columns
+    } // for rows
+    obj__ray_free(ray);
 }

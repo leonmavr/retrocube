@@ -2,9 +2,8 @@
 #include "vector.h"
 #include "objects.h"
 #include <ncurses.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#include <unistd.h> // sleep
+#include <math.h> // sin, cos
 
 
 int main() {
@@ -22,13 +21,12 @@ int main() {
     int n = 0;
     while(1) {
         clear();
-        for (int i = 0; i < 9999; i++)
-            j += 0.00001*cos(2*i); 
+        sleep(0.05);
         obj__cube_rotate(cube, cos(n/100.0)*4, sin(1.5*n/100.0)*4, 4*sin(0.5*n/100.0));
         draw__cube(cube);
         refresh();
         n++;
-        if (n == 2000000) n = 0;
+        n %= 200000000;
     }
 
     draw__end();
