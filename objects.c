@@ -54,15 +54,16 @@ cube_t* obj__cube_new(int cx, int cy, int cz, int side) {
  *           |         |         .         |               \
  *           |         |         .         |                v z
  *        p0 +---------|.........+ p1      |
- *            \        |           \       |
- *              \      |             \     |
- *                 \   |                \  |
+ *            \        |           .       |
+ *              \      |             .     |
+ *                 \   |                .  |
  *                    \+-------------------+
  *                     p4                   p5
  */
         cube_t* new = malloc(sizeof(cube_t));
         new->center = vec__vec3i_new(cx, cy, cz);
         new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
+        new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
         int diag = round(HALF_SQRT_TWO * side); 
         new->vertices[0] = vec__vec3i_new(cx-diag, cy-diag, cz-diag);
         new->vertices[1] = vec__vec3i_new(cx+diag, cy-diag, cz-diag);
@@ -72,28 +73,42 @@ cube_t* obj__cube_new(int cx, int cy, int cz, int side) {
         new->vertices[5] = vec__vec3i_new(cx+diag, cy-diag, cz+diag);
         new->vertices[6] = vec__vec3i_new(cx+diag, cy+diag, cz+diag);
         new->vertices[7] = vec__vec3i_new(cx-diag, cy+diag, cz+diag);
+        // back them up
+        new->vertices_backup[0] = vec__vec3i_new(cx-diag, cy-diag, cz-diag);
+        new->vertices_backup[1] = vec__vec3i_new(cx+diag, cy-diag, cz-diag);
+        new->vertices_backup[2] = vec__vec3i_new(cx+diag, cy+diag, cz-diag);
+        new->vertices_backup[3] = vec__vec3i_new(cx-diag, cy+diag, cz-diag);
+        new->vertices_backup[4] = vec__vec3i_new(cx-diag, cy-diag, cz+diag);
+        new->vertices_backup[5] = vec__vec3i_new(cx+diag, cy-diag, cz+diag);
+        new->vertices_backup[6] = vec__vec3i_new(cx+diag, cy+diag, cz+diag);
+        new->vertices_backup[7] = vec__vec3i_new(cx-diag, cy+diag, cz+diag);
         return new;
 }
 
 void obj__cube_rotate (cube_t* cube, float angle_x_deg, float angle_y_deg, float angle_z_deg) {
+    // first, reset the vertices so no floating point error is accumulated
+    for (int i = 0; i < 8; ++i) {
+        vec__vec3i_copy(cube->vertices[i], cube->vertices_backup[i]);
+    }
+
     // to be consistent with wiki article: https://en.wikipedia.org/wiki/Rotation_matrix
     float a = angle_z_deg, b = angle_y_deg, c = angle_x_deg;
     float ca = cos(a), cb = cos(b), cc = cos(c);
     float sa = sin(a), sb = sin(b), sc = sin(c);
     float matrix_rotx[3][3] = {
-        {1, 0, 0},
+        {1, 0,  0  },
         {0, ca, -sa},
-        {0, sa, ca},
+        {0, sa, ca },
     };
     float matrix_roty[3][3] = {
-        {cb, 0, sb},
-        {0, 1, 0},
+        {cb,  0, sb},
+        {0,   1, 0},
         {-sb, 0, cb},
     };
     float matrix_rotz[3][3] = {
         {cc, -sc, 0},
-        {sc, cc, 0},
-        {0, 0, 1},
+        {sc, cc,  0},
+        {0,  0,   1},
     };
     for (int i = 0; i < 8; ++i) {
         cube->vertices[i]->x -= cube->center->x;

@@ -6,6 +6,7 @@
 
 typedef struct cube {
     vec3i_t** vertices;
+    vec3i_t** vertices_backup;
     vec3i_t* center;
 } cube_t;
 
