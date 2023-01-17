@@ -4,7 +4,8 @@
 #include <ncurses.h>
 #include <sys/ioctl.h>
 #include <stdio.h>
-#include <math.h>
+//#include <math.h>
+#include <limits.h> // INT_MIN
 #include <unistd.h>
 
 // colors for each face of the cube
@@ -54,8 +55,8 @@ void draw__init() {
  *         v z
  */
 void draw__pixel(int x, int y, char c) {
-    int yScaled = y/(g_aspect_ratio_screen/g_aspect_ratio_char);
-    mvaddch(yScaled+g_rows/2, x+g_cols/2, c);
+    int y_scaled = y/(g_aspect_ratio_screen/g_aspect_ratio_char);
+    mvaddch(y_scaled+g_rows/2, x+g_cols/2, c);
 }
 
 void draw__end() {
@@ -69,8 +70,8 @@ static void draw__surface(vec3i_t* pt1, vec3i_t* pt2, vec3i_t* pt3, vec3i_t* pt4
     for (int i = g_min_rows; i <= g_max_rows; ++i) {
         for (int j = g_min_cols; j <= g_max_cols; ++j) {
             // which z the ray hits the plane
-            int z = obj__plane_z_at_xy(plane, j, i);
-            obj__ray_send(ray, j, i, z);
+            int z_hit = obj__plane_z_at_xy(plane, j, i);
+            obj__ray_send(ray, j, i, z_hit);
             if (obj__ray_hits_rectangle(ray, pt1, pt2, pt3, pt4)) {
                 draw__pixel(j, i, color);
             }
@@ -81,23 +82,39 @@ static void draw__surface(vec3i_t* pt1, vec3i_t* pt2, vec3i_t* pt3, vec3i_t* pt4
 
 void draw__cube(cube_t* cube) {
 /*
- *          p3                  p2 
- *           +-------------------+
- *           | \                 | \
- *           |    \              |    \                  ^y
- *           |      \  p7        |       \               |
- *           |         +-------------------+ p6          |
- *           |         |         |         |             |
- *           |         |*(cx,xy,cz)        |             o-------> x
- *           |         |         |         |              \
- *           |         |         |         |               \
- *           |         |         |         |                v z
- *        p0 +---------|---------+ p1      |
- *            \        |           \       |
- *              \      |             \     |
- *                 \   |                \  |
- *                    \+-------------------+
- *                     p4                   p5
+ * This function renders the given cube by the basic ray tracing principle.
+ *
+ * A ray is shot from the origin to every pixel on the screen row by row.
+ * For each screen coordinate, there can zero to two intersections with the cube.
+ * If there is one, render the (x, y) of the intersection (not the x,y of the screen!).
+ * If there are two, render the (x, y) of the closer intersection. In the figure below,
+ * z_hit are the z of the two intersections and z_rend is the closer one.
+ *
+ * Note: the ray is not necessarily horizontal - it's only drawn this way for illustration
+ * purposes. It intersects faces (p0, p1, p2, p3) and  (p4, p5, p6, p7)
+ * 
+ *                        \
+ *                         V ray
+ *                          \
+ *                    p3     \            p2                      o cube's centre 
+ *                    +-------------------+                       + cube's vertices
+ *                    | \      \          | \                     # ray-cube intersections
+ *                    |    \    #         |    \
+ *                    |      \  p7        |       \               ^ y
+ *                    |         +-------------------+ p6          |
+ *                    |         | \       .         |             |
+ *                    |         |  \      .         |             o-------> x
+ *                    |         |   \     .         |              \
+ *                    |         |    \    .         |               \
+ *                    |         |     \   .         |                v z
+ *                 p0 +---------|......\..+ p1      |
+ *                     \        |       \    .      |
+ *                       \      |        #     .    |
+ *                          \   |         \      .  |
+ *                             \+----------\--------+
+ *                              p4          \        p5
+ *                                           \
+ *
  */
     // aliases for cube's vertices
     vec3i_t* p0 = cube->vertices[0];
@@ -116,71 +133,57 @@ void draw__cube(cube_t* cube) {
             // (p0, p1, p2, p3), (p0, p4, p7, p3)
             // (p4, p5, p6, p7), (p5, p1, p2, p6)
             // (p7, p6, p2, p3), (p0, p4, p5, p1)
-            size_t hit_count = 0;
-            char rendered_color;
-            int z_hit = -999999999;
-            int z;
+
+            // the final z where a pixel is to be drawn
+            int z_rendered = INT_MIN;
+            // which z the ray hits the plane - can be up to two hits
+            int z_hit;
             plane_t* plane = obj__plane_new(p0, p1, p2);
-            z = obj__plane_z_at_xy(plane, j, i);
-            obj__ray_send(ray, j, i, z);
-            //draw__pixel(10, 10, g_colors[0]);
-            if (obj__ray_hits_rectangle(ray, p0, p1, p2, p3)) {
-                draw__pixel(10, 10, g_colors[0]);
-                // which z the ray hits the plane
-                if (z > z_hit) {
-                    draw__pixel(j, i, g_colors[0]);
-                    z_hit = z;
-                }
+            z_hit = obj__plane_z_at_xy(plane, j, i);
+            obj__ray_send(ray, j, i, z_hit);
+            if (obj__ray_hits_rectangle(ray, p0, p1, p2, p3) && (z_hit > z_rendered)) {
+                draw__pixel(j, i, g_colors[0]);
+                z_rendered = z_hit;
             }
-            plane = obj__plane_new(p0, p4, p7);
-            z = obj__plane_z_at_xy(plane, j, i);
-            obj__ray_send(ray, j, i, z);
-            if (obj__ray_hits_rectangle(ray, p0, p4, p7, p3)) {
-                // which z the ray hits the plane
-                if (z > z_hit) {
-                    draw__pixel(j, i, g_colors[1]);
-                    z_hit = z;
-                }
+            // through (p0, p4, p7);
+            obj__plane_set(plane, p0, p4, p7);
+            z_hit = obj__plane_z_at_xy(plane, j, i);
+            obj__ray_send(ray, j, i, z_hit);
+            if (obj__ray_hits_rectangle(ray, p0, p4, p7, p3) && (z_hit > z_rendered)) {
+                draw__pixel(j, i, g_colors[1]);
+                z_rendered = z_hit;
             }
-            plane = obj__plane_new(p4, p5, p6);
-            z = obj__plane_z_at_xy(plane, j, i);
-            obj__ray_send(ray, j, i, z);
-            if (obj__ray_hits_rectangle(ray, p4, p5, p6, p7)) {
-                // which z the ray hits the plane
-                if (z > z_hit) {
-                    draw__pixel(j, i, g_colors[2]);
-                    z_hit = z;
-                }
+            // through (p4, p5, p6);
+            obj__plane_set(plane, p4, p5, p6);
+            z_hit = obj__plane_z_at_xy(plane, j, i);
+            obj__ray_send(ray, j, i, z_hit);
+            if (obj__ray_hits_rectangle(ray, p4, p5, p6, p7) && (z_hit > z_rendered)) {
+                draw__pixel(j, i, g_colors[2]);
+                z_rendered = z_hit;
             }
-            plane = obj__plane_new(p5, p1, p2);
-            z = obj__plane_z_at_xy(plane, j, i);
-            obj__ray_send(ray, j, i, z);
-            if (obj__ray_hits_rectangle(ray, p5, p1, p2, p6)) {
-                // which z the ray hits the plane
-                if (z > z_hit) {
-                    draw__pixel(j, i, g_colors[3]);
-                    z_hit = z;
-                }
+            // through (p5, p1, p2);
+            obj__plane_set(plane, p5, p1, p2);
+            z_hit = obj__plane_z_at_xy(plane, j, i);
+            obj__ray_send(ray, j, i, z_hit);
+            if (obj__ray_hits_rectangle(ray, p5, p1, p2, p6) && (z_hit > z_rendered)) {
+                draw__pixel(j, i, g_colors[3]);
+                z_rendered = z_hit;
             }
-            plane = obj__plane_new(p7, p6, p2);
-            z = obj__plane_z_at_xy(plane, j, i);
-            obj__ray_send(ray, j, i, z);
-            if (obj__ray_hits_rectangle(ray, p7, p6, p2, p3)) {
-                // which z the ray hits the plane
-                if (z > z_hit) {
-                    draw__pixel(j, i, g_colors[4]);
-                    z_hit = z;
-                }
+            // through (p7, p6, p2);
+            obj__plane_set(plane, p7, p6, p2);
+            z_hit = obj__plane_z_at_xy(plane, j, i);
+            obj__ray_send(ray, j, i, z_hit);
+            if (obj__ray_hits_rectangle(ray, p7, p6, p2, p3) && (z_hit > z_rendered)) {
+                draw__pixel(j, i, g_colors[4]);
+                z_rendered = z_hit;
             } 
-            plane = obj__plane_new(p0, p4, p5);
-            z = obj__plane_z_at_xy(plane, j, i);
-            obj__ray_send(ray, j, i, z);
-            if (obj__ray_hits_rectangle(ray, p0, p4, p5, p1)) {
-                // which z the ray hits the plane
-                if (z > z_hit) {
-                    draw__pixel(j, i, g_colors[5]);
-                    z_hit = z;
-                }
+            // through (p0, p4, p5);
+            obj__plane_set(plane, p0, p4, p5);
+            z_hit = obj__plane_z_at_xy(plane, j, i);
+            obj__ray_send(ray, j, i, z_hit);
+            if (obj__ray_hits_rectangle(ray, p0, p4, p5, p1) && (z_hit > z_rendered)) {
+                draw__pixel(j, i, g_colors[5]);
+                z_rendered = z_hit;
             }
         }
     }

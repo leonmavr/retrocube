@@ -261,3 +261,14 @@ extern inline int obj__plane_z_at_xy (plane_t* plane, int x, int y) {
     vec3i_t xyz = (vec3i_t) {x, y, 1};
     return round(1.0/plane->normal->z*(-vec__vec3i_dotprod(&coeffs, &xyz)));
 }
+
+
+void obj__plane_set(plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
+    // reset plane's normal and offset like obj__plane_new function computes them
+    vec3i_t p1p2;
+    vec3i_t p1p0;
+    vec__vec3i_sub(&p1p2, p2, p1);
+    vec__vec3i_sub(&p1p0, p0, p1);
+    vec__vec3i_crossprod(plane->normal, &p1p2, &p1p0);
+    plane->offset = -vec__vec3i_dotprod(plane->normal, p1);
+}

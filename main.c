@@ -19,11 +19,14 @@ int main() {
     clear();
 
     int j = 0;
-    for (int i = 0; i < 9999999; i++)
-        j += cos(2*i); 
-    obj__cube_rotate(cube, 4.8, 3.2, 5.7);
-    draw__cube(cube);
-    refresh();
+    for (int n = 0; n < 20; ++n) {
+        clear();
+        for (int i = 0; i < 999999; i++)
+            j += 0.00001*cos(2*i); 
+        obj__cube_rotate(cube, 0.05, 0.05, 0.05);
+        draw__cube(cube);
+        refresh();
+    }
 
     draw__end();
 
