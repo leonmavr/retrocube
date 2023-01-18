@@ -175,4 +175,6 @@ void draw_cube(cube_t* cube) {
         } /* for columns */
     } /* for rows */
     obj_ray_free(ray);
+    // render with with ncurse's `refresh`
+    refresh();
 }

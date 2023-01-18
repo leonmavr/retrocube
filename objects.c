@@ -169,10 +169,6 @@ ray_t* obj_ray_new(int x, int y, int z) {
     return new;
 }
 
-void obj_ray_set_color(ray_t* ray, char color) {
-    ray->color = color;
-}
-
 void obj_ray_send(ray_t* ray, int x, int y, int z) {
     ray->end->x = x;
     ray->end->y = y;

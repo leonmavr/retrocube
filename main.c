@@ -2,6 +2,7 @@
 #include "vector.h"
 #include "objects.h"
 #include <ncurses.h>
+#include <time.h>
 #include <unistd.h> // sleep
 #include <math.h> // sin, cos
 
@@ -15,12 +16,13 @@ int main() {
 
     int j = 0;
     int n = 0;
+    const int ms_to_wait = 20;
     while(1) {
         clear();
-        sleep(0.02);
         obj_cube_rotate(cube, cos(2*sin(n/100.0))*4, sin(1.5*n/100.0)*4, 4*sin(0.5*n/100.0));
         draw_cube(cube);
-        refresh();
+        //refresh();
+        usleep(ms_to_wait * 1000);
         n++;
         n %= 200000000;
     }
