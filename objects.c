@@ -3,12 +3,9 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
-//#include <stdio.h>
 
 #define SQRT_TWO 1.414213
 #define HALF_SQRT_TWO 0.7071065 
-#define PI M_PI
-#define RAD_TO_DEG(angle_rad) ((angle_rad) * 180.0 / PI)
 
 
 static inline bool is_point_in_rec(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d) {
@@ -85,14 +82,12 @@ cube_t* obj_cube_new(int cx, int cy, int cz, int side) {
         return new;
 }
 
-void obj_cube_rotate (cube_t* cube, float angle_x_deg, float angle_y_deg, float angle_z_deg) {
+void obj_cube_rotate (cube_t* cube, float angle_x_rad, float angle_y_rad, float angle_z_rad) {
     // first, reset the vertices so no floating point error is accumulated
-    for (int i = 0; i < 8; ++i) {
+    for (int i = 0; i < 8; ++i)
         vec_vec3i_copy(cube->vertices[i], cube->vertices_backup[i]);
-    }
 
-    // to be consistent with wiki article: https://en.wikipedia.org/wiki/Rotation_matrix
-    float a = angle_z_deg, b = angle_y_deg, c = angle_x_deg;
+    float a = angle_x_rad, b = angle_y_rad, c = angle_z_rad;
     float ca = cos(a), cb = cos(b), cc = cos(c);
     float sa = sin(a), sb = sin(b), sc = sin(c);
     float matrix_rotx[3][3] = {
@@ -111,14 +106,15 @@ void obj_cube_rotate (cube_t* cube, float angle_x_deg, float angle_y_deg, float 
         {0,  0,   1},
     };
     for (int i = 0; i < 8; ++i) {
+        // -(cx, cy, cz)
         cube->vertices[i]->x -= cube->center->x;
         cube->vertices[i]->y -= cube->center->y;
         cube->vertices[i]->z -= cube->center->z;
-#if 1
+
+        // Rx
         int x = cube->vertices[i]->x;
         int y = cube->vertices[i]->y;
         int z = cube->vertices[i]->z;
-        // Rx
         cube->vertices[i]->x = round(matrix_rotx[0][0]*x + matrix_rotx[0][1]*y + matrix_rotx[0][2]*z);
         cube->vertices[i]->y = round(matrix_rotx[1][0]*x + matrix_rotx[1][1]*y + matrix_rotx[1][2]*z);
         cube->vertices[i]->z = round(matrix_rotx[2][0]*x + matrix_rotx[2][1]*y + matrix_rotx[2][2]*z);
@@ -136,11 +132,24 @@ void obj_cube_rotate (cube_t* cube, float angle_x_deg, float angle_y_deg, float 
         cube->vertices[i]->x = round(matrix_rotz[0][0]*x + matrix_rotz[0][1]*y + matrix_rotz[0][2]*z);
         cube->vertices[i]->y = round(matrix_rotz[1][0]*x + matrix_rotz[1][1]*y + matrix_rotz[1][2]*z);
         cube->vertices[i]->z = round(matrix_rotz[2][0]*x + matrix_rotz[2][1]*y + matrix_rotz[2][2]*z);
-#endif
+        // +(cx, cy, cz)
         cube->vertices[i]->x += cube->center->x;
         cube->vertices[i]->y += cube->center->y;
         cube->vertices[i]->z += cube->center->z;
     }
+}
+
+
+void obj_cube_free(cube_t* cube) {
+    // free the data of the vertices first
+    for (int i = 0; i < 8; ++i) {
+        free(cube->vertices[i]);
+        free(cube->vertices_backup[i]);
+    }
+    free(cube->vertices);
+    free(cube->vertices_backup);
+    free(cube->center);
+    free(cube);
 }
 
 //----------------------------------------------------------------------------------------------------------
@@ -156,7 +165,6 @@ ray_t* obj_ray_new(int x, int y, int z) {
 void obj_ray_set_color(ray_t* ray, char color) {
     ray->color = color;
 }
-
 
 void obj_ray_send(ray_t* ray, int x, int y, int z) {
     ray->end->x = x;

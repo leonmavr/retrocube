@@ -4,7 +4,6 @@
 #include <ncurses.h>
 #include <sys/ioctl.h>
 #include <stdio.h>
-//#include <math.h>
 #include <limits.h> // INT_MIN
 #include <unistd.h>
 
@@ -64,21 +63,6 @@ void draw_end() {
     endwin();
 }
 
-static void draw_surface(vec3i_t* pt1, vec3i_t* pt2, vec3i_t* pt3, vec3i_t* pt4, char color) {
-    ray_t* ray = obj_ray_new(0, 0, 0);
-    plane_t* plane = obj_plane_new(pt1, pt2, pt3);
-    for (int i = g_min_rows; i <= g_max_rows; ++i) {
-        for (int j = g_min_cols; j <= g_max_cols; ++j) {
-            // which z the ray hits the plane
-            int z_hit = obj_plane_z_at_xy(plane, j, i);
-            obj_ray_send(ray, j, i, z_hit);
-            if (obj_ray_hits_rectangle(ray, pt1, pt2, pt3, pt4)) {
-                draw_pixel(j, i, color);
-            }
-        }
-    }
-    // TODO: free ray and its members
-}
 
 void draw_cube(cube_t* cube) {
 /*
@@ -139,6 +123,7 @@ void draw_cube(cube_t* cube) {
             int z_rendered = INT_MIN;
             // which z the ray hits the plane - can be up to two hits
             int z_hit;
+            // through (p0, p1, p2)
             plane_t* plane = obj_plane_new(p0, p1, p2);
             z_hit = obj_plane_z_at_xy(plane, j, i);
             obj_ray_send(ray, j, i, z_hit);
@@ -187,7 +172,7 @@ void draw_cube(cube_t* cube) {
                 z_rendered = z_hit;
             }
             obj_plane_free(plane);
-        } // for columns
-    } // for rows
+        } /* for columns */
+    } /* for rows */
     obj_ray_free(ray);
 }
