@@ -110,8 +110,8 @@ void obj_cube_rotate (cube_t* cube, float angle_x_rad, float angle_y_rad, float 
         cube->vertices[i]->x -= cube->center->x;
         cube->vertices[i]->y -= cube->center->y;
         cube->vertices[i]->z -= cube->center->z;
-
         // Rx
+        // x, y, z store the previous coordinates before updating the rotation
         int x = cube->vertices[i]->x;
         int y = cube->vertices[i]->y;
         int z = cube->vertices[i]->z;
