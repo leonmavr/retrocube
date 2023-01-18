@@ -8,7 +8,7 @@
 #define HALF_SQRT_TWO 0.7071065 
 
 
-static inline bool is_point_in_rec(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d) {
+static inline bool obj__is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d) {
 /* 
  * The diagram below visualises the conditions for M to be inside rectangle ABCD:
  *
@@ -282,7 +282,7 @@ bool obj_ray_hits_rectangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, v
     plane_t* plane = obj_plane_new(p0, p1, p2);
     vec3i_t ray_plane_intersection = obj_ray_plane_intersection(plane, ray);
     bool ret = false;
-    if (is_point_in_rec(&ray_plane_intersection, p0, p1, p2, p3))
+    if (obj__is_point_in_rect(&ray_plane_intersection, p0, p1, p2, p3))
         ret = true;;
     obj_plane_free(plane);
     return ret;
