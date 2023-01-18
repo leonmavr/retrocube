@@ -1,0 +1,4 @@
+g++
+%cpp -std=c++17
+-I../include
+-Wall
