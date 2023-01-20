@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 // colors for each face of the cube
-char g_colors[6] = {'~', '.', '=', ':', '%', '|'};
+char g_colors[6] = {'~', '.', '=', '@', '%', '|'};
 
 // rows, columns and aspect ratio of the terminal
 int g_rows;

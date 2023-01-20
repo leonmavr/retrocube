@@ -6,11 +6,12 @@
 #include <time.h> // nanosleep 
 #include <math.h> // sin, cos
 #include <stdlib.h> // atof, atoi, random
-#include <time.h> // time
+#include <unistd.h> // for usleep
 #include <assert.h>
 #include <stdbool.h>
 #include <string.h> // strcmp
 #include <limits.h> // UINT_MAX
+#include <time.h> // time
 
 
 //// default command line arguments
@@ -24,7 +25,7 @@ static bool g_use_random_rotation = false;
 // centre (x, y, z) of the cube
 static int g_cx = 0;
 static int g_cy = 0;
-static int g_cz = 200;
+static int g_cz = 250;
 // size of each face in "pixels" (rendered characters)
 static unsigned g_cube_size = 24;
 // how many frames to run the program for
@@ -80,7 +81,8 @@ int main(int argc, char** argv) {
                                   6*sin((0.5 + random_bias_y)*0.0015*t + random_bias_y),
                                   6*sin((0.5 + random_bias_z)*0.0015*t + random_bias_z));
         draw_cube(cube);
-        nanosleep((const struct timespec[]) {{0, (int)(1.0 / g_fps * 1e9)}}, NULL);
+        //nanosleep((const struct timespec[]) {{0, (int)(1.0 / g_fps * 1e9)}}, NULL);
+        usleep((int)(1.0 / g_fps * 1e6));
     }
     obj_cube_free(cube);
     draw_end();

@@ -1,4 +1,4 @@
 gcc
-%c -std=c99
+%c -std=gnu99
 -I../include
 -Wall
