@@ -8,7 +8,7 @@
 #include <unistd.h>
 
 // colors for each face of the cube
-char g_colors[6] = {'~', '.', '=', '+', '%', '|'};
+char g_colors[6] = {'~', '.', '=', ':', '%', '|'};
 
 // rows, columns and aspect ratio of the terminal
 int g_rows;
@@ -17,6 +17,7 @@ int g_min_rows;
 int g_max_rows;
 int g_min_cols;
 int g_max_cols;
+// aspect ratio of the terminal
 float g_aspect_ratio_screen;
 // aspect ratio of each character
 float g_aspect_ratio_char;
@@ -37,8 +38,8 @@ void draw_init() {
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
     g_aspect_ratio_screen = (float)wsize.ws_col/wsize.ws_row;
     g_aspect_ratio_char = (float)wsize.ws_xpixel/wsize.ws_ypixel;
-    printf("screen:\th = %d, w = %d, %.2f\n", wsize.ws_row, wsize.ws_col, g_aspect_ratio_screen);
-    printf("char:\th = %d, w = %d, %.2f\n", wsize.ws_xpixel, wsize.ws_ypixel, g_aspect_ratio_char);
+    //printf("screen:\th = %d, w = %d, %.2f\n", wsize.ws_row, wsize.ws_col, g_aspect_ratio_screen);
+    //printf("char:\th = %d, w = %d, %.2f\n", wsize.ws_xpixel, wsize.ws_ypixel, g_aspect_ratio_char);
 }
 
 /* Uses the following coordinate system:

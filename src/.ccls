@@ -1,4 +1,4 @@
-g++
-%cpp -std=c++17
+gcc
+%c -std=c99
 -I../include
 -Wall
