@@ -77,9 +77,9 @@ int main(int argc, char** argv) {
         if (!g_use_random_rotation)
             obj_cube_rotate(cube, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
         else
-            obj_cube_rotate(cube, 6*sin((0.5 + random_bias_x)*sin(0.0015*t) + random_bias_x),
-                                  6*sin((0.5 + random_bias_y)*0.0015*t + random_bias_y),
-                                  6*sin((0.5 + random_bias_z)*0.0015*t + random_bias_z));
+            obj_cube_rotate(cube, 4*sin((0.5 + random_bias_x)*sin(0.0025*t) + random_bias_x),
+                                  4*sin((0.5 + random_bias_y)*0.0025*t + random_bias_y),
+                                  4*sin((0.5 + random_bias_z)*0.0025*t + random_bias_z));
         draw_cube(cube);
         //nanosleep((const struct timespec[]) {{0, (int)(1.0 / g_fps * 1e9)}}, NULL);
         usleep((int)(1.0 / g_fps * 1e6));
