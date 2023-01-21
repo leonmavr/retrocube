@@ -1,5 +1,5 @@
 ## :black_large_square: retrocube :white_large_square: 
-spinning cube animation via very basic ray tracing on the terminal
+Spinning cube animation via very basic ray tracing on the terminal. Rendered in ASCII.
 ```
                     +==
                 ++======
@@ -78,4 +78,6 @@ By default the program runs forever so you can stop it with `Ctr+C`. Below are t
 
 This is what it looks like on the command line:
 
-TODO: demo gifs
+random speed | constant speed
+:-------------------------:|:-------------------------:
+![](https://github.com/leonmavr/retrocube/blob/master/assets/demo_constant.gif?raw=true)  |  ![](https://raw.githubusercontent.com/leonmavr/retrocube/master/assets/demo_random.gif)
