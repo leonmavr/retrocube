@@ -46,7 +46,7 @@ typedef struct plane {
  * @param cz z-coordinate of the center
  * @param size lenght of one side
  *
- * @return pointer to the newly constructed cube
+ * @return A pointer to the newly constructed cube
  */
 cube_t*     obj_cube_new               (int cx, int cy, int cz, int size);
 void        obj_cube_rotate            (cube_t* cube, float angle_x_rad, float angle_y_rad, float angle_z_rad);
@@ -63,7 +63,7 @@ void        obj_cube_free              (cube_t* cube);
  * @param y y-coordinate of ray's destination
  * @param z z-coordinate of ray's destination
  *
- * @return A point to the newly constructed ray
+ * @return A pointer to the newly constructed ray
  */
 ray_t*      obj_ray_new                (int x, int y, int z);
 void        obj_ray_send               (ray_t* ray, int x, int y, int z); 
@@ -79,7 +79,7 @@ void        obj_ray_free               (ray_t* ray);
  * @param p1 Second point on the plane
  * @param p2 Third point on the plane
  *
- * @return The newly constructed plane
+ * @return A pointer to the newly constructed plane
  */
 plane_t*    obj_plane_new              (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
 vec3i_t     obj_ray_plane_intersection (plane_t* plane, ray_t* ray);
