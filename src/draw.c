@@ -75,8 +75,7 @@ void draw_cube(cube_t* cube) {
  * If there are two, render the (x, y) of the closer intersection. In the figure below,
  * z_hit are the z of the two intersections and z_rend is the closer one.
  *
- * Note: the ray is not necessarily horizontal - it's only drawn this way for illustration
- * purposes. It intersects faces (p0, p1, p2, p3) and  (p4, p5, p6, p7)
+ * The ray below intersects faces (p0, p1, p2, p3) and  (p4, p5, p6, p7)
  * 
  *                      O camera origin  
  *                       \
