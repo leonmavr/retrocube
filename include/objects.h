@@ -66,6 +66,14 @@ void        obj_cube_free              (cube_t* cube);
  * @return A pointer to the newly constructed ray
  */
 ray_t*      obj_ray_new                (int x, int y, int z);
+/**
+ * @brief Sets the destination (`end` member) of a ray
+ *
+ * @param ray Pointer to the ray to modify
+ * @param x x-coordinate of ray's new destination
+ * @param y y-coordinate of ray's new sestination
+ * @param z z-coordinate of ray's new destination
+ */
 void        obj_ray_send               (ray_t* ray, int x, int y, int z); 
 void        obj_ray_free               (ray_t* ray);
 
@@ -73,7 +81,7 @@ void        obj_ray_free               (ray_t* ray);
 // Plane
 //-------------------------------------------------------------------------------------------------------------
 /**
- * @brief Allocates and sets the normal vector and offset of a plane given three points
+ * @brief Allocates a plane and sets its normal vector and offset given three points
  *
  * @param p0 First point on the plane
  * @param p1 Second point on the plane
