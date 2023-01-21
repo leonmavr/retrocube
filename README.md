@@ -25,6 +25,11 @@ Spinning cube animation via very basic ray tracing on the terminal. Rendered in 
 
 ```
 
+### Requirements
+
+* ncurses
+* gcc
+
 ### This implementation
 
 In human language, the graphics are rendered by the following algorithm:
