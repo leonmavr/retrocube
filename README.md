@@ -1,4 +1,7 @@
 ## :black_large_square: retrocube :white_large_square: 
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)  
+---
 Spinning cube animation via very basic ray tracing on the terminal. Rendered in ASCII.
 ```
                     +==
