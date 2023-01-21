@@ -7,7 +7,7 @@
 
 
 //-----------------------------------------------------------------------------------
-// Integral vectors
+//  Floating point vectors
 //-----------------------------------------------------------------------------------
 vec3_t* vec_vec3_new(float x, float y, float z) {
     vec3_t* new = malloc(sizeof(vec3_t));
@@ -59,9 +59,8 @@ void vec_vec3_crossprod(vec3_t* dest, vec3_t* src1, vec3_t* src2) {
 
 
 //-----------------------------------------------------------------------------------
-// Floating point vectors
+// Integral vectors
 //-----------------------------------------------------------------------------------
-
 vec3i_t* vec_vec3i_new(int x, int y, int z) {
     vec3i_t* new = malloc(sizeof(vec3i_t));
     new->x = x;
