@@ -31,7 +31,7 @@ In human language, the graphics are rendered by the following algorithm:
 ```
 rows <- terminal's width
 columns <- terminal's height
-// a face (surface) a plane with (x, y, z)
+// a face (surface) is a plane (x, y, z)
 initialise a cube (6 faces)
 for (r in rows):
     for (c in columns):
