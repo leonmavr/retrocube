@@ -27,8 +27,16 @@ Spinning cube animation via very basic ray tracing on the terminal. Rendered in 
 
 ### Requirements
 
-* ncurses
-* gcc
+1. **ncurses**  
+On Debian-based systems it's installed with:
+```
+apt-get install libncurses-dev
+```
+On Arch-based systems it's installed with:
+```
+pacman -S ncurses
+```
+2. **gcc**
 
 ### This implementation
 
