@@ -14,7 +14,7 @@
 
 
 //// default command line arguments
-// rotation speed around x, y, z axes (0 to 1)
+// rotation speed around x, y, z axes (-1 to 1)
 static float g_rot_speed_x = 0.7;
 static float g_rot_speed_y = 0.4;
 static float g_rot_speed_z = 0.6;
