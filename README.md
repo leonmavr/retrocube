@@ -78,7 +78,7 @@ make clean
 
 #### 3.2 General installation
 
-The `Makefile` include an installation command. The binary will be installed at `/usr/bin/cube` as:
+The `Makefile` includes an installation command. The binary will be installed at `/usr/bin/cube` as:
 ```
 sudo make install
 ```
