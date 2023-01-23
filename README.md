@@ -82,6 +82,10 @@ The `Makefile` include an installation command. The binary will be installed at 
 ```
 sudo make install
 ```
+Similarly, you can uninstall it from `/usr/bin` as:
+```
+sudo make uninstall
+```
 
 #### 3.3 Installation as Nix package
 

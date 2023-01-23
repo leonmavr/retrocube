@@ -28,3 +28,18 @@ $(EXEC): $(OBJECTS)
 clean:
 	$(RM) $(OBJECTS) 
 	$(RM) $(EXEC)
+
+###################################################
+# release                                         #
+###################################################
+PREFIX = /usr
+
+.PHONY: install
+install: $(EXEC) 
+	mkdir -p $(DESTDIR)$(PREFIX)/bin
+	cp $< $(DESTDIR)$(PREFIX)/bin/$(EXEC)
+
+.PHONY: uninstall
+uninstall:
+	$(RM) $(DESTDIR)$(PREFIX)/bin/$(EXEC)
+	# remove configs too if necessary
