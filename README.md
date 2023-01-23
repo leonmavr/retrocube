@@ -78,7 +78,7 @@ make clean
 
 #### 3.2 General installation
 
-The `Makefile` include an installation command. The binary will be installed at `/usr/bin/cube` as:
+The `Makefile` includes an installation command. The binary will be installed at `/usr/bin/cube` as:
 ```
 sudo make install
 ```
@@ -91,7 +91,7 @@ sudo make uninstall
 
 On Nix (with flakes enabled) you don't need to install it and you can directly run it with:
 ```
-nix run github:leonmavr/retrocub
+nix run github:leonmavr/retrocube
 ```
 Credits for the Nix packaging to [Peter Marreck (pmarreck)](https://github.com/pmarreck).
 
