@@ -25,6 +25,11 @@ Spinning cube animation via very basic ray tracing on the terminal. Rendered in 
 
 ```
 
+<<<<<<< HEAD
+### 1. This implementation
+||||||| b95f869
+### This implementation
+=======
 ### Requirements
 
 1. **ncurses**  
@@ -39,6 +44,7 @@ pacman -S ncurses
 2. **gcc**
 
 ### This implementation
+>>>>>>> 12bcd973352e9b625ad45507eba5233cb6f9bfe1
 
 In human language, the graphics are rendered by the following algorithm:
 ```
@@ -48,15 +54,17 @@ columns <- terminal's height
 initialise a cube (6 faces)
 for (r in rows):
     for (c in columns):
-        z_rendered = +inf
+        z_rendered <- +inf
         for (surface in cube's faces):
             find z(c, r)
             if (z < z_rendered) and ((c, r, z) in surface):
-                z_rendered = z
+                z_rendered <- z
                 draw(c, r)
 ```
 
-### Development
+### 2. Development and installation
+
+#### 2.1 Development
 
 The naming convention follows the one of [stb](https://github.com/nothings/stb).  
 Source files are found in `src` and headers in `include`.
@@ -74,7 +82,22 @@ You can delete the binary and object files with:
 make clean
 ```
 
-### Usage
+#### 2.2 General installation
+
+The `Makefile` include an installation command. The binary will be installed at `/usr/bin/cube` as:
+```
+sudo make install
+```
+
+#### 2.3 Installation as Nix package
+
+On Nix (with flakes enabled) you don't need to install it and you can directly run it with:
+```
+nix run github:leonmavr/retrocub
+```
+Credits for the Nix packaging to [Peter Marreck (pmarreck)](https://github.com/pmarreck).
+
+### 3. Usage
 
 By default the program runs forever so you can stop it with `Ctr+C`. Below are the command line arguments it accepts.
 
@@ -97,3 +120,12 @@ This is what it looks like on the command line:
 random speed | constant speed
 :-------------------------:|:-------------------------:
 ![](https://github.com/leonmavr/retrocube/blob/master/assets/demo_constant.gif?raw=true)  |  ![](https://raw.githubusercontent.com/leonmavr/retrocube/master/assets/demo_random.gif)
+
+
+### 4. Contributing
+
+If you'd like to contribute, please follow the codiing guidelines (section 2.1) and make sure that it builds and runs.
+I'll be happy to merge new changes.  
+
+List of contributors:
+* [pmarreck](https://github.com/pmarreck) - Nix packaging
