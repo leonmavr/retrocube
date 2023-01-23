@@ -1,6 +1,6 @@
-## :black_large_square: retrocube :white_large_square: 
+## :black_large_square: retrocube :white_large_square:
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)  
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ---
 Spinning cube animation via very basic ray tracing on the terminal. Rendered in ASCII.
 ```
@@ -45,7 +45,7 @@ for (r in rows):
 
 ### 2. Requirements
 
-1. **ncurses**  
+1. **ncurses**
 On Debian-based systems it's installed with:
 ```
 apt-get install libncurses-dev
@@ -60,7 +60,7 @@ pacman -S ncurses
 
 #### 3.1 Development
 
-The naming convention follows the one of [stb](https://github.com/nothings/stb).  
+The naming convention follows the one of [stb](https://github.com/nothings/stb).
 Source files are found in `src` and headers in `include`.
 
 You can compile the project with:
@@ -97,33 +97,52 @@ Credits for the Nix packaging to [Peter Marreck (pmarreck)](https://github.com/p
 
 ### 4. Usage
 
+#### 4.1 Arguments
+
 By default the program runs forever so you can stop it with `Ctr+C`. Below are the command line arguments it accepts.
 
 
 | Short specifier | Long specifier            | Argument type | Default | Description                                                                              |
 |:--------------- |:--------------------------|:--------------|:--------|:-----------------------------------------------------------------------------------------|
-| -sx             | --speedx                  | float         | 0.7     |Rotational speed around the x axis (-1 to 1)                                              |   
-| -sy             | --speedy                  | float         | 0.4     |Rotational speed around the y axis (-1 to 1)                                              |   
-| -sz             | --speedz                  | float         | 0.6     |Rotational speed around the z axis (-1 to 1)                                              |   
-| -f              | --fps                     | int           | 40      |Maximum fps at which the graphics can be rendered (lower it if high CPU usage)            |   
-| -r              | --random                  | no argument   | Off     |If disabled, rotate at constant speed around each axis. Else randomly and sinusoidally.   |   
-| -cx             | --cx                      | int           | 0       |x-coordinate of the cube's center in pixels                                               |   
-| -cy             | --cy                      | int           | 0       |y-coordinate of the cube's center in pixels                                               |   
-| -cz             | --cz                      | int           | 0       |z-coordinate of the cube's center in pixels                                               |   
-| -s              | --size                    | int           | 24      |Length of cube's sides in pixels                                                          |   
-| -mi             | --maximum-iterations      | int           | Inf/ty  |How many frames to run the program for                                                    |   
+| -sx             | --speedx                  | float         | 0.7     |Rotational speed around the x axis (-1 to 1)                                              |
+| -sy             | --speedy                  | float         | 0.4     |Rotational speed around the y axis (-1 to 1)                                              |
+| -sz             | --speedz                  | float         | 0.6     |Rotational speed around the z axis (-1 to 1)                                              |
+| -f              | --fps                     | int           | 40      |Maximum fps at which the graphics can be rendered (lower it if high CPU usage)            |
+| -r              | --random                  | no argument   | Off     |If disabled, rotate at constant speed around each axis. Else randomly and sinusoidally.   |
+| -cx             | --cx                      | int           | 0       |x-coordinate of the cube's center in pixels                                               |
+| -cy             | --cy                      | int           | 0       |y-coordinate of the cube's center in pixels                                               |
+| -cz             | --cz                      | int           | 0       |z-coordinate of the cube's center in pixels                                               |
+| -s              | --size                    | int           | 24      |Length of cube's sides in pixels                                                          |
+| -mi             | --maximum-iterations      | int           | Inf/ty  |How many frames to run the program for                                                    |
 
-This is what it looks like on the command line:
+
+#### 4.2 Supported terminal emulators
+
+Some terminal emulators have been found not to render the drawing. If so, you can switch to a working one.
+
+| Terminal          | Support                                                   |
+|:------------------|:----------------------------------------------------------|
+| alacritty         |![#48f514](https://placehold.co/15x15/48f514/48f514.png)   |
+| termite           |![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)   |
+| urxtv             |![#48f514](https://placehold.co/15x15/48f514/48f514.png)   |
+| xterm             |![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)   |
+
+If everyhing works, this is what it looks like on the command line:
 
 random speed | constant speed
 :-------------------------:|:-------------------------:
 ![](https://github.com/leonmavr/retrocube/blob/master/assets/demo_constant.gif?raw=true)  |  ![](https://raw.githubusercontent.com/leonmavr/retrocube/master/assets/demo_random.gif)
 
 
+#### 4.3 Tips
+
+1. If the animation flickers too much, you can reduce the maximum fps. 15-20 is a relatively flicker-free range. You can do this by: `./cube -f 15` or `./cube --fps 15`.
+
+
 ### 5. Contributing
 
 If you'd like to contribute, please follow the codiing guidelines (section 3.1) and make sure that it builds and runs.
-I'll be happy to merge new changes.  
+I'll be happy to merge new changes.
 
 List of contributors:
 * [pmarreck](https://github.com/pmarreck) - Nix packaging
