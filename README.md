@@ -29,8 +29,8 @@ Spinning cube animation via very basic ray tracing on the terminal. Rendered in 
 
 In human language, the graphics are rendered by the following algorithm:
 ```
-rows <- terminal's width
-columns <- terminal's height
+rows <- terminal's height
+columns <- terminal's width
 // a face (surface) is a plane segment (x, y, z) restricted within 4 cube vertices
 initialise a cube (6 faces)
 for (r in rows):
