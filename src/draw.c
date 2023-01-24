@@ -119,58 +119,64 @@ void draw_cube(cube_t* cube) {
             // (p4, p5, p6, p7), (p5, p1, p2, p6)
             // (p7, p6, p2, p3), (p0, p4, p5, p1)
 
-            // the final z where a pixel is to be drawn
-            int z_rendered = INT_MIN;
-            // which z the ray hits the plane - can be up to two hits
+            // the final pixel to render
+            // we keep the z to find the furthest one from the origin and we draw its x and y
+            vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MIN};
+            // the color of the rendered pixel
+            char rendered_color;
+            // which z the ray currently hits the plane - can be up to two hits
             int z_hit;
             // through (p0, p1, p2)
             plane_t* plane = obj_plane_new(p0, p1, p2);
             z_hit = obj_plane_z_at_xy(plane, j, i);
             obj_ray_send(ray, j, i, z_hit);
-            if (obj_ray_hits_rectangle(ray, p0, p1, p2, p3) && (z_hit > z_rendered)) {
-                draw_pixel(j, i, g_colors[0]);
-                z_rendered = z_hit;
+            if (obj_ray_hits_rectangle(ray, p0, p1, p2, p3) && (z_hit > rendered_point.z)) {
+                rendered_color = g_colors[0];
+                rendered_point = (vec3i_t) {j, i, z_hit};
             }
             // through (p0, p4, p7);
             obj_plane_set(plane, p0, p4, p7);
             z_hit = obj_plane_z_at_xy(plane, j, i);
             obj_ray_send(ray, j, i, z_hit);
-            if (obj_ray_hits_rectangle(ray, p0, p4, p7, p3) && (z_hit > z_rendered)) {
-                draw_pixel(j, i, g_colors[1]);
-                z_rendered = z_hit;
+            if (obj_ray_hits_rectangle(ray, p0, p4, p7, p3) && (z_hit > rendered_point.z)) {
+                rendered_color = g_colors[1];
+                rendered_point = (vec3i_t) {j, i, z_hit};
             }
             // through (p4, p5, p6);
             obj_plane_set(plane, p4, p5, p6);
             z_hit = obj_plane_z_at_xy(plane, j, i);
             obj_ray_send(ray, j, i, z_hit);
-            if (obj_ray_hits_rectangle(ray, p4, p5, p6, p7) && (z_hit > z_rendered)) {
-                draw_pixel(j, i, g_colors[2]);
-                z_rendered = z_hit;
+            if (obj_ray_hits_rectangle(ray, p4, p5, p6, p7) && (z_hit > rendered_point.z)) {
+                rendered_color = g_colors[2];
+                rendered_point = (vec3i_t) {j, i, z_hit};
             }
             // through (p5, p1, p2);
             obj_plane_set(plane, p5, p1, p2);
             z_hit = obj_plane_z_at_xy(plane, j, i);
             obj_ray_send(ray, j, i, z_hit);
-            if (obj_ray_hits_rectangle(ray, p5, p1, p2, p6) && (z_hit > z_rendered)) {
-                draw_pixel(j, i, g_colors[3]);
-                z_rendered = z_hit;
+            if (obj_ray_hits_rectangle(ray, p5, p1, p2, p6) && (z_hit > rendered_point.z)) {
+                rendered_color = g_colors[3];
+                rendered_point = (vec3i_t) {j, i, z_hit};
             }
             // through (p7, p6, p2);
             obj_plane_set(plane, p7, p6, p2);
             z_hit = obj_plane_z_at_xy(plane, j, i);
             obj_ray_send(ray, j, i, z_hit);
-            if (obj_ray_hits_rectangle(ray, p7, p6, p2, p3) && (z_hit > z_rendered)) {
-                draw_pixel(j, i, g_colors[4]);
-                z_rendered = z_hit;
+            if (obj_ray_hits_rectangle(ray, p7, p6, p2, p3) && (z_hit > rendered_point.z)) {
+                rendered_color = g_colors[4];
+                rendered_point = (vec3i_t) {j, i, z_hit};
             } 
             // through (p0, p4, p5);
             obj_plane_set(plane, p0, p4, p5);
             z_hit = obj_plane_z_at_xy(plane, j, i);
             obj_ray_send(ray, j, i, z_hit);
-            if (obj_ray_hits_rectangle(ray, p0, p4, p5, p1) && (z_hit > z_rendered)) {
-                draw_pixel(j, i, g_colors[5]);
-                z_rendered = z_hit;
+            if (obj_ray_hits_rectangle(ray, p0, p4, p5, p1) && (z_hit > rendered_point.z)) {
+                rendered_color = g_colors[5];
+                rendered_point = (vec3i_t) {j, i, z_hit};
             }
+            // if it's valid, i.e. at least one intersection, rendered it
+            if (rendered_point.z != INT_MIN)
+                draw_pixel(rendered_point.x, rendered_point.y, rendered_color);
             obj_plane_free(plane);
         } /* for columns */
     } /* for rows */

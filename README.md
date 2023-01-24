@@ -36,15 +36,22 @@ initialise a cube (6 faces)
 for (r in rows):
     for (c in columns):
         z_rendered <- +inf
+        have_intersection <- false
+        pixel_to_draw <- (0, 0)
         for (surface in cube's faces):
-            find z(c, r)
+            // from equation ax + by + cz + d = 0
+            find surface.z(c, r)
             if (z < z_rendered) and ((c, r, z) in surface):
                 z_rendered <- z
+                have_intersection <- true
+                pixel_to_draw <- (c, r) 
+            if (have_intersection):
                 draw(c, r)
 ```
 
 ### 2. Requirements
 
+Currenctly there is no Windows support. You'll need the following Linux packages:  
 1. **ncurses**
 On Debian-based systems it's installed with:
 ```
@@ -55,12 +62,13 @@ On Arch-based systems it's installed with:
 pacman -S ncurses
 ```
 2. **gcc**
+3. **make**
 
 ### 3. Development and installation
 
 #### 3.1 Development
 
-The naming convention follows the one of [stb](https://github.com/nothings/stb).
+The naming convention follows the one of [stb](https://github.com/nothings/stb).  
 Source files are found in `src` and headers in `include`.
 
 You can compile the project with:
@@ -102,18 +110,18 @@ Credits for the Nix packaging to [Peter Marreck (pmarreck)](https://github.com/p
 By default the program runs forever so you can stop it with `Ctr+C`. Below are the command line arguments it accepts.
 
 
-| Short specifier | Long specifier            | Argument type | Default | Description                                                                              |
-|:--------------- |:--------------------------|:--------------|:--------|:-----------------------------------------------------------------------------------------|
-| -sx             | --speedx                  | float         | 0.7     |Rotational speed around the x axis (-1 to 1)                                              |
-| -sy             | --speedy                  | float         | 0.4     |Rotational speed around the y axis (-1 to 1)                                              |
-| -sz             | --speedz                  | float         | 0.6     |Rotational speed around the z axis (-1 to 1)                                              |
-| -f              | --fps                     | int           | 40      |Maximum fps at which the graphics can be rendered (lower it if high CPU usage)            |
-| -r              | --random                  | no argument   | Off     |If disabled, rotate at constant speed around each axis. Else randomly and sinusoidally.   |
-| -cx             | --cx                      | int           | 0       |x-coordinate of the cube's center in pixels                                               |
-| -cy             | --cy                      | int           | 0       |y-coordinate of the cube's center in pixels                                               |
-| -cz             | --cz                      | int           | 0       |z-coordinate of the cube's center in pixels                                               |
-| -s              | --size                    | int           | 24      |Length of cube's sides in pixels                                                          |
-| -mi             | --maximum-iterations      | int           | Inf/ty  |How many frames to run the program for                                                    |
+| Short specifier | Long specifier            | Argument type | Default | Description                                                                                 |
+|:--------------- |:--------------------------|:--------------|:--------|:--------------------------------------------------------------------------------------------|
+| -sx             | --speedx                  | float         | 0.7     |Rotational speed around the x axis (-1 to 1)                                                 |
+| -sy             | --speedy                  | float         | 0.4     |Rotational speed around the y axis (-1 to 1)                                                 |
+| -sz             | --speedz                  | float         | 0.6     |Rotational speed around the z axis (-1 to 1)                                                 |
+| -f              | --fps                     | int           | 20      |Maximum fps at which the graphics can be rendered (lower it if high CPU usage or if flicker) | 
+| -r              | --random                  | no argument   | On      |If disabled, rotate at constant speed around each axis. Else randomly and sinusoidally.      |
+| -cx             | --cx                      | int           | 0       |x-coordinate of the cube's center in pixels                                                  |
+| -cy             | --cy                      | int           | 0       |y-coordinate of the cube's center in pixels                                                  |
+| -cz             | --cz                      | int           | 0       |z-coordinate of the cube's center in pixels                                                  |
+| -s              | --size                    | int           | 24      |Length of cube's sides in pixels                                                             |
+| -mi             | --maximum-iterations      | int           | Inf/ty  |How many frames to run the program for                                                       |
 
 
 #### 4.2 Supported terminal emulators

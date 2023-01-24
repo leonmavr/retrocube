@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <string.h> // strcmp
 #include <limits.h> // UINT_MAX
+#include <time.h> // time 
 
 
 //// default command line arguments
