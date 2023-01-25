@@ -21,4 +21,4 @@ jobs:
       run: make
       
     - name: run
-      run: ./cube -mi 5
+      run: export TERM=xterm && ./cube -mi 5
