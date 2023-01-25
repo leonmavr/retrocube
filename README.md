@@ -46,7 +46,7 @@ for (r in rows):
                 have_intersection <- true
                 pixel_to_draw <- (c, r) 
         if (have_intersection):
-            draw(c, r)
+            draw(pixel_to_draw)
 ```
 
 ### 2. Requirements
