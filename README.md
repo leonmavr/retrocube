@@ -45,14 +45,14 @@ for (r in rows):
                 z_rendered <- z
                 have_intersection <- true
                 pixel_to_draw <- (c, r) 
-            if (have_intersection):
-                draw(c, r)
+        if (have_intersection):
+            draw(pixel_to_draw)
 ```
 
 ### 2. Requirements
 
 Currenctly there is no Windows support. You'll need the following Linux packages:  
-1. **ncurses**
+1. **ncurses**  
 On Debian-based systems it's installed with:
 ```
 apt-get install libncurses-dev

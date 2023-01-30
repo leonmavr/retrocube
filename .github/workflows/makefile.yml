@@ -14,5 +14,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: requirements
+      run: sudo apt-get install libncurses-dev
+
     - name: build
       run: make
+      
+    - name: run
+      run: export TERM=xterm && ./cube -mi 5
