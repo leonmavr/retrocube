@@ -93,7 +93,8 @@ plane_t*    obj_plane_new              (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
 vec3i_t     obj_ray_plane_intersection (plane_t* plane, ray_t* ray);
 bool        obj_ray_hits_rectangle     (ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3);
 /* find the z-coordinate on a plane give x and y */
-inline int  obj_plane_z_at_xy          (plane_t* plane, int x, int y);
+extern inline int
+            obj_plane_z_at_xy          (plane_t* plane, int x, int y);
 /* recompute plane's normal and offset given 3 points */
 void        obj_plane_set              (plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
 void        obj_plane_free             (plane_t* plane);
