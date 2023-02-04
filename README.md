@@ -123,18 +123,6 @@ By default the program runs forever so you can stop it with `Ctr+C`. Below are t
 | -s              | --size                    | int           | 24      |Length of cube's sides in pixels                                                             |
 | -mi             | --maximum-iterations      | int           | Inf/ty  |How many frames to run the program for                                                       |
 
-
-#### 4.2 Supported terminal emulators
-
-Some terminal emulators have been found not to render the drawing. If so, you can switch to a working one.
-
-| Terminal          | Support                                                   |
-|:------------------|:----------------------------------------------------------|
-| alacritty         |![#48f514](https://placehold.co/15x15/48f514/48f514.png)   |
-| termite           |![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)   |
-| urxtv             |![#48f514](https://placehold.co/15x15/48f514/48f514.png)   |
-| xterm             |![#f03c15](https://placehold.co/15x15/f03c15/f03c15.png)   |
-
 If everyhing works, this is what it looks like on the command line:
 
 random speed | constant speed
@@ -142,7 +130,7 @@ random speed | constant speed
 ![](https://github.com/leonmavr/retrocube/blob/master/assets/demo_constant.gif?raw=true)  |  ![](https://raw.githubusercontent.com/leonmavr/retrocube/master/assets/demo_random.gif)
 
 
-#### 4.3 Tips
+#### 4.2 Tips
 
 1. If the animation flickers too much, you can reduce the maximum fps. 15-20 is a relatively flicker-free range. You can do this by: `./cube -f 15` or `./cube --fps 15`.
 
