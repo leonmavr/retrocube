@@ -13,7 +13,7 @@ extern int g_max_cols;
 
 
 void draw_init();
-void draw_pixel(int x, int y, char c);
+void draw_pixel(int x, int y, color_t c);
 void draw_clear();
 void draw_end();
 void draw_cube(cube_t* cube);

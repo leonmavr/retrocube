@@ -10,7 +10,7 @@
 #include <stdbool.h> // true/false 
 
 // colors for each face of the cube
-char g_colors[6] = {'~', '.', '=', '@', '%', '|'};
+color_t g_colors[6] = {'~', '.', '=', '@', '%', '|'};
 
 // rows, columns and aspect ratio of the terminal
 int g_rows;
@@ -104,7 +104,7 @@ void draw_init() {
  *        \
  *         v z
  */
-void draw_pixel(int x, int y, char c) {
+void draw_pixel(int x, int y, color_t c) {
     int y_scaled = y/(g_cols_over_rows/g_screen_res);
     mvaddch(y_scaled+g_rows/2, x+g_cols/2, c);
 }
@@ -173,7 +173,7 @@ void draw_cube(cube_t* cube) {
             // we keep the z to find the furthest one from the origin and we draw its x and y
             vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MIN};
             // the color of the rendered pixel
-            char rendered_color;
+            color_t rendered_color;
             // which z the ray currently hits the plane - can be up to two hits
             int z_hit;
             // through (p0, p1, p2)

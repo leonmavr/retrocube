@@ -4,6 +4,8 @@
 #include "vector.h"
 #include <stdbool.h>
 
+typedef char color_t;
+
 typedef struct cube {
     vec3i_t** vertices;
     vec3i_t** vertices_backup;
@@ -15,8 +17,6 @@ typedef struct ray {
     // for now it is always set to (0, 0, 0)
     vec3i_t* orig;
     vec3i_t* end;
-    // pixel color encoded as a character
-    char color;
 } ray_t;
 
 /* 
