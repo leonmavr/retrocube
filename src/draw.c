@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <limits.h> // INT_MIN
 #include <unistd.h>
+#include <stdlib.h> // exit
+#include <stdbool.h> // true/false 
 
 // colors for each face of the cube
 char g_colors[6] = {'~', '.', '=', '@', '%', '|'};
@@ -17,10 +19,60 @@ int g_min_rows;
 int g_max_rows;
 int g_min_cols;
 int g_max_cols;
-// aspect ratio of the terminal
-float g_aspect_ratio_screen;
-// aspect ratio of each character
-float g_aspect_ratio_char;
+// columns over rows for the terminal 
+float g_cols_over_rows;
+// screen resolution (pixels over pixels) 
+float g_screen_res;
+
+/**
+ * @brief Checks whether a null-terminated array of characters represents
+ *        a positive decimal number, e.g. 1.8999 or 1,002
+ *
+ * @param string A null-terminated array of chars
+ *
+ * @return true if the given string is numerical
+ */
+static bool is_decimal(char* string) {
+    bool ret = false;
+    for (char* s = string; *s != '\0'; ++s) {
+        if (((*s >= '0') && (*s <= '9')) ||
+            (*s == '.') || (*s == ',') ||
+            (*s == '\n'))
+            ret = true;
+        else
+            return false;
+    }
+    return ret;
+}
+
+/**
+ * Adapted from
+ * https://stackoverflow.com/a/646254
+ */
+static float get_screen_res() {
+  FILE *fp;
+  char path[1035];
+  // what screen resolution to return
+  // initialise with a common value in case xrand fails
+  float ret = 1.7777;
+
+  // Open the command for reading
+  fp = popen("echo `xrandr --current | grep \'*\' | uniq | awk \'{print $1}\' | cut -d \'x\' -f1` / `xrandr --current | grep \'*\' | uniq | awk '{print $1}\' | cut -d \'x\' -f2` | bc -l", "r");
+  if (fp == NULL) {
+    printf("Failed to run command\n" );
+    exit(1);
+  }
+  // parse the output - it should only be the resolution
+  while (fgets(path, sizeof(path), fp) != NULL) {
+    if (is_decimal(path)) {
+        ret = atof(path);
+        break;
+    }
+  }
+  // close file
+  pclose(fp);
+  return ret;
+}
 
 
 void draw_init() {
@@ -36,10 +88,8 @@ void draw_init() {
     // find terminal window's aspect ratio
     struct winsize wsize;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
-    g_aspect_ratio_screen = (float)wsize.ws_col/wsize.ws_row;
-    g_aspect_ratio_char = (float)wsize.ws_xpixel/wsize.ws_ypixel;
-    //printf("screen:\th = %d, w = %d, %.2f\n", wsize.ws_row, wsize.ws_col, g_aspect_ratio_screen);
-    //printf("char:\th = %d, w = %d, %.2f\n", wsize.ws_xpixel, wsize.ws_ypixel, g_aspect_ratio_char);
+    g_cols_over_rows = (float)wsize.ws_col/wsize.ws_row;
+    g_screen_res = get_screen_res();
 }
 
 /* Uses the following coordinate system:
@@ -55,7 +105,7 @@ void draw_init() {
  *         v z
  */
 void draw_pixel(int x, int y, char c) {
-    int y_scaled = y/(g_aspect_ratio_screen/g_aspect_ratio_char);
+    int y_scaled = y/(g_cols_over_rows/g_screen_res);
     mvaddch(y_scaled+g_rows/2, x+g_cols/2, c);
 }
 
