@@ -115,8 +115,8 @@ By default the program runs forever so you can stop it with `Ctr+C`. Below are t
 | -sx             | --speedx                  | float         | 0.7     |Rotational speed around the x axis (-1 to 1). If set, disables random rotations.             |
 | -sy             | --speedy                  | float         | 0.4     |Rotational speed around the y axis (-1 to 1). If set, disables random rotations.             |
 | -sz             | --speedz                  | float         | 0.6     |Rotational speed around the z axis (-1 to 1). If set, disables random rotations.             |
-| -f              | --fps                     | int           | 20      |THrottle the fps at which the graphics can be rendered (lower it if high CPU usage or if flicker) | 
-| -r              | --random                  | no argument   | On      |If disabled, rotate at constant speed around each axis. Else randomly and sinusoidally.      |
+| -f              | --fps                     | int           | 20      |Throttle the fps at which the graphics can be rendered (lower it if high CPU usage or if flicker) | 
+| -r              | --random                  | no argument   | On      |Rotate the cube randomly and sinusoidally.                                                    |
 | -cx             | --cx                      | int           | 0       |x-coordinate of the cube's center in pixels                                                  |
 | -cy             | --cy                      | int           | 0       |y-coordinate of the cube's center in pixels                                                  |
 | -cz             | --cz                      | int           | 0       |z-coordinate of the cube's center in pixels                                                  |
