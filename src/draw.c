@@ -52,7 +52,7 @@ static bool is_decimal(char* string) {
  *        1. `ioctl` call - fails on some terminals
  *        2.  (fallback) xrandr command
  *        3.  (fallback) assume a common screen resolution, e.g. 1920/1080
- *        Writes to global variables g_screen_res and g_cols_over_rows
+ *        Writes to global variables `g_screen_res` and `g_cols_over_rows`
  */
 static void get_screen_res() {
     FILE *fp;
@@ -173,7 +173,8 @@ void draw_cube(cube_t* cube) {
     vec3i_t* p6 = cube->vertices[6];
     vec3i_t* p7 = cube->vertices[7];
     ray_t* ray = obj_ray_new(0, 0, 0);
-    //plane_t* plane = obj_plane_new(pt1, pt2, pt3);
+    // plane (cube's face) the ray will hit - initialised with some dummy values
+    plane_t* plane = obj_plane_new(p0, p0, p0);
     for (int i = g_min_rows; i <= g_max_rows; ++i) {
         for (int j = g_min_cols; j <= g_max_cols; ++j) {
             // we test whether the ray has hit the following surafaces:
@@ -185,11 +186,11 @@ void draw_cube(cube_t* cube) {
             // we keep the z to find the furthest one from the origin and we draw its x and y
             vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MIN};
             // the color of the rendered pixel
-            color_t rendered_color;
+            color_t rendered_color = ' ';
             // which z the ray currently hits the plane - can be up to two hits
             int z_hit;
             // through (p0, p1, p2)
-            plane_t* plane = obj_plane_new(p0, p1, p2);
+            obj_plane_set(plane, p0, p1, p2);
             z_hit = obj_plane_z_at_xy(plane, j, i);
             obj_ray_send(ray, j, i, z_hit);
             if (obj_ray_hits_rectangle(ray, p0, p1, p2, p3) && (z_hit > rendered_point.z)) {
@@ -239,9 +240,10 @@ void draw_cube(cube_t* cube) {
             // if it's valid, i.e. at least one intersection, rendered it
             if (rendered_point.z != INT_MIN)
                 draw_pixel(rendered_point.x, rendered_point.y, rendered_color);
-            obj_plane_free(plane);
         } /* for columns */
     } /* for rows */
+    // free ray-tracing-related constructs
+    obj_plane_free(plane);
     obj_ray_free(ray);
     // render with with ncurse's `refresh`
     refresh();
