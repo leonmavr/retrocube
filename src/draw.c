@@ -9,6 +9,8 @@
 #include <stdlib.h> // exit
 #include <stdbool.h> // true/false 
 
+#define SIZE_INVALID 0
+
 // colors for each face of the cube
 color_t g_colors[6] = {'~', '.', '=', '@', '%', '|'};
 
@@ -46,32 +48,45 @@ static bool is_decimal(char* string) {
 }
 
 /**
- * Adapted from
- * https://stackoverflow.com/a/646254
+ * @brief Attempt to get the screen resolution in three ways:
+ *        1. `ioctl` call - fails on some terminals
+ *        2.  (fallback) xrandr command
+ *        3.  (fallback) assume a common screen resolution, e.g. 1920/1080
+ *        Writes to global variables g_screen_res and g_cols_over_rows
  */
-static float get_screen_res() {
-  FILE *fp;
-  char path[1035];
-  // what screen resolution to return
-  // initialise with a common value in case xrand fails
-  float ret = 1.7777;
-
-  // Open the command for reading
-  fp = popen("echo `xrandr --current | grep \'*\' | uniq | awk \'{print $1}\' | cut -d \'x\' -f1` / `xrandr --current | grep \'*\' | uniq | awk '{print $1}\' | cut -d \'x\' -f2` | bc -l", "r");
-  if (fp == NULL) {
-    printf("Failed to run command\n" );
-    exit(1);
-  }
-  // parse the output - it should only be the resolution
-  while (fgets(path, sizeof(path), fp) != NULL) {
-    if (is_decimal(path)) {
-        ret = atof(path);
-        break;
+static void get_screen_res() {
+    FILE *fp;
+    char path[1035];
+    
+    //// 1st way - ioctl call
+    struct winsize wsize;
+    wsize.ws_xpixel = SIZE_INVALID;
+    wsize.ws_ypixel = SIZE_INVALID;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
+    g_cols_over_rows = (float)wsize.ws_col/wsize.ws_row;
+    if ((wsize.ws_xpixel != SIZE_INVALID) && (wsize.ws_ypixel != SIZE_INVALID)) {
+        g_screen_res = (float)wsize.ws_xpixel/wsize.ws_ypixel;
+        return;
     }
-  }
-  // close file
-  pclose(fp);
-  return ret;
+
+    //// 2nd way - xrandr command
+    // Open the command for reading
+    fp = popen("echo `xrandr --current | grep \'*\' | uniq | awk \'{print $1}\' | cut -d \'x\' -f1` / `xrandr --current | grep \'*\' | uniq | awk '{print $1}\' | cut -d \'x\' -f2` | bc -l", "r");
+    if (fp == NULL) {
+        printf("Failed to run command\n" );
+        exit(1);
+    }
+    // parse the output - it should only be the resolution
+    while (fgets(path, sizeof(path), fp) != NULL) {
+        if (is_decimal(path)) {
+            // close file
+            pclose(fp);
+            g_screen_res = atof(path);
+            return;
+        }
+    }
+    //// 3rd way - assume a common resolution
+    g_screen_res = 1920.0/1080.0;
 }
 
 
@@ -85,11 +100,8 @@ void draw_init() {
     g_max_rows = g_rows + 1;
     g_min_cols = -g_cols/2 + 1;
     g_max_cols = g_cols/2;
-    // find terminal window's aspect ratio
-    struct winsize wsize;
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
-    g_cols_over_rows = (float)wsize.ws_col/wsize.ws_row;
-    g_screen_res = get_screen_res();
+    // find terminal window's size information
+    get_screen_res();
 }
 
 /* Uses the following coordinate system:
