@@ -33,7 +33,7 @@ static float g_cols_over_rows;
 // screen resolution (pixels over pixels) 
 static float g_screen_res;
 color_t* g_screen_buffer;
-unsigned g_screen_buffer_size;
+int g_screen_buffer_size;
 
 /**
  * @brief Checks whether a null-terminated array of characters represents
@@ -71,15 +71,13 @@ static void draw__get_screen_info() {
     
     //// 1st way - ioctl call
     struct winsize wsize;
-    wsize.ws_xpixel = SIZE_INVALID;
-    wsize.ws_ypixel = SIZE_INVALID;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
     g_rows = wsize.ws_row;
     g_cols = wsize.ws_col;
     g_cols_over_rows = (float)g_cols/g_rows;
     g_min_rows = -g_rows;
-    g_max_rows = g_rows + 1;
-    g_min_cols = -g_cols/2 + 1;
+    g_max_rows = g_rows+1;
+    g_min_cols = -g_cols/2+1;
     g_max_cols = g_cols/2;
     if ((wsize.ws_xpixel != SIZE_INVALID) && (wsize.ws_ypixel != SIZE_INVALID)) {
         g_screen_res = (float)wsize.ws_xpixel/wsize.ws_ypixel;
@@ -105,7 +103,7 @@ static void draw__get_screen_info() {
     }
     if (xrandr_success) {
         // close file
-        //pclose(fp);
+        pclose(fp);
         return;
     }
 #endif
@@ -117,11 +115,10 @@ static void draw__get_screen_info() {
 void draw_init() {
     SCREEN_HIDE_CURSOR();
     SCREEN_CLEAR();
-    // start the curses mode
-    g_screen_buffer_size = g_rows*g_cols;
-    g_screen_buffer = malloc(sizeof(color_t) * g_screen_buffer_size);
     // get terminal's size info
     draw__get_screen_info();
+    g_screen_buffer_size = g_rows*g_cols;
+    g_screen_buffer = malloc(sizeof(color_t) * g_screen_buffer_size);
 }
 
 /* Uses the following coordinate system:
@@ -264,9 +261,7 @@ void draw_cube(cube_t* cube) {
                 rendered_color = g_colors[5];
                 rendered_point = (vec3i_t) {j, i, z_hit};
             }
-            // if it's valid, i.e. at least one intersection, rendered it
-            if (rendered_point.z != INT_MIN)
-                draw_pixel(rendered_point.x, rendered_point.y, rendered_color);
+            draw_pixel(rendered_point.x, rendered_point.y, rendered_color);
         } /* for columns */
     } /* for rows */
     // render the screen buffer
