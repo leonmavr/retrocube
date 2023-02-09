@@ -10,7 +10,11 @@
 #include <stdbool.h> // true/false 
 
 #define SIZE_INVALID 0
-
+// printf macros to manipulate the terminal
+#define SCREEN_CLEAR() printf("\033[H\033[J")
+#define SCREEN_GOTO_TOPLEFT() printf("\033[0;0H")
+#define SCREEN_HIDE_CURSOR() printf("\e[?25l")
+#define SCREEN_SHOW_CURSOR() printf("\e[?25h");
 
 
 // colors for each face of the cube
@@ -24,9 +28,11 @@ int g_max_rows;
 int g_min_cols;
 int g_max_cols;
 // columns over rows for the terminal 
-float g_cols_over_rows;
+static float g_cols_over_rows;
 // screen resolution (pixels over pixels) 
-float g_screen_res;
+static float g_screen_res;
+color_t* g_screen_buffer;
+unsigned g_screen_buffer_size;
 
 /**
  * @brief Checks whether a null-terminated array of characters represents
@@ -104,6 +110,8 @@ void draw_init() {
     // start the curses mode
     initscr();
     curs_set(0);
+    g_screen_buffer_size = g_rows*g_cols;
+    g_screen_buffer = malloc(sizeof(color_t) * g_screen_buffer_size);
     // get terminal's size info
     draw__get_screen_info();
 }
