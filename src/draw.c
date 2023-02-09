@@ -11,6 +11,8 @@
 
 #define SIZE_INVALID 0
 
+
+
 // colors for each face of the cube
 color_t g_colors[6] = {'~', '.', '=', '@', '%', '|'};
 
@@ -52,18 +54,26 @@ static bool is_decimal(char* string) {
  *        1. `ioctl` call - fails on some terminals
  *        2.  (fallback) xrandr command
  *        3.  (fallback) assume a common screen resolution, e.g. 1920/1080
- *        Writes to global variables `g_screen_res` and `g_cols_over_rows`
+ *        Writes to global variables `g_screen_res` and `g_cols_over_rows`,
+ *        `g_rows`, `g_cols`, `g_min_rows`, `g_min_cols`, `g_max_rows`,
+ *        `g_max_cols`
  */
-static void get_screen_res() {
+static void draw__get_screen_info() {
     FILE *fp;
-    char path[1035];
+    char path[512];
     
     //// 1st way - ioctl call
     struct winsize wsize;
     wsize.ws_xpixel = SIZE_INVALID;
     wsize.ws_ypixel = SIZE_INVALID;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
-    g_cols_over_rows = (float)wsize.ws_col/wsize.ws_row;
+    g_rows = wsize.ws_row;
+    g_cols = wsize.ws_col;
+    g_cols_over_rows = (float)g_cols/g_rows;
+    g_min_rows = -g_rows;
+    g_max_rows = g_rows + 1;
+    g_min_cols = -g_cols/2 + 1;
+    g_max_cols = g_cols/2;
     if ((wsize.ws_xpixel != SIZE_INVALID) && (wsize.ws_ypixel != SIZE_INVALID)) {
         g_screen_res = (float)wsize.ws_xpixel/wsize.ws_ypixel;
         return;
@@ -94,14 +104,8 @@ void draw_init() {
     // start the curses mode
     initscr();
     curs_set(0);
-    // get the number of rows and columns
-    getmaxyx(stdscr, g_rows, g_cols);
-    g_min_rows = -g_rows;
-    g_max_rows = g_rows + 1;
-    g_min_cols = -g_cols/2 + 1;
-    g_max_cols = g_cols/2;
-    // find terminal window's size information
-    get_screen_res();
+    // get terminal's size info
+    draw__get_screen_info();
 }
 
 /* Uses the following coordinate system:
