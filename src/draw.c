@@ -1,13 +1,14 @@
 #include "vector.h"
 #include "draw.h" // g_colors
 #include "objects.h"
-#include <ncurses.h>
+//#include <ncurses.h>
 #include <sys/ioctl.h>
 #include <stdio.h>
 #include <limits.h> // INT_MIN
 #include <unistd.h>
 #include <stdlib.h> // exit
 #include <stdbool.h> // true/false 
+#include <string.h> // memset
 
 #define SIZE_INVALID 0
 // printf macros to manipulate the terminal
@@ -66,7 +67,7 @@ static bool is_decimal(char* string) {
  */
 static void draw__get_screen_info() {
     FILE *fp;
-    char path[512];
+    char path[1035];
     
     //// 1st way - ioctl call
     struct winsize wsize;
@@ -85,6 +86,7 @@ static void draw__get_screen_info() {
         return;
     }
 
+#if 0
     //// 2nd way - xrandr command
     // Open the command for reading
     fp = popen("echo `xrandr --current | grep \'*\' | uniq | awk \'{print $1}\' | cut -d \'x\' -f1` / `xrandr --current | grep \'*\' | uniq | awk '{print $1}\' | cut -d \'x\' -f2` | bc -l", "r");
@@ -92,24 +94,30 @@ static void draw__get_screen_info() {
         printf("Failed to run command\n" );
         exit(1);
     }
+    bool xrandr_success = false;
     // parse the output - it should only be the resolution
     while (fgets(path, sizeof(path), fp) != NULL) {
         if (is_decimal(path)) {
-            // close file
-            pclose(fp);
             g_screen_res = atof(path);
-            return;
+	    xrandr_success = true;
+	    break;
         }
     }
+    if (xrandr_success) {
+        // close file
+        //pclose(fp);
+        return;
+    }
+#endif
     //// 3rd way - assume a common resolution
     g_screen_res = 1920.0/1080.0;
 }
 
 
 void draw_init() {
+    SCREEN_HIDE_CURSOR();
+    SCREEN_CLEAR();
     // start the curses mode
-    initscr();
-    curs_set(0);
     g_screen_buffer_size = g_rows*g_cols;
     g_screen_buffer = malloc(sizeof(color_t) * g_screen_buffer_size);
     // get terminal's size info
@@ -129,14 +137,21 @@ void draw_init() {
  *         v z
  */
 void draw_pixel(int x, int y, color_t c) {
-    int y_scaled = y/(g_cols_over_rows/g_screen_res);
-    mvaddch(y_scaled+g_rows/2, x+g_cols/2, c);
+    int y_scaled = y/(g_cols_over_rows/g_screen_res) + g_rows/2;
+    x += g_cols/2;
+    *(g_screen_buffer + y_scaled*g_cols + x) = c;
 }
 
 void draw_end() {
-    getch();
-    endwin();
+    SCREEN_SHOW_CURSOR();
 }
+
+void draw_clear() {
+    for (int i = 0; i < g_screen_buffer_size; ++i)
+        g_screen_buffer[i] = ' ';
+    SCREEN_GOTO_TOPLEFT();
+}
+
 
 
 void draw_cube(cube_t* cube) {
@@ -254,9 +269,12 @@ void draw_cube(cube_t* cube) {
                 draw_pixel(rendered_point.x, rendered_point.y, rendered_color);
         } /* for columns */
     } /* for rows */
+    // render the screen buffer
+    for (size_t i = 0; i < g_screen_buffer_size; ++i)
+        putchar(g_screen_buffer[i]);
     // free ray-tracing-related constructs
     obj_plane_free(plane);
     obj_ray_free(ray);
     // render with with ncurse's `refresh`
-    refresh();
+    //refresh();
 }
