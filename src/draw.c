@@ -97,8 +97,8 @@ static void draw__get_screen_info() {
     while (fgets(path, sizeof(path), fp) != NULL) {
         if (is_decimal(path)) {
             g_screen_res = atof(path);
-	    xrandr_success = true;
-	    break;
+        xrandr_success = true;
+        break;
         }
     }
     if (xrandr_success) {
@@ -144,8 +144,7 @@ void draw_end() {
 }
 
 void draw_clear() {
-    for (int i = 0; i < g_screen_buffer_size; ++i)
-        g_screen_buffer[i] = ' ';
+    memset(g_screen_buffer, ' ', sizeof(color_t) * g_screen_buffer_size);
     SCREEN_GOTO_TOPLEFT();
 }
 
@@ -264,6 +263,11 @@ void draw_cube(cube_t* cube) {
             draw_pixel(rendered_point.x, rendered_point.y, rendered_color);
         } /* for columns */
     } /* for rows */
+    // BUG: central pixel is never drawn - mitigate it by copying from the left
+    for (size_t i = 1; i < g_screen_buffer_size - 1; ++i)
+        if ((g_screen_buffer[i-1] != ' ') && (g_screen_buffer[i] == ' ') && (g_screen_buffer[i+1]  != ' ')) {
+            g_screen_buffer[i] = g_screen_buffer[i-1];
+    }
     // render the screen buffer
     for (size_t i = 0; i < g_screen_buffer_size; ++i)
         putchar(g_screen_buffer[i]);
