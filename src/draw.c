@@ -58,16 +58,16 @@ static bool is_decimal(char* string) {
 
 /**
  * @brief Attempt to get the screen resolution in three ways:
- *        1. `ioctl` call - fails on some terminals
- *        2.  (fallback) xrandr command
- *        3.  (fallback) assume a common screen resolution, e.g. 1920/1080
+ *            1.`ioctl` call - fails on some terminals
+ *            2. (fallback) xrandr command
+ *            3. (fallback) assume a common screen resolution, e.g. 1920/1080
  *        Writes to global variables `g_screen_res` and `g_cols_over_rows`,
  *        `g_rows`, `g_cols`, `g_min_rows`, `g_min_cols`, `g_max_rows`,
  *        `g_max_cols`
  */
 static void draw__get_screen_info() {
     FILE *fp;
-    char path[1035];
+    char path[512];
     
     //// 1st way - ioctl call
     struct winsize wsize;
@@ -84,7 +84,6 @@ static void draw__get_screen_info() {
         return;
     }
 
-#if 0
     //// 2nd way - xrandr command
     // Open the command for reading
     fp = popen("echo `xrandr --current | grep \'*\' | uniq | awk \'{print $1}\' | cut -d \'x\' -f1` / `xrandr --current | grep \'*\' | uniq | awk '{print $1}\' | cut -d \'x\' -f2` | bc -l", "r");
@@ -92,21 +91,14 @@ static void draw__get_screen_info() {
         printf("Failed to run command\n" );
         exit(1);
     }
-    bool xrandr_success = false;
     // parse the output - it should only be the resolution
     while (fgets(path, sizeof(path), fp) != NULL) {
         if (is_decimal(path)) {
             g_screen_res = atof(path);
-        xrandr_success = true;
-        break;
+            pclose(fp);
+            return;
         }
     }
-    if (xrandr_success) {
-        // close file
-        pclose(fp);
-        return;
-    }
-#endif
     //// 3rd way - assume a common resolution
     g_screen_res = 1920.0/1080.0;
 }
