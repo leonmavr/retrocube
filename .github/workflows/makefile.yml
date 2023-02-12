@@ -25,6 +25,3 @@ jobs:
 
     - name: build
       run: make
-      
-    - name: run
-      run: export TERM=xterm && ./cube -mi 5
