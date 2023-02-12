@@ -124,7 +124,7 @@ random speed | constant speed
 
 #### 4.2 Tips
 
-1. If the animation flickers too much, you can reduce the maximum fps. 15-20 is a relatively flicker-free range. You can do this by: `./cube -f 15` or `./cube --fps 15`.
+1. If the CPU usage is too high (it was low on my ancient laptop), you can reduce the fps e.g. to 15 by: `./cube -f 15` or `./cube --fps 15`.
 
 
 ### 5. Contributing
