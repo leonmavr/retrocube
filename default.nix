@@ -15,7 +15,7 @@ fastStdenv.mkDerivation {
   enableParallelBuilding = true;
 
   # any dependencies/build tools needed at compilation/build time
-  nativeBuildInputs = [ pkg-config ncurses gcc ];
+  nativeBuildInputs = [ pkg-config gcc ];
 
   # any dependencies needed at runtime
   # (why is it not called "runtimeInputs"? and the build time inputs just called "buildInputs"?)
