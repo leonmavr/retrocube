@@ -52,7 +52,7 @@ for (r in rows):
 
 ### 2. Requirements
 
-Currenctly there is no Windows support. You'll need the following Linux packages:  
+Currenctly there is no Windows support. You only need gcc and make:  
 1. **gcc**
 2. **make**
 
