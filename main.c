@@ -1,15 +1,14 @@
 #include "draw.h"
-#include "vector.h"
 #include "objects.h"
-#include <ncurses.h> // clear
 #include <math.h> // sin, cos
-#include <stdlib.h> // atof, atoi, random
+#include <stdlib.h> // atof, atoi, random, exit
 #include <unistd.h> // for usleep
-#include <assert.h>
+#include <assert.h> // assert
 #include <stdbool.h>
 #include <string.h> // strcmp
 #include <limits.h> // UINT_MAX
 #include <time.h> // time 
+#include <signal.h> // signal
 
 
 //// default command line arguments
@@ -29,6 +28,14 @@ static unsigned g_cube_size = 24;
 // how many frames to run the program for
 static unsigned g_max_iterations = UINT_MAX;
 
+
+/* Clears the screen and makes the cursor visible when the user hits Ctr+C */
+void interrupt_handler(int int_num) {
+    if (int_num == SIGINT) {
+        draw_end();
+        exit(0);
+    }            
+}
 
 int main(int argc, char** argv) {
     int i = 0;
@@ -68,6 +75,9 @@ int main(int argc, char** argv) {
                (-1.0 < g_rot_speed_y) && (g_rot_speed_y < 1.0) &&
                (-1.0 < g_rot_speed_z) && (g_rot_speed_z < 1.0));
     }
+
+    // make sure we end gracefully if the user hits Ctr+C
+    signal(SIGINT, interrupt_handler);
 
     draw_init();
     cube_t* cube = obj_cube_new(g_cx, g_cy, g_cz, g_cube_size);
