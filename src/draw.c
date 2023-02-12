@@ -1,7 +1,6 @@
 #include "vector.h"
 #include "draw.h" // g_colors
 #include "objects.h"
-//#include <ncurses.h>
 #include <sys/ioctl.h>
 #include <stdio.h>
 #include <limits.h> // INT_MIN
@@ -43,7 +42,7 @@ int g_screen_buffer_size;
  *
  * @return true if the given string is numerical
  */
-static bool is_decimal(char* string) {
+static bool draw__is_decimal(char* string) {
     bool ret = false;
     for (char* s = string; *s != '\0'; ++s) {
         if (((*s >= '0') && (*s <= '9')) ||
@@ -86,14 +85,14 @@ static void draw__get_screen_info() {
 
     //// 2nd way - xrandr command
     // Open the command for reading
-    fp = popen("echo `xrandr --current | grep \'*\' | uniq | awk \'{print $1}\' | cut -d \'x\' -f1` / `xrandr --current | grep \'*\' | uniq | awk '{print $1}\' | cut -d \'x\' -f2` | bc -l", "r");
+    fp = popen("echo `xrandr --current | grep \'*\' | uniq | awk \'{print $1}\' | cut -d \'x\' -f1` / `xrandr --current | grep \'*\' | uniq | awk \'{print $1}\' | cut -d \'x\' -f2` | bc -l", "r");
     if (fp == NULL) {
         printf("Failed to run command\n" );
         exit(1);
     }
     // parse the output - it should only be the resolution
     while (fgets(path, sizeof(path), fp) != NULL) {
-        if (is_decimal(path)) {
+        if (draw__is_decimal(path)) {
             g_screen_res = atof(path);
             pclose(fp);
             return;
@@ -125,21 +124,31 @@ void draw_init() {
  *        \
  *         v z
  */
-void draw_pixel(int x, int y, color_t c) {
+void draw_write_pixel(int x, int y, color_t c) {
     int y_scaled = y/(g_cols_over_rows/g_screen_res) + g_rows/2;
     x += g_cols/2;
     *(g_screen_buffer + y_scaled*g_cols + x) = c;
+}
+
+void draw_flush_screen() {
+    // BUG: central pixel is colored as background - mitigate it by copying from the left
+    for (size_t i = 1; i < g_screen_buffer_size - 1; ++i)
+        if ((g_screen_buffer[i-1] != ' ') && (g_screen_buffer[i] == ' ') && (g_screen_buffer[i+1]  != ' ')) {
+            g_screen_buffer[i] = g_screen_buffer[i-1];
+    }
+    // render the screen buffer
+    for (size_t i = 0; i < g_screen_buffer_size; ++i)
+        putchar(g_screen_buffer[i]);
+    memset(g_screen_buffer, ' ', sizeof(color_t) * g_screen_buffer_size);
 }
 
 void draw_end() {
     SCREEN_SHOW_CURSOR();
 }
 
-void draw_clear() {
-    memset(g_screen_buffer, ' ', sizeof(color_t) * g_screen_buffer_size);
+void draw_reset() {
     SCREEN_GOTO_TOPLEFT();
 }
-
 
 
 void draw_cube(cube_t* cube) {
@@ -252,20 +261,10 @@ void draw_cube(cube_t* cube) {
                 rendered_color = g_colors[5];
                 rendered_point = (vec3i_t) {j, i, z_hit};
             }
-            draw_pixel(rendered_point.x, rendered_point.y, rendered_color);
+            draw_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
         } /* for columns */
     } /* for rows */
-    // BUG: central pixel is never drawn - mitigate it by copying from the left
-    for (size_t i = 1; i < g_screen_buffer_size - 1; ++i)
-        if ((g_screen_buffer[i-1] != ' ') && (g_screen_buffer[i] == ' ') && (g_screen_buffer[i+1]  != ' ')) {
-            g_screen_buffer[i] = g_screen_buffer[i-1];
-    }
-    // render the screen buffer
-    for (size_t i = 0; i < g_screen_buffer_size; ++i)
-        putchar(g_screen_buffer[i]);
     // free ray-tracing-related constructs
     obj_plane_free(plane);
     obj_ray_free(ray);
-    // render with with ncurse's `refresh`
-    //refresh();
 }

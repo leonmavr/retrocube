@@ -18,8 +18,9 @@ extern int g_screen_buffer_size;
  * @brief Initialises the screen buffer and prepares terminal for writing
  */
 void draw_init();
-void draw_pixel(int x, int y, color_t c);
-void draw_clear();
+void draw_write_pixel(int x, int y, color_t c);
+void draw_flush_screen();
+void draw_reset();
 void draw_end();
 void draw_cube(cube_t* cube);
 
