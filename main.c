@@ -17,7 +17,7 @@ static float g_rot_speed_x = 0.7;
 static float g_rot_speed_y = 0.4;
 static float g_rot_speed_z = 0.6;
 // maximum fps at which to render the cube
-static unsigned g_fps = 20;
+static unsigned g_fps = 40;
 static bool g_use_random_rotation = true;
 // centre (x, y, z) of the cube
 static int g_cx = 0;
@@ -84,9 +84,9 @@ int main(int argc, char** argv) {
 
     for (size_t t = 0; t < g_max_iterations; ++t) {
         if (g_use_random_rotation)
-            obj_cube_rotate(cube, 4*sin(random_bias_x*sin(0.0025*t) + 2*random_bias_x),
-                                  4*sin(random_bias_y*0.0025*t      + 2*random_bias_y),
-                                  4*sin(random_bias_z*0.0025*t      + 2*random_bias_z));
+            obj_cube_rotate(cube, 4.25*sin(random_bias_x*sin(0.002*t) + 2*random_bias_x),
+                                  4.25*sin(random_bias_y*0.002*t      + 2*random_bias_y),
+                                  4.25*sin(random_bias_z*0.002*t      + 2*random_bias_z));
         else
             obj_cube_rotate(cube, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
         draw_cube(cube);

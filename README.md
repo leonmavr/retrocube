@@ -2,7 +2,8 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ---
-Spinning cube animation via very basic ray tracing on the terminal. Rendered in ASCII.
+Spinning cube animation via very basic ray tracing on the terminal. Rendered in ASCII.  
+It runs on the standard C library.
 ```
                     +==
                 ++======
@@ -27,7 +28,7 @@ Spinning cube animation via very basic ray tracing on the terminal. Rendered in 
 
 ### 1. This implementation
 
-In human language, the graphics are rendered by the following algorithm:
+In human language, the graphics are rendered more or less by the following algorithm:
 ```
 rows <- terminal's height
 columns <- terminal's width
@@ -38,31 +39,22 @@ for (r in rows):
         z_rendered <- +inf
         have_intersection <- false
         pixel_to_draw <- (0, 0)
+        color_to_draw <- background
         for (surface in cube's faces):
             // from equation ax + by + cz + d = 0
-            find surface.z(c, r)
+            z <- surface.z(c, r)
             if (z < z_rendered) and ((c, r, z) in surface):
                 z_rendered <- z
-                have_intersection <- true
+                color_to_draw <- surface.color
                 pixel_to_draw <- (c, r) 
-        if (have_intersection):
-            draw(pixel_to_draw)
+        draw(pixel_to_draw, color_to_draw)
 ```
 
 ### 2. Requirements
 
 Currenctly there is no Windows support. You'll need the following Linux packages:  
-1. **ncurses**  
-On Debian-based systems it's installed with:
-```
-apt-get install libncurses-dev
-```
-On Arch-based systems it's installed with:
-```
-pacman -S ncurses
-```
-2. **gcc**
-3. **make**
+1. **gcc**
+2. **make**
 
 ### 3. Development and installation
 
@@ -115,7 +107,7 @@ By default the program runs forever so you can stop it with `Ctr+C`. Below are t
 | -sx             | --speedx                  | float         | 0.7     |Rotational speed around the x axis (-1 to 1). If set, disables random rotations.             |
 | -sy             | --speedy                  | float         | 0.4     |Rotational speed around the y axis (-1 to 1). If set, disables random rotations.             |
 | -sz             | --speedz                  | float         | 0.6     |Rotational speed around the z axis (-1 to 1). If set, disables random rotations.             |
-| -f              | --fps                     | int           | 20      |Throttle the fps at which the graphics can be rendered (lower it if high CPU usage or if flicker) | 
+| -f              | --fps                     | int           | 40      |Throttle the fps at which the graphics can be rendered (lower it if high CPU usage or if flicker) | 
 | -r              | --random                  | no argument   | On      |Rotate the cube randomly and sinusoidally.                                                    |
 | -cx             | --cx                      | int           | 0       |x-coordinate of the cube's center in pixels                                                  |
 | -cy             | --cy                      | int           | 0       |y-coordinate of the cube's center in pixels                                                  |
