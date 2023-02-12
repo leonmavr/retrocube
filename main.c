@@ -73,7 +73,6 @@ int main(int argc, char** argv) {
     cube_t* cube = obj_cube_new(g_cx, g_cy, g_cz, g_cube_size);
 
     for (size_t t = 0; t < g_max_iterations; ++t) {
-	draw_reset();
         if (g_use_random_rotation)
             obj_cube_rotate(cube, 4*sin(random_bias_x*sin(0.0025*t) + 2*random_bias_x),
                                   4*sin(random_bias_y*0.0025*t      + 2*random_bias_y),
@@ -83,7 +82,6 @@ int main(int argc, char** argv) {
         draw_cube(cube);
         draw_flush_screen();
         nanosleep((const struct timespec[]) {{0, (int)(1.0 / g_fps * 1e9)}}, NULL);
-        //usleep((int)(1.0 / g_fps * 1e6));
     }
     obj_cube_free(cube);
     draw_end();

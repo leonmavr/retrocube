@@ -20,7 +20,6 @@ extern int g_screen_buffer_size;
 void draw_init();
 void draw_write_pixel(int x, int y, color_t c);
 void draw_flush_screen();
-void draw_reset();
 void draw_end();
 void draw_cube(cube_t* cube);
 

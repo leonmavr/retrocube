@@ -140,16 +140,13 @@ void draw_flush_screen() {
     for (size_t i = 0; i < g_screen_buffer_size; ++i)
         putchar(g_screen_buffer[i]);
     memset(g_screen_buffer, ' ', sizeof(color_t) * g_screen_buffer_size);
-}
-
-void draw_end() {
-    SCREEN_SHOW_CURSOR();
-}
-
-void draw_reset() {
     SCREEN_GOTO_TOPLEFT();
 }
 
+void draw_end() {
+    SCREEN_CLEAR();
+    SCREEN_SHOW_CURSOR();
+}
 
 void draw_cube(cube_t* cube) {
 /*
