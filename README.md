@@ -46,7 +46,6 @@ for (r in rows):
             if (z < z_rendered) and ((c, r, z) in surface):
                 z_rendered <- z
                 color_to_draw <- surface.color
-                pixel_to_draw <- (c, r) 
         draw(pixel_to_draw, color_to_draw)
 ```
 
