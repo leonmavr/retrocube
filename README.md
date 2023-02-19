@@ -38,7 +38,7 @@ for (r in rows):
     for (c in columns):
         z_rendered <- +inf
         have_intersection <- false
-        pixel_to_draw <- (0, 0)
+        pixel_to_draw <- (c, r)
         color_to_draw <- background
         for (surface in cube's faces):
             // from equation ax + by + cz + d = 0
