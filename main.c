@@ -86,21 +86,19 @@ int main(int argc, char** argv) {
     draw_init();
     cube_t* cube = obj_cube_new(g_cx, g_cy, g_cz, g_cube_size);
     // spinning parameters in case random rotation was selected
-    if (g_use_random_rotation) {
 #ifndef _WIN32
-    const float radnom_rot_speed_x = 0.002, radnom_rot_speed_y = 0.002, radnom_rot_speed_z = 0.002;
+    const float random_rot_speed_x = 0.002, random_rot_speed_y = 0.002, random_rot_speed_z = 0.002;
     const float amplitude_x = 4.25, amplitude_y = 4.25, amplitude_z = 4.25;
 #else
     // make it spin faster on windows because terminal refresh functions are sluggish there
-    const float radnom_rot_speed_x = 0.01, radnom_rot_speed_y = 0.01, radnom_rot_speed_z = 0.01;
+    const float random_rot_speed_x = 0.01, random_rot_speed_y = 0.01, random_rot_speed_z = 0.01;
     const float amplitude_x = 10.0, amplitude_y = 10.0, amplitude_z = 10.0;
 #endif
-    }
     for (size_t t = 0; t < g_max_iterations; ++t) {
         if (g_use_random_rotation)
-            obj_cube_rotate(cube, amplitude_x*sin(random_bias_x*sin(random_bias_x*t) + 2*random_bias_x),
-                                  amplitude_y*sin(random_bias_y*random_bias_y*t      + 2*random_bias_y),
-                                  amplitude_z*sin(random_bias_z*random_bias_z*t      + 2*random_bias_z));
+            obj_cube_rotate(cube, amplitude_x*sin(random_rot_speed_x*sin(random_bias_x*t) + 2*random_bias_x),
+                                  amplitude_y*sin(random_rot_speed_y*random_bias_y*t      + 2*random_bias_y),
+                                  amplitude_z*sin(random_rot_speed_z*random_bias_z*t      + 2*random_bias_z));
         else
             obj_cube_rotate(cube, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
         draw_cube(cube);
