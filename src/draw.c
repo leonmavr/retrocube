@@ -1,24 +1,57 @@
 #include "vector.h"
 #include "draw.h" // g_colors
 #include "objects.h"
-#include <sys/ioctl.h>
-#include <stdio.h>
+#ifndef _WIN32
+#include <sys/ioctl.h> // ioctl
+#else
+#include <windows.h>
+#endif
+#include <stdio.h> // printf, fgets
 #include <limits.h> // INT_MIN
 #include <unistd.h>
 #include <stdlib.h> // exit
-#include <stdbool.h> // true/false 
+#include <stdbool.h> // true/false
 #include <string.h> // memset
 
 #define SIZE_INVALID 0
 // printf macros to manipulate the terminal
+#ifndef _WIN32
 #define SCREEN_CLEAR() printf("\033[H\033[J")
 #define SCREEN_GOTO_TOPLEFT() printf("\033[0;0H")
 #define SCREEN_HIDE_CURSOR() printf("\e[?25l")
 #define SCREEN_SHOW_CURSOR() printf("\e[?25h");
+#else
+HANDLE g_cons_out;
 
+// Credits to @Jerry Coffin: https://stackoverflow.com/a/2732327
+static void gotoxy(int x, int y) {
+    COORD pos = {x, y};
+    HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleCursorPosition(output, pos);
+}
+
+// Credits to @oogabooga:
+// https://cboard.cprogramming.com/c-programming/161186-undefined-reference.html
+static void clrscr() {
+    COORD top_left = {0, 0};
+    DWORD c_chars_written;
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(g_cons_out, &csbi);
+    DWORD dw_con_size = csbi.dwSize.X * csbi.dwSize.Y;
+    FillConsoleOutputCharacter(g_cons_out, ' ', dw_con_size,
+            top_left, &c_chars_written);
+    FillConsoleOutputAttribute(g_consOut, csbi.wAttributes,
+            dw_con_size, top_left, &c_chars_written);
+    SetConsoleCursorPosition(g_consOut, top_left);
+}
+#define SCREEN_CLEAR() clrscr()
+#define SCREEN_GOTO_TOPLEFT() gotoxy(0, 0)
+#define SCREEN_HIDE_CURSOR() ;
+#define SCREEN_SHOW_CURSOR() ;
+#endif
 
 // colors for each face of the cube
-color_t g_colors[6] = {'~', '.', '=', '@', '%', '|'};
+static color_t g_colors[6] = {'~', '.', '=', '@', '%', '|'};
 
 // rows, columns and aspect ratio of the terminal
 int g_rows;
@@ -27,9 +60,9 @@ int g_min_rows;
 int g_max_rows;
 int g_min_cols;
 int g_max_cols;
-// columns over rows for the terminal 
+// columns over rows for the terminal
 static float g_cols_over_rows;
-// screen resolution (pixels over pixels) 
+// screen resolution (pixels over pixels)
 static float g_screen_res;
 color_t* g_screen_buffer;
 int g_screen_buffer_size;
@@ -65,9 +98,10 @@ static bool draw__is_decimal(char* string) {
  *        `g_max_cols`
  */
 static void draw__get_screen_info() {
+#ifndef _WIN32
     FILE *fp;
     char path[512];
-    
+
     //// 1st way - ioctl call
     struct winsize wsize;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
@@ -100,6 +134,21 @@ static void draw__get_screen_info() {
     }
     //// 3rd way - assume a common resolution
     g_screen_res = 1920.0/1080.0;
+#else
+    // get terminal info on Windows - credits @quantum:
+    // https://stackoverflow.com/a/12642749
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi);
+    g_cols = csbi.srWindow.Right - csbi.srWindow.Left + 1;
+    g_rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+    g_cols_over_rows = (float)g_cols/g_rows;
+    g_min_rows = -g_rows;
+    g_max_rows = g_rows/2;
+    g_min_cols = -g_cols/2+1;
+    g_max_cols = g_cols/4;
+    //// assume a common resolution on Windows
+    g_screen_res = 1920.0/1080.0;
+#endif
 }
 
 
@@ -159,12 +208,12 @@ void draw_cube(cube_t* cube) {
  * z_hit are the z of the two intersections and z_rend is the closer one.
  *
  * The ray below intersects faces (p0, p1, p2, p3) and  (p4, p5, p6, p7)
- * 
- *                      O camera origin  
+ *
+ *                      O camera origin
  *                       \
  *                        \
  *                         V ray
- *                    p3    \            p2                      o cube's centre 
+ *                    p3    \            p2                      o cube's centre
  *                    +-------------------+                      + cube's vertices
  *                    | \     \           | \                    # ray-cube intersections
  *                    |    \   # z_rend   |    \                   (z_hit)
@@ -249,7 +298,7 @@ void draw_cube(cube_t* cube) {
             if (obj_ray_hits_rectangle(ray, p7, p6, p2, p3) && (z_hit > rendered_point.z)) {
                 rendered_color = g_colors[4];
                 rendered_point = (vec3i_t) {j, i, z_hit};
-            } 
+            }
             // through (p0, p4, p5);
             obj_plane_set(plane, p0, p4, p5);
             z_hit = obj_plane_z_at_xy(plane, j, i);
