@@ -40,9 +40,9 @@ static void clrscr() {
     DWORD dw_con_size = csbi.dwSize.X * csbi.dwSize.Y;
     FillConsoleOutputCharacter(g_cons_out, ' ', dw_con_size,
             top_left, &c_chars_written);
-    FillConsoleOutputAttribute(g_consOut, csbi.wAttributes,
+    FillConsoleOutputAttribute(g_cons_out, csbi.wAttributes,
             dw_con_size, top_left, &c_chars_written);
-    SetConsoleCursorPosition(g_consOut, top_left);
+    SetConsoleCursorPosition(g_cons_out, top_left);
 }
 #define SCREEN_CLEAR() clrscr()
 #define SCREEN_GOTO_TOPLEFT() gotoxy(0, 0)
