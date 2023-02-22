@@ -9,13 +9,40 @@
 #include <stdbool.h> // true/false 
 #include <string.h> // memset
 
+#ifndef _WIN32
 #define SIZE_INVALID 0
 // printf macros to manipulate the terminal
 #define SCREEN_CLEAR() printf("\033[H\033[J")
 #define SCREEN_GOTO_TOPLEFT() printf("\033[0;0H")
 #define SCREEN_HIDE_CURSOR() printf("\e[?25l")
 #define SCREEN_SHOW_CURSOR() printf("\e[?25h");
+#else
+// Credits to @Jerry Coffin: https://stackoverflow.com/a/2732327
+static void gotoxy(int x, int y) {
+    COORD pos = {x, y};
+    HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleCursorPosition(output, pos);
+}
 
+// Credits to @oogabooga:
+// https://cboard.cprogramming.com/c-programming/161186-undefined-reference.html
+static void clrscr() {
+    COORD top_left = {0, 0};
+    DWORD c_chars_written;
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(g_cons_out, &csbi);
+    DWORD dw_con_size = csbi.dwSize.X * csbi.dwSize.Y;
+    FillConsoleOutputCharacter(g_cons_out, ' ', dw_con_size,
+            top_left, &c_chars_written);
+    FillConsoleOutputAttribute(g_cons_out, csbi.wAttributes,
+            dw_con_size, top_left, &c_chars_written);
+    SetConsoleCursorPosition(g_cons_out, top_left);
+}
+#define SCREEN_CLEAR() clrscr()
+#define SCREEN_GOTO_TOPLEFT() gotoxy(0, 0)
+#define SCREEN_HIDE_CURSOR() ;
+#define SCREEN_SHOW_CURSOR() ;
+#endif
 
 // colors for each face of the cube
 color_t g_colors[6] = {'~', '.', '=', '@', '%', '|'};
