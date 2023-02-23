@@ -143,9 +143,9 @@ static void draw__get_screen_info() {
     g_rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
     g_cols_over_rows = (float)g_cols/g_rows;
     g_min_rows = -g_rows;
-    g_max_rows = g_rows/2;
+    g_max_rows = g_rows+1;
     g_min_cols = -g_cols/2+1;
-    g_max_cols = g_cols/4;
+    g_max_cols = g_cols/2;
     //// assume a common resolution on Windows
     g_screen_res = 1920.0/1080.0;
 #endif

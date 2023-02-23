@@ -103,9 +103,7 @@ int main(int argc, char** argv) {
             obj_cube_rotate(cube, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
         draw_cube(cube);
         draw_flush_screen();
-#ifndef _WIN32
         nanosleep((const struct timespec[]) {{0, (int)(1.0 / g_fps * 1e9)}}, NULL);
-#endif
     }
     obj_cube_free(cube);
     draw_end();
