@@ -1,6 +1,7 @@
 #include "vector.h"
 #include <stdbool.h>
 #include <stdlib.h>
+#include <math.h>
 
 // square root tolerance distance when comparing vectors 
 #define SQRT_TOL 1e-2
@@ -57,6 +58,47 @@ void vec_vec3_crossprod(vec3_t* dest, vec3_t* src1, vec3_t* src2) {
     dest->z = a->x*b->y - a->y*b->x;
 }
 
+void vec_vec3_rotate(vec3_t* src, float angle_x_rad, float angle_y_rad, float angle_z_rad) {
+    float a = angle_x_rad, b = angle_y_rad, c = angle_z_rad;
+    float ca = cos(a), cb = cos(b), cc = cos(c);
+    float sa = sin(a), sb = sin(b), sc = sin(c);
+    float matrix_rotx[3][3] = {
+        {1, 0,  0  },
+        {0, ca, -sa},
+        {0, sa, ca },
+    };
+    float matrix_roty[3][3] = {
+        {cb,  0, sb},
+        {0,   1, 0},
+        {-sb, 0, cb},
+    };
+    float matrix_rotz[3][3] = {
+        {cc, -sc, 0},
+        {sc, cc,  0},
+        {0,  0,   1},
+    };
+    // x, y, z store the previous coordinates as computed by the previous operation
+    int x = src->x;
+    int y = src->y;
+    int z = src->z;
+    src->x = round(matrix_rotx[0][0]*x + matrix_rotx[0][1]*y + matrix_rotx[0][2]*z);
+    src->y = round(matrix_rotx[1][0]*x + matrix_rotx[1][1]*y + matrix_rotx[1][2]*z);
+    src->z = round(matrix_rotx[2][0]*x + matrix_rotx[2][1]*y + matrix_rotx[2][2]*z);
+    // Ry
+    x = src->x;
+    y = src->y;
+    z = src->z;
+    src->x = round(matrix_roty[0][0]*x + matrix_roty[0][1]*y + matrix_roty[0][2]*z);
+    src->y = round(matrix_roty[1][0]*x + matrix_roty[1][1]*y + matrix_roty[1][2]*z);
+    src->z = round(matrix_roty[2][0]*x + matrix_roty[2][1]*y + matrix_roty[2][2]*z);
+    // Rz
+    x = src->x;
+    y = src->y;
+    z = src->z;
+    src->x = round(matrix_rotz[0][0]*x + matrix_rotz[0][1]*y + matrix_rotz[0][2]*z);
+    src->y = round(matrix_rotz[1][0]*x + matrix_rotz[1][1]*y + matrix_rotz[1][2]*z);
+    src->z = round(matrix_rotz[2][0]*x + matrix_rotz[2][1]*y + matrix_rotz[2][2]*z);
+}
 
 //-----------------------------------------------------------------------------------
 // Integral vectors
@@ -107,4 +149,46 @@ void vec_vec3i_crossprod(vec3i_t* dest, vec3i_t* src1, vec3i_t* src2) {
     dest->x =  a->y*b->z - a->z*b->y;
     dest->y = -a->x*b->z + a->z*b->x;
     dest->z =  a->x*b->y - a->y*b->x;
+}
+
+void vec_vec3i_rotate(vec3i_t* src, float angle_x_rad, float angle_y_rad, float angle_z_rad) {
+    float a = angle_x_rad, b = angle_y_rad, c = angle_z_rad;
+    float ca = cos(a), cb = cos(b), cc = cos(c);
+    float sa = sin(a), sb = sin(b), sc = sin(c);
+    float matrix_rotx[3][3] = {
+        {1, 0,  0  },
+        {0, ca, -sa},
+        {0, sa, ca },
+    };
+    float matrix_roty[3][3] = {
+        {cb,  0, sb},
+        {0,   1, 0},
+        {-sb, 0, cb},
+    };
+    float matrix_rotz[3][3] = {
+        {cc, -sc, 0},
+        {sc, cc,  0},
+        {0,  0,   1},
+    };
+    // x, y, z store the previous coordinates as computed by the previous operation
+    int x = src->x;
+    int y = src->y;
+    int z = src->z;
+    src->x = round(matrix_rotx[0][0]*x + matrix_rotx[0][1]*y + matrix_rotx[0][2]*z);
+    src->y = round(matrix_rotx[1][0]*x + matrix_rotx[1][1]*y + matrix_rotx[1][2]*z);
+    src->z = round(matrix_rotx[2][0]*x + matrix_rotx[2][1]*y + matrix_rotx[2][2]*z);
+    // Ry
+    x = src->x;
+    y = src->y;
+    z = src->z;
+    src->x = round(matrix_roty[0][0]*x + matrix_roty[0][1]*y + matrix_roty[0][2]*z);
+    src->y = round(matrix_roty[1][0]*x + matrix_roty[1][1]*y + matrix_roty[1][2]*z);
+    src->z = round(matrix_roty[2][0]*x + matrix_roty[2][1]*y + matrix_roty[2][2]*z);
+    // Rz
+    x = src->x;
+    y = src->y;
+    z = src->z;
+    src->x = round(matrix_rotz[0][0]*x + matrix_rotz[0][1]*y + matrix_rotz[0][2]*z);
+    src->y = round(matrix_rotz[1][0]*x + matrix_rotz[1][1]*y + matrix_rotz[1][2]*z);
+    src->z = round(matrix_rotz[2][0]*x + matrix_rotz[2][1]*y + matrix_rotz[2][2]*z);
 }

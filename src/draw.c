@@ -17,29 +17,27 @@
 #define SCREEN_HIDE_CURSOR() printf("\e[?25l")
 #define SCREEN_SHOW_CURSOR() printf("\e[?25h");
 #else
-// Credits to @Jerry Coffin: https://stackoverflow.com/a/2732327
-static void gotoxy(int x, int y) {
-    COORD pos = {x, y};
-    HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);
-    SetConsoleCursorPosition(output, pos);
-}
-
 // Credits to @oogabooga:
 // https://cboard.cprogramming.com/c-programming/161186-undefined-reference.html
-static void clrscr() {
-    COORD top_left = {0, 0};
-    DWORD c_chars_written;
-    CONSOLE_SCREEN_BUFFER_INFO csbi;
-    GetConsoleScreenBufferInfo(g_cons_out, &csbi);
-    DWORD dw_con_size = csbi.dwSize.X * csbi.dwSize.Y;
-    FillConsoleOutputCharacter(g_cons_out, ' ', dw_con_size,
-            top_left, &c_chars_written);
-    FillConsoleOutputAttribute(g_cons_out, csbi.wAttributes,
-            dw_con_size, top_left, &c_chars_written);
-    SetConsoleCursorPosition(g_cons_out, top_left);
-}
-#define SCREEN_CLEAR() clrscr()
-#define SCREEN_GOTO_TOPLEFT() gotoxy(0, 0)
+#define SCREEN_CLEAR() do { \
+    COORD top_left = {0, 0}; \
+    DWORD c_chars_written; \
+    CONSOLE_SCREEN_BUFFER_INFO csbi; \
+    GetConsoleScreenBufferInfo(g_cons_out, &csbi); \
+    DWORD dw_con_size = csbi.dwSize.X * csbi.dwSize.Y; \
+    FillConsoleOutputCharacter(g_cons_out, ' ', dw_con_size, \
+            top_left, &c_chars_written); \
+    FillConsoleOutputAttribute(g_cons_out, csbi.wAttributes, \
+            dw_con_size, top_left, &c_chars_written); \
+    SetConsoleCursorPosition(g_cons_out, top_left); \
+} while(0);
+// Credits to @Jerry Coffin: https://stackoverflow.com/a/2732327
+#define SCREEN_GOTO_TOPLEFT() do { \
+    COORD pos = {0, 0}; \
+    HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE); \
+    SetConsoleCursorPosition(output, pos); \
+} while(0);
+    
 #define SCREEN_HIDE_CURSOR() ;
 #define SCREEN_SHOW_CURSOR() ;
 #endif
@@ -223,8 +221,8 @@ void draw_cube(cube_t* cube) {
     ray_t* ray = obj_ray_new(0, 0, 0);
     // plane (cube's face) the ray will hit - initialised with some dummy values
     plane_t* plane = obj_plane_new(p0, p0, p0);
-    for (int i = g_min_rows; i <= g_max_rows; ++i) {
-        for (int j = g_min_cols; j <= g_max_cols; ++j) {
+    for (int r = g_min_rows; r <= g_max_rows; ++r) {
+        for (int c = g_min_cols; c <= g_max_cols; ++c) {
             // we test whether the ray has hit the following surafaces:
             // (p0, p1, p2, p3), (p0, p4, p7, p3)
             // (p4, p5, p6, p7), (p5, p1, p2, p6)
@@ -239,51 +237,51 @@ void draw_cube(cube_t* cube) {
             int z_hit;
             // through (p0, p1, p2)
             obj_plane_set(plane, p0, p1, p2);
-            z_hit = obj_plane_z_at_xy(plane, j, i);
-            obj_ray_send(ray, j, i, z_hit);
+            z_hit = obj_plane_z_at_xy(plane, r, c);
+            obj_ray_send(ray, r, c, z_hit);
             if (obj_ray_hits_rectangle(ray, p0, p1, p2, p3) && (z_hit > rendered_point.z)) {
                 rendered_color = g_colors[0];
-                rendered_point = (vec3i_t) {j, i, z_hit};
+                rendered_point = (vec3i_t) {r, c, z_hit};
             }
             // through (p0, p4, p7);
             obj_plane_set(plane, p0, p4, p7);
-            z_hit = obj_plane_z_at_xy(plane, j, i);
-            obj_ray_send(ray, j, i, z_hit);
+            z_hit = obj_plane_z_at_xy(plane, r, c);
+            obj_ray_send(ray, r, c, z_hit);
             if (obj_ray_hits_rectangle(ray, p0, p4, p7, p3) && (z_hit > rendered_point.z)) {
                 rendered_color = g_colors[1];
-                rendered_point = (vec3i_t) {j, i, z_hit};
+                rendered_point = (vec3i_t) {r, c, z_hit};
             }
             // through (p4, p5, p6);
             obj_plane_set(plane, p4, p5, p6);
-            z_hit = obj_plane_z_at_xy(plane, j, i);
-            obj_ray_send(ray, j, i, z_hit);
+            z_hit = obj_plane_z_at_xy(plane, r, c);
+            obj_ray_send(ray, r, c, z_hit);
             if (obj_ray_hits_rectangle(ray, p4, p5, p6, p7) && (z_hit > rendered_point.z)) {
                 rendered_color = g_colors[2];
-                rendered_point = (vec3i_t) {j, i, z_hit};
+                rendered_point = (vec3i_t) {r, c, z_hit};
             }
             // through (p5, p1, p2);
             obj_plane_set(plane, p5, p1, p2);
-            z_hit = obj_plane_z_at_xy(plane, j, i);
-            obj_ray_send(ray, j, i, z_hit);
+            z_hit = obj_plane_z_at_xy(plane, r, c);
+            obj_ray_send(ray, r, c, z_hit);
             if (obj_ray_hits_rectangle(ray, p5, p1, p2, p6) && (z_hit > rendered_point.z)) {
                 rendered_color = g_colors[3];
-                rendered_point = (vec3i_t) {j, i, z_hit};
+                rendered_point = (vec3i_t) {r, c, z_hit};
             }
             // through (p7, p6, p2);
             obj_plane_set(plane, p7, p6, p2);
-            z_hit = obj_plane_z_at_xy(plane, j, i);
-            obj_ray_send(ray, j, i, z_hit);
+            z_hit = obj_plane_z_at_xy(plane, r, c);
+            obj_ray_send(ray, r, c, z_hit);
             if (obj_ray_hits_rectangle(ray, p7, p6, p2, p3) && (z_hit > rendered_point.z)) {
                 rendered_color = g_colors[4];
-                rendered_point = (vec3i_t) {j, i, z_hit};
+                rendered_point = (vec3i_t) {r, c, z_hit};
             } 
             // through (p0, p4, p5);
             obj_plane_set(plane, p0, p4, p5);
-            z_hit = obj_plane_z_at_xy(plane, j, i);
-            obj_ray_send(ray, j, i, z_hit);
+            z_hit = obj_plane_z_at_xy(plane, r, c);
+            obj_ray_send(ray, r, c, z_hit);
             if (obj_ray_hits_rectangle(ray, p0, p4, p5, p1) && (z_hit > rendered_point.z)) {
                 rendered_color = g_colors[5];
-                rendered_point = (vec3i_t) {j, i, z_hit};
+                rendered_point = (vec3i_t) {r, c, z_hit};
             }
             draw_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
         } /* for columns */

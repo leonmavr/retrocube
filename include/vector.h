@@ -23,6 +23,7 @@ void     vec_vec3_sub           (vec3_t* dest, vec3_t* src1, vec3_t* src2);
 void     vec_vec3_mul_scalar    (vec3_t* dest, vec3_t* src, float scalar);
 float    vec_vec3_dotprod       (vec3_t* src1, vec3_t* src2);
 void     vec_vec3_crossprod     (vec3_t* dest, vec3_t* src1, vec3_t* src2);
+void     vec_vec3_rotate        (vec3_t* src, float angle_x_rad, float angle_y_rad, float angle_z_rad);
 // basic operations between integral vectors
 vec3i_t* vec_vec3i_new          (int x, int y, int z);
 void     vec_vec3i_copy         (vec3i_t* dest, vec3i_t* src);
@@ -32,5 +33,6 @@ void     vec_vec3i_sub          (vec3i_t* dest, vec3i_t* src1, vec3i_t* src2);
 void     vec_vec3i_mul_scalar   (vec3i_t* dest, vec3i_t* src, float scalar);
 int      vec_vec3i_dotprod      (vec3i_t* src1, vec3i_t* src2);
 void     vec_vec3i_crossprod    (vec3i_t* dest, vec3i_t* src1, vec3i_t* src2);
+void     vec_vec3i_rotate       (vec3i_t* src, float angle_x_rad, float angle_y_rad, float angle_z_rad);
 
 #endif /* VECTOR_H */

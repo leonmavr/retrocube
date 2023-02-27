@@ -87,24 +87,6 @@ void obj_cube_rotate (cube_t* cube, float angle_x_rad, float angle_y_rad, float 
     for (int i = 0; i < 8; ++i)
         vec_vec3i_copy(cube->vertices[i], cube->vertices_backup[i]);
 
-    float a = angle_x_rad, b = angle_y_rad, c = angle_z_rad;
-    float ca = cos(a), cb = cos(b), cc = cos(c);
-    float sa = sin(a), sb = sin(b), sc = sin(c);
-    float matrix_rotx[3][3] = {
-        {1, 0,  0  },
-        {0, ca, -sa},
-        {0, sa, ca },
-    };
-    float matrix_roty[3][3] = {
-        {cb,  0, sb},
-        {0,   1, 0},
-        {-sb, 0, cb},
-    };
-    float matrix_rotz[3][3] = {
-        {cc, -sc, 0},
-        {sc, cc,  0},
-        {0,  0,   1},
-    };
     for (int i = 0; i < 8; ++i) {
         // alias for each vertex
         vec3i_t* vertex = cube->vertices[i];
@@ -117,28 +99,8 @@ void obj_cube_rotate (cube_t* cube, float angle_x_rad, float angle_y_rad, float 
         vertex->x -= cube->center->x;
         vertex->y -= cube->center->y;
         vertex->z -= cube->center->z;
-        // Rx
-        // x, y, z store the previous coordinates as computed by the previous operation
-        int x = vertex->x;
-        int y = vertex->y;
-        int z = vertex->z;
-        vertex->x = round(matrix_rotx[0][0]*x + matrix_rotx[0][1]*y + matrix_rotx[0][2]*z);
-        vertex->y = round(matrix_rotx[1][0]*x + matrix_rotx[1][1]*y + matrix_rotx[1][2]*z);
-        vertex->z = round(matrix_rotx[2][0]*x + matrix_rotx[2][1]*y + matrix_rotx[2][2]*z);
-        // Ry
-        x = vertex->x;
-        y = vertex->y;
-        z = vertex->z;
-        vertex->x = round(matrix_roty[0][0]*x + matrix_roty[0][1]*y + matrix_roty[0][2]*z);
-        vertex->y = round(matrix_roty[1][0]*x + matrix_roty[1][1]*y + matrix_roty[1][2]*z);
-        vertex->z = round(matrix_roty[2][0]*x + matrix_roty[2][1]*y + matrix_roty[2][2]*z);
-        // Rz
-        x = vertex->x;
-        y = vertex->y;
-        z = vertex->z;
-        vertex->x = round(matrix_rotz[0][0]*x + matrix_rotz[0][1]*y + matrix_rotz[0][2]*z);
-        vertex->y = round(matrix_rotz[1][0]*x + matrix_rotz[1][1]*y + matrix_rotz[1][2]*z);
-        vertex->z = round(matrix_rotz[2][0]*x + matrix_rotz[2][1]*y + matrix_rotz[2][2]*z);
+        // rotate around x axis, then y, then z
+        vec_vec3i_rotate(vertex, angle_x_rad, angle_y_rad, angle_z_rad);
         // +(cx, cy, cz)
         vertex->x += cube->center->x;
         vertex->y += cube->center->y;
