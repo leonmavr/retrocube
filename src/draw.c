@@ -17,7 +17,7 @@
 #define SCREEN_CLEAR() printf("\033[H\033[J")
 #define SCREEN_GOTO_TOPLEFT() printf("\033[0;0H")
 #define SCREEN_HIDE_CURSOR() printf("\e[?25l")
-#define SCREEN_SHOW_CURSOR() printf("\e[?25h");
+#define SCREEN_SHOW_CURSOR() printf("\e[?25h")
 #else
 //----------------------------------------------------------------------------------
 // Windows terminal manipulation macros
@@ -35,13 +35,13 @@
     FillConsoleOutputAttribute(g_cons_out, csbi.wAttributes, \
             dw_con_size, top_left, &c_chars_written); \
     SetConsoleCursorPosition(g_cons_out, top_left); \
-} while(0);
+} while(0)
 // Credits to @Jerry Coffin: https://stackoverflow.com/a/2732327
 #define SCREEN_GOTO_TOPLEFT() do { \
     COORD pos = {0, 0}; \
     HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE); \
     SetConsoleCursorPosition(output, pos); \
-} while(0);
+} while(0)
 #define SCREEN_HIDE_CURSOR() ;
 #define SCREEN_SHOW_CURSOR() ;
 #endif
