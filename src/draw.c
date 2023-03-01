@@ -1,22 +1,27 @@
 #include "vector.h"
-#include "draw.h" // g_colors
+#include "draw.h"
 #include "objects.h"
 #include <sys/ioctl.h>
 #include <stdio.h>
 #include <limits.h> // INT_MIN
-#include <unistd.h>
+#include <unistd.h> // STDOUT_FILENO
 #include <stdlib.h> // exit
 #include <stdbool.h> // true/false 
 #include <string.h> // memset
 
 #ifndef _WIN32
-#define SIZE_INVALID 0
-// printf macros to manipulate the terminal
+#define IOCTL_SIZE_INVALID 0
+//----------------------------------------------------------------------------------
+// Linux POSIX terminal manipulation macros
+//----------------------------------------------------------------------------------
 #define SCREEN_CLEAR() printf("\033[H\033[J")
 #define SCREEN_GOTO_TOPLEFT() printf("\033[0;0H")
 #define SCREEN_HIDE_CURSOR() printf("\e[?25l")
-#define SCREEN_SHOW_CURSOR() printf("\e[?25h");
+#define SCREEN_SHOW_CURSOR() printf("\e[?25h")
 #else
+//----------------------------------------------------------------------------------
+// Windows terminal manipulation macros
+//----------------------------------------------------------------------------------
 // Credits to @oogabooga:
 // https://cboard.cprogramming.com/c-programming/161186-undefined-reference.html
 #define SCREEN_CLEAR() do { \
@@ -30,20 +35,17 @@
     FillConsoleOutputAttribute(g_cons_out, csbi.wAttributes, \
             dw_con_size, top_left, &c_chars_written); \
     SetConsoleCursorPosition(g_cons_out, top_left); \
-} while(0);
+} while(0)
 // Credits to @Jerry Coffin: https://stackoverflow.com/a/2732327
 #define SCREEN_GOTO_TOPLEFT() do { \
     COORD pos = {0, 0}; \
     HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE); \
     SetConsoleCursorPosition(output, pos); \
-} while(0);
-    
+} while(0)
 #define SCREEN_HIDE_CURSOR() ;
 #define SCREEN_SHOW_CURSOR() ;
 #endif
-
-// colors for each face of the cube
-color_t g_colors[6] = {'~', '.', '=', '@', '%', '|'};
+//----------------------------------------------------------------------------------
 
 // rows, columns and aspect ratio of the terminal
 int g_rows;
@@ -103,7 +105,7 @@ static void draw__get_screen_info() {
     g_max_rows = g_rows+1;
     g_min_cols = -g_cols/2+1;
     g_max_cols = g_cols/2;
-    if ((wsize.ws_xpixel != SIZE_INVALID) && (wsize.ws_ypixel != SIZE_INVALID)) {
+    if ((wsize.ws_xpixel != IOCTL_SIZE_INVALID) && (wsize.ws_ypixel != IOCTL_SIZE_INVALID)) {
         g_screen_res = (float)wsize.ws_xpixel/wsize.ws_ypixel;
         return;
     }
@@ -181,7 +183,7 @@ void draw_cube(cube_t* cube) {
  * For each screen coordinate, there can zero to two intersections with the cube.
  * If there is one, render the (x, y) of the intersection (not the x,y of the screen!).
  * If there are two, render the (x, y) of the closer intersection. In the figure below,
- * z_hit are the z of the two intersections and z_rend is the closer one.
+ * z_hit are the z of the two intersections and z_rend is the furthest one.
  *
  * The ray below intersects faces (p0, p1, p2, p3) and  (p4, p5, p6, p7)
  * 
@@ -192,7 +194,7 @@ void draw_cube(cube_t* cube) {
  *                    p3    \            p2                      o cube's centre 
  *                    +-------------------+                      + cube's vertices
  *                    | \     \           | \                    # ray-cube intersections
- *                    |    \   # z_rend   |    \                   (z_hit)
+ *                    |    \   #          |    \                   (z_hit)
  *                    |      \  p7        |       \
  *                    |         +-------------------+ p6         ^ y
  *                    |         | \       .         |            |
@@ -202,14 +204,14 @@ void draw_cube(cube_t* cube) {
  *                    |         |     \   .         |              \
  *                 p0 +---------|......\..+ p1      |               V z
  *                     \        |       \    .      |
- *                       \      |        #     .    |
+ *                       \      | z_rend #     .    |
  *                          \   |         \      .  |
  *                             \+----------\--------+
  *                              p4          \        p5
  *                                           \
  *                                            V
  */
-    // aliases for cube's vertices
+    //// initialisations
     vec3i_t* p0 = cube->vertices[0];
     vec3i_t* p1 = cube->vertices[1];
     vec3i_t* p2 = cube->vertices[2];
@@ -218,70 +220,36 @@ void draw_cube(cube_t* cube) {
     vec3i_t* p5 = cube->vertices[5];
     vec3i_t* p6 = cube->vertices[6];
     vec3i_t* p7 = cube->vertices[7];
+    // each quad of points p0 to p5 represents a cube's face
+    vec3i_t* surfaces[6][4] = {
+        {p0, p1, p2, p3},
+        {p0, p4, p7, p3},
+        {p4, p5, p6, p7},
+        {p5, p1, p2, p6},
+        {p7, p6, p2, p3},
+        {p0, p4, p5, p1}
+    };
     ray_t* ray = obj_ray_new(0, 0, 0);
     // plane (cube's face) the ray will hit - initialised with some dummy values
     plane_t* plane = obj_plane_new(p0, p0, p0);
+    const color_t background = ' ';
+    //// main processing
     for (int r = g_min_rows; r <= g_max_rows; ++r) {
         for (int c = g_min_cols; c <= g_max_cols; ++c) {
-            // we test whether the ray has hit the following surafaces:
-            // (p0, p1, p2, p3), (p0, p4, p7, p3)
-            // (p4, p5, p6, p7), (p5, p1, p2, p6)
-            // (p7, p6, p2, p3), (p0, p4, p5, p1)
-
-            // the final pixel to render
-            // we keep the z to find the furthest one from the origin and we draw its x and y
+            // the final pixel and color to render
             vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MIN};
-            // the color of the rendered pixel
-            color_t rendered_color = ' ';
-            // which z the ray currently hits the plane - can be up to two hits
-            int z_hit;
-            // through (p0, p1, p2)
-            obj_plane_set(plane, p0, p1, p2);
-            z_hit = obj_plane_z_at_xy(plane, r, c);
-            obj_ray_send(ray, r, c, z_hit);
-            if (obj_ray_hits_rectangle(ray, p0, p1, p2, p3) && (z_hit > rendered_point.z)) {
-                rendered_color = g_colors[0];
-                rendered_point = (vec3i_t) {r, c, z_hit};
-            }
-            // through (p0, p4, p7);
-            obj_plane_set(plane, p0, p4, p7);
-            z_hit = obj_plane_z_at_xy(plane, r, c);
-            obj_ray_send(ray, r, c, z_hit);
-            if (obj_ray_hits_rectangle(ray, p0, p4, p7, p3) && (z_hit > rendered_point.z)) {
-                rendered_color = g_colors[1];
-                rendered_point = (vec3i_t) {r, c, z_hit};
-            }
-            // through (p4, p5, p6);
-            obj_plane_set(plane, p4, p5, p6);
-            z_hit = obj_plane_z_at_xy(plane, r, c);
-            obj_ray_send(ray, r, c, z_hit);
-            if (obj_ray_hits_rectangle(ray, p4, p5, p6, p7) && (z_hit > rendered_point.z)) {
-                rendered_color = g_colors[2];
-                rendered_point = (vec3i_t) {r, c, z_hit};
-            }
-            // through (p5, p1, p2);
-            obj_plane_set(plane, p5, p1, p2);
-            z_hit = obj_plane_z_at_xy(plane, r, c);
-            obj_ray_send(ray, r, c, z_hit);
-            if (obj_ray_hits_rectangle(ray, p5, p1, p2, p6) && (z_hit > rendered_point.z)) {
-                rendered_color = g_colors[3];
-                rendered_point = (vec3i_t) {r, c, z_hit};
-            }
-            // through (p7, p6, p2);
-            obj_plane_set(plane, p7, p6, p2);
-            z_hit = obj_plane_z_at_xy(plane, r, c);
-            obj_ray_send(ray, r, c, z_hit);
-            if (obj_ray_hits_rectangle(ray, p7, p6, p2, p3) && (z_hit > rendered_point.z)) {
-                rendered_color = g_colors[4];
-                rendered_point = (vec3i_t) {r, c, z_hit};
-            } 
-            // through (p0, p4, p5);
-            obj_plane_set(plane, p0, p4, p5);
-            z_hit = obj_plane_z_at_xy(plane, r, c);
-            obj_ray_send(ray, r, c, z_hit);
-            if (obj_ray_hits_rectangle(ray, p0, p4, p5, p1) && (z_hit > rendered_point.z)) {
-                rendered_color = g_colors[5];
-                rendered_point = (vec3i_t) {r, c, z_hit};
+            color_t rendered_color = background;
+            for (size_t isurf = 0; isurf < 6; ++isurf) {
+                obj_plane_set(plane, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]);
+                // we keep the z to find the furthest one from the origin and we draw its x and y
+                // which z the ray currently hits the plane - can be up to two hits
+                int z_hit = obj_plane_z_at_xy(plane, r, c);
+                obj_ray_send(ray, r, c, z_hit);
+                if (obj_ray_hits_rectangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2], surfaces[isurf][3]) &&
+                (z_hit > rendered_point.z)) {
+                    rendered_color = cube->colors[isurf];
+                    rendered_point = (vec3i_t) {r, c, z_hit};
+                }
             }
             draw_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
         } /* for columns */

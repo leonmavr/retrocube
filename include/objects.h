@@ -2,7 +2,8 @@
 #define OBJECTS_H 
 
 #include "vector.h"
-#include <stdbool.h>
+#include <stdbool.h> // true/false
+#include <math.h> // round
 
 typedef char color_t;
 
@@ -10,6 +11,7 @@ typedef struct cube {
     vec3i_t** vertices;
     vec3i_t** vertices_backup;
     vec3i_t* center;
+    color_t colors[6];
 } cube_t;
 
 typedef struct ray {
@@ -92,8 +94,13 @@ plane_t*    obj_plane_new              (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
 vec3i_t     obj_ray_plane_intersection (plane_t* plane, ray_t* ray);
 bool        obj_ray_hits_rectangle     (ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3);
 /* find the z-coordinate on a plane give x and y */
-extern inline int
-            obj_plane_z_at_xy          (plane_t* plane, int x, int y);
+static inline int
+            obj_plane_z_at_xy          (plane_t* plane, int x, int y) {
+    // solve for z in plane's eq/n: n.x*x + n.y*y + n.z*z + offset = 0
+    vec3i_t coeffs = (vec3i_t) {plane->normal->x, plane->normal->y, plane->offset};
+    vec3i_t xyz = (vec3i_t) {x, y, 1};
+    return round(1.0/plane->normal->z*(-vec_vec3i_dotprod(&coeffs, &xyz)));
+}
 /* recompute plane's normal and offset given 3 points */
 void        obj_plane_set              (plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
 void        obj_plane_free             (plane_t* plane);

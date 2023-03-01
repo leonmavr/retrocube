@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h> // strcpy
 
 #define SQRT_TWO 1.414213
 #define HALF_SQRT_TWO 0.7071065 
@@ -79,6 +80,8 @@ cube_t* obj_cube_new(int cx, int cy, int cz, int side) {
         new->vertices_backup[5] = vec_vec3i_new(cx+diag, cy-diag, cz+diag);
         new->vertices_backup[6] = vec_vec3i_new(cx+diag, cy+diag, cz+diag);
         new->vertices_backup[7] = vec_vec3i_new(cx-diag, cy+diag, cz+diag);
+        // colors for each of the 6 faces - change the hardcoded string below to modify them
+        strcpy(new->colors, "~.=@%|");
         return new;
 }
 
@@ -238,14 +241,6 @@ bool obj_ray_hits_rectangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, v
     obj_plane_free(plane);
     return ret;
 }
-
-extern inline int obj_plane_z_at_xy (plane_t* plane, int x, int y) {
-    // solve for z in plane's eq/n: n.x*x + n.y*y + n.z*z + offset = 0
-    vec3i_t coeffs = (vec3i_t) {plane->normal->x, plane->normal->y, plane->offset};
-    vec3i_t xyz = (vec3i_t) {x, y, 1};
-    return round(1.0/plane->normal->z*(-vec_vec3i_dotprod(&coeffs, &xyz)));
-}
-
 
 void obj_plane_set(plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
     // reset plane's normal and offset like obj_plane_new function computes them
