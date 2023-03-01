@@ -91,23 +91,12 @@ void obj_cube_rotate (cube_t* cube, float angle_x_rad, float angle_y_rad, float 
         vec_vec3i_copy(cube->vertices[i], cube->vertices_backup[i]);
 
     for (int i = 0; i < 8; ++i) {
-        // alias for each vertex
-        vec3i_t* vertex = cube->vertices[i];
-        // We rotate as follows (* denotes matrix product, C the cube's origin):
-        // v = v - C 
-        // v = Rz*Ry*Rx*v
-        // v = v + C
-
-        // -(cx, cy, cz)
-        vertex->x -= cube->center->x;
-        vertex->y -= cube->center->y;
-        vertex->z -= cube->center->z;
+        // point to rotate about
+        int x0 = cube->center->x, y0 = cube->center->y, z0 = cube->center->z;
         // rotate around x axis, then y, then z
-        vec_vec3i_rotate(vertex, angle_x_rad, angle_y_rad, angle_z_rad);
-        // +(cx, cy, cz)
-        vertex->x += cube->center->x;
-        vertex->y += cube->center->y;
-        vertex->z += cube->center->z;
+        // We rotate as follows (* denotes matrix product, C the cube's origin):
+        // v = v - C, v = Rz*Ry*Rx*v, v = v + C
+        vec_vec3i_rotate(cube->vertices[i], angle_x_rad, angle_y_rad, angle_z_rad, x0, y0, z0);
     }
 }
 

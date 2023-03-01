@@ -58,7 +58,13 @@ void vec_vec3_crossprod(vec3_t* dest, vec3_t* src1, vec3_t* src2) {
     dest->z = a->x*b->y - a->y*b->x;
 }
 
-void vec_vec3_rotate(vec3_t* src, float angle_x_rad, float angle_y_rad, float angle_z_rad) {
+void vec_vec3_rotate(vec3_t* src, float angle_x_rad, float angle_y_rad, float angle_z_rad, int x0, int y0, int z0) {
+    // -(x0, y0, z0)
+    // bring to zero so we can do the rotation
+    src->x -= x0;
+    src->y -= y0;
+    src->z -= z0;
+
     float a = angle_x_rad, b = angle_y_rad, c = angle_z_rad;
     float ca = cos(a), cb = cos(b), cc = cos(c);
     float sa = sin(a), sb = sin(b), sc = sin(c);
@@ -77,6 +83,7 @@ void vec_vec3_rotate(vec3_t* src, float angle_x_rad, float angle_y_rad, float an
         {sc, cc,  0},
         {0,  0,   1},
     };
+    //
     // x, y, z store the previous coordinates as computed by the previous operation
     int x = src->x;
     int y = src->y;
@@ -98,6 +105,12 @@ void vec_vec3_rotate(vec3_t* src, float angle_x_rad, float angle_y_rad, float an
     src->x = round(matrix_rotz[0][0]*x + matrix_rotz[0][1]*y + matrix_rotz[0][2]*z);
     src->y = round(matrix_rotz[1][0]*x + matrix_rotz[1][1]*y + matrix_rotz[1][2]*z);
     src->z = round(matrix_rotz[2][0]*x + matrix_rotz[2][1]*y + matrix_rotz[2][2]*z);
+
+    // +(x0, y0, z0)
+    // reset original offset 
+    src->x += x0;
+    src->y += y0;
+    src->z += z0;
 }
 
 //-----------------------------------------------------------------------------------
@@ -151,21 +164,27 @@ void vec_vec3i_crossprod(vec3i_t* dest, vec3i_t* src1, vec3i_t* src2) {
     dest->z =  a->x*b->y - a->y*b->x;
 }
 
-void vec_vec3i_rotate(vec3i_t* src, float angle_x_rad, float angle_y_rad, float angle_z_rad) {
-    float a = angle_x_rad, b = angle_y_rad, c = angle_z_rad;
-    float ca = cos(a), cb = cos(b), cc = cos(c);
-    float sa = sin(a), sb = sin(b), sc = sin(c);
-    float matrix_rotx[3][3] = {
+void vec_vec3i_rotate(vec3i_t* src, float angle_x_rad, float angle_y_rad, float angle_z_rad, int x0, int y0, int z0) {
+    // -(x0, y0, z0)
+    // bring it to zero so we can do the rotation
+    src->x -= x0;
+    src->y -= y0;
+    src->z -= z0;
+
+    const float a = angle_x_rad, b = angle_y_rad, c = angle_z_rad;
+    const float ca = cos(a), cb = cos(b), cc = cos(c);
+    const float sa = sin(a), sb = sin(b), sc = sin(c);
+    const float matrix_rotx[3][3] = {
         {1, 0,  0  },
         {0, ca, -sa},
         {0, sa, ca },
     };
-    float matrix_roty[3][3] = {
+    const float matrix_roty[3][3] = {
         {cb,  0, sb},
         {0,   1, 0},
         {-sb, 0, cb},
     };
-    float matrix_rotz[3][3] = {
+    const float matrix_rotz[3][3] = {
         {cc, -sc, 0},
         {sc, cc,  0},
         {0,  0,   1},
@@ -191,4 +210,10 @@ void vec_vec3i_rotate(vec3i_t* src, float angle_x_rad, float angle_y_rad, float 
     src->x = round(matrix_rotz[0][0]*x + matrix_rotz[0][1]*y + matrix_rotz[0][2]*z);
     src->y = round(matrix_rotz[1][0]*x + matrix_rotz[1][1]*y + matrix_rotz[1][2]*z);
     src->z = round(matrix_rotz[2][0]*x + matrix_rotz[2][1]*y + matrix_rotz[2][2]*z);
+
+    // +(x0, y0, z0)
+    // reset original offset 
+    src->x += x0;
+    src->y += y0;
+    src->z += z0;
 }
