@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h> // strcpy
 
 #define SQRT_TWO 1.414213
 #define HALF_SQRT_TWO 0.7071065 
@@ -79,6 +80,8 @@ cube_t* obj_cube_new(int cx, int cy, int cz, int side) {
         new->vertices_backup[5] = vec_vec3i_new(cx+diag, cy-diag, cz+diag);
         new->vertices_backup[6] = vec_vec3i_new(cx+diag, cy+diag, cz+diag);
         new->vertices_backup[7] = vec_vec3i_new(cx-diag, cy+diag, cz+diag);
+        // colors for each of the 6 faces - change the hardcoded string below to modify them
+        strcpy(new->colors, "~.=@%|");
         return new;
 }
 

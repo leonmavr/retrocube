@@ -1,10 +1,10 @@
 #include "vector.h"
-#include "draw.h" // g_colors
+#include "draw.h"
 #include "objects.h"
 #include <sys/ioctl.h>
 #include <stdio.h>
 #include <limits.h> // INT_MIN
-#include <unistd.h>
+#include <unistd.h> // STDOUT_FILENO
 #include <stdlib.h> // exit
 #include <stdbool.h> // true/false 
 #include <string.h> // memset
@@ -46,9 +46,6 @@
 #define SCREEN_SHOW_CURSOR() ;
 #endif
 //----------------------------------------------------------------------------------
-
-// colors for each face of the cube
-color_t g_colors[6] = {'~', '.', '=', '@', '%', '|'};
 
 // rows, columns and aspect ratio of the terminal
 int g_rows;
@@ -186,7 +183,7 @@ void draw_cube(cube_t* cube) {
  * For each screen coordinate, there can zero to two intersections with the cube.
  * If there is one, render the (x, y) of the intersection (not the x,y of the screen!).
  * If there are two, render the (x, y) of the closer intersection. In the figure below,
- * z_hit are the z of the two intersections and z_rend is the closer one.
+ * z_hit are the z of the two intersections and z_rend is the furthest one.
  *
  * The ray below intersects faces (p0, p1, p2, p3) and  (p4, p5, p6, p7)
  * 
@@ -197,7 +194,7 @@ void draw_cube(cube_t* cube) {
  *                    p3    \            p2                      o cube's centre 
  *                    +-------------------+                      + cube's vertices
  *                    | \     \           | \                    # ray-cube intersections
- *                    |    \   # z_rend   |    \                   (z_hit)
+ *                    |    \   #          |    \                   (z_hit)
  *                    |      \  p7        |       \
  *                    |         +-------------------+ p6         ^ y
  *                    |         | \       .         |            |
@@ -207,7 +204,7 @@ void draw_cube(cube_t* cube) {
  *                    |         |     \   .         |              \
  *                 p0 +---------|......\..+ p1      |               V z
  *                     \        |       \    .      |
- *                       \      |        #     .    |
+ *                       \      | z_rend #     .    |
  *                          \   |         \      .  |
  *                             \+----------\--------+
  *                              p4          \        p5
@@ -239,18 +236,18 @@ void draw_cube(cube_t* cube) {
     //// main processing
     for (int r = g_min_rows; r <= g_max_rows; ++r) {
         for (int c = g_min_cols; c <= g_max_cols; ++c) {
-            // the final pixel to render
-            // we keep the z to find the furthest one from the origin and we draw its x and y
+            // the final pixel and color to render
             vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MIN};
             color_t rendered_color = background;
-            // which z the ray currently hits the plane - can be up to two hits
             for (size_t isurf = 0; isurf < 6; ++isurf) {
                 obj_plane_set(plane, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]);
+                // we keep the z to find the furthest one from the origin and we draw its x and y
+                // which z the ray currently hits the plane - can be up to two hits
                 int z_hit = obj_plane_z_at_xy(plane, r, c);
                 obj_ray_send(ray, r, c, z_hit);
                 if (obj_ray_hits_rectangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2], surfaces[isurf][3]) &&
                 (z_hit > rendered_point.z)) {
-                    rendered_color = g_colors[isurf];
+                    rendered_color = cube->colors[isurf];
                     rendered_point = (vec3i_t) {r, c, z_hit};
                 }
             }
