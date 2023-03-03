@@ -45,6 +45,7 @@ int main(int argc, char** argv) {
     const float random_bias_x = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
     const float random_bias_y = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
     const float random_bias_z = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
+    // TODO: width and height cmd args
     // parse command line arguments - if followed by an argument, e.g. -sx 0.9, increment `i`
     while (++i < argc) {
         if ((strcmp(argv[i], "--speedx") == 0) || (strcmp(argv[i], "-sx") == 0)) {
@@ -80,7 +81,7 @@ int main(int argc, char** argv) {
     signal(SIGINT, interrupt_handler);
 
     draw_init();
-    shape_t* cube = obj_cube_new(g_cx, g_cy, g_cz, g_cube_size, g_cube_size, OBJ_CUBE);
+    shape_t* cube = obj_cube_new(g_cx, g_cy, g_cz, g_cube_size, 1.5*g_cube_size, OBJ_RHOMBUS);
     // spinning parameters in case random rotation was selected
 #ifndef _WIN32
     const float random_rot_speed_x = 0.002, random_rot_speed_y = 0.002, random_rot_speed_z = 0.002;

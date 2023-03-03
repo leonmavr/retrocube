@@ -92,9 +92,6 @@ static bool draw__is_decimal(char* string) {
  *        `g_max_cols`
  */
 static void draw__get_screen_info() {
-    FILE *fp;
-    char path[512];
-    
     //// 1st way - ioctl call
     struct winsize wsize;
     ioctl(STDOUT_FILENO, TIOCGWINSZ, &wsize);
@@ -112,15 +109,17 @@ static void draw__get_screen_info() {
 
     //// 2nd way - xrandr command
     // Open the command for reading
+    FILE *fp;
+    char line[512];
     fp = popen("echo `xrandr --current | grep \'*\' | uniq | awk \'{print $1}\' | cut -d \'x\' -f1` / `xrandr --current | grep \'*\' | uniq | awk \'{print $1}\' | cut -d \'x\' -f2` | bc -l", "r");
     if (fp == NULL) {
         printf("Failed to run command\n" );
         exit(1);
     }
     // parse the output - it should only be the resolution
-    while (fgets(path, sizeof(path), fp) != NULL) {
-        if (draw__is_decimal(path)) {
-            g_screen_res = atof(path);
+    while (fgets(line, sizeof(line), fp) != NULL) {
+        if (draw__is_decimal(line)) {
+            g_screen_res = atof(line);
             pclose(fp);
             return;
         }
@@ -211,49 +210,99 @@ void draw_cube(shape_t* cube) {
  *                                           \
  *                                            V
  */
-    //// initialisations
-    vec3i_t* p0 = cube->vertices[0];
-    vec3i_t* p1 = cube->vertices[1];
-    vec3i_t* p2 = cube->vertices[2];
-    vec3i_t* p3 = cube->vertices[3];
-    vec3i_t* p4 = cube->vertices[4];
-    vec3i_t* p5 = cube->vertices[5];
-    vec3i_t* p6 = cube->vertices[6];
-    vec3i_t* p7 = cube->vertices[7];
-    // each quad of points p0 to p5 represents a cube's face
-    vec3i_t* surfaces[6][4] = {
-        {p0, p1, p2, p3},
-        {p0, p4, p7, p3},
-        {p4, p5, p6, p7},
-        {p5, p1, p2, p6},
-        {p7, p6, p2, p3},
-        {p0, p4, p5, p1}
-    };
-    ray_t* ray = obj_ray_new(0, 0, 0);
-    // plane (cube's face) the ray will hit - initialised with some dummy values
-    plane_t* plane = obj_plane_new(p0, p0, p0);
+    ray_t* ray;
+    plane_t* plane;
     const color_t background = ' ';
-    //// main processing
-    for (int r = g_min_rows; r <= g_max_rows; ++r) {
-        for (int c = g_min_cols; c <= g_max_cols; ++c) {
-            // the final pixel and color to render
-            vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MIN};
-            color_t rendered_color = background;
-            for (size_t isurf = 0; isurf < 6; ++isurf) {
-                obj_plane_set(plane, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]);
-                // we keep the z to find the furthest one from the origin and we draw its x and y
-                // which z the ray currently hits the plane - can be up to two hits
-                int z_hit = obj_plane_z_at_xy(plane, r, c);
-                obj_ray_send(ray, r, c, z_hit);
-                if (obj_ray_hits_rectangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2], surfaces[isurf][3]) &&
-                (z_hit > rendered_point.z)) {
-                    rendered_color = cube->colors[isurf];
-                    rendered_point = (vec3i_t) {r, c, z_hit};
+    if (cube->type == OBJ_CUBE) {
+        //// initialisations
+        vec3i_t* p0 = cube->vertices[0];
+        vec3i_t* p1 = cube->vertices[1];
+        vec3i_t* p2 = cube->vertices[2];
+        vec3i_t* p3 = cube->vertices[3];
+        vec3i_t* p4 = cube->vertices[4];
+        vec3i_t* p5 = cube->vertices[5];
+        vec3i_t* p6 = cube->vertices[6];
+        vec3i_t* p7 = cube->vertices[7];
+        // each quad of points p0 to p5 represents a cube's face
+        vec3i_t* surfaces[6][4] = {
+            {p0, p1, p2, p3},
+            {p0, p4, p7, p3},
+            {p4, p5, p6, p7},
+            {p5, p1, p2, p6},
+            {p7, p6, p2, p3},
+            {p0, p4, p5, p1}
+        };
+        ray = obj_ray_new(0, 0, 0);
+        // plane (cube's face) the ray will hit - initialised with some dummy values
+        plane = obj_plane_new(p0, p0, p0);
+        //// main processing
+        for (int r = g_min_rows; r <= g_max_rows; ++r) {
+            for (int c = g_min_cols; c <= g_max_cols; ++c) {
+                // the final pixel and color to render
+                vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MIN};
+                color_t rendered_color = background;
+                for (size_t isurf = 0; isurf < 6; ++isurf) {
+                    obj_plane_set(plane, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]);
+                    // we keep the z to find the furthest one from the origin and we draw its x and y
+                    // which z the ray currently hits the plane - can be up to two hits
+                    int z_hit = obj_plane_z_at_xy(plane, r, c);
+                    obj_ray_send(ray, r, c, z_hit);
+                    if (obj_ray_hits_rectangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2], surfaces[isurf][3]) &&
+                    (z_hit > rendered_point.z)) {
+                        rendered_color = cube->colors[isurf];
+                        rendered_point = (vec3i_t) {r, c, z_hit};
+                    }
                 }
-            }
-            draw_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
-        } /* for columns */
-    } /* for rows */
+                draw_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
+            } /* for columns */
+        } /* for rows */
+    } else if (cube->type == OBJ_RHOMBUS) {
+        //// initialisations
+        vec3i_t* p0 = cube->vertices[0];
+        vec3i_t* p1 = cube->vertices[1];
+        vec3i_t* p2 = cube->vertices[2];
+        vec3i_t* p3 = cube->vertices[3];
+        vec3i_t* p4 = cube->vertices[4];
+        vec3i_t* p5 = cube->vertices[5];
+        // each quad of points p0 to p5 represents a cube's face
+        vec3i_t* surfaces[8][3] = {
+            {p3, p4, p0},
+            {p0, p4, p1},
+            {p4, p2, p1},
+            {p4, p2, p3},
+            {p3, p0, p5},
+            {p0, p1, p5},
+            {p1, p5, p2},
+            {p3, p2, p5}
+        };
+        ray = obj_ray_new(0, 0, 0);
+        // plane (cube's face) the ray will hit - initialised with some dummy values
+        plane = obj_plane_new(p0, p0, p0);
+        //// main processing
+        for (int r = g_min_rows; r <= g_max_rows; ++r) {
+            for (int c = g_min_cols; c <= g_max_cols; ++c) {
+                // the final pixel and color to render
+                vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MIN};
+                color_t rendered_color = background;
+                for (size_t isurf = 0; isurf < 6; ++isurf) {
+                    obj_plane_set(plane, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]);
+                    // we keep the z to find the furthest one from the origin and we draw its x and y
+                    // which z the ray currently hits the plane - can be up to two hits
+                    int z_hit = obj_plane_z_at_xy(plane, r, c);
+                    obj_ray_send(ray, r, c, z_hit);
+                    if (obj_ray_hits_triangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]) &&
+                    (z_hit > rendered_point.z)) {
+                        rendered_color = cube->colors[isurf];
+                        rendered_point = (vec3i_t) {r, c, z_hit};
+                    }
+                }
+                draw_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
+            } /* for columns */
+        } /* for rows */
+
+
+
+    }
     // free ray-tracing-related constructs
     obj_plane_free(plane);
     obj_ray_free(ray);

@@ -7,7 +7,8 @@
 
 #define SQRT_TWO 1.414213
 #define HALF_SQRT_TWO 0.7071065 
-
+// the golden ratio
+#define PHI 1.6180
 
 // the min below is generic and avoids double evaluation by redefining `a`, `b`
 #define MIN(a, b) (          \
@@ -19,14 +20,14 @@
 )
 
 // perpendicular 2D vector, i.e. rotated by 90 degrees ccw
-#define VEC_PERP(src) (          \
-{                                \
-    __typeof__ (src) _ret;       \
-    _ret.x = -src.y;             \
-    _ret.y = src.x;              \
-    _ret.z = 0;                  \
-    _ret;                        \
-}                                \
+#define VEC_PERP(src) (      \
+{                            \
+    __typeof__ (src) _ret;   \
+    _ret.x = -src.y;         \
+    _ret.y = src.x;          \
+    _ret.z = 0;              \
+    _ret;                    \
+}                            \
 )
 
 #define VEC_PERP_DOT_PROD(a, b) a.x*b.y - a.y*b.x
@@ -42,7 +43,6 @@ static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b,
     vec3i_t ma = {a->x - m->x, a->y - m->y, 0};
     vec3i_t mb = {b->x - m->x, b->y - m->y, 0};
     vec3i_t mc = {c->x - m->x, c->y - m->y, 0};
-#if 1
     return 
         // cw case
         (((VEC_PERP_DOT_PROD(ma, mb) < 0) &&
@@ -52,9 +52,6 @@ static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b,
         (( VEC_PERP_DOT_PROD(ma, mb) > 0) &&
         (  VEC_PERP_DOT_PROD(mb, mc) > 0) &&
         (  VEC_PERP_DOT_PROD(mc, ma) > 0)));
-#else
-    return true;
-#endif
 }
 
 static inline bool obj__is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d) {
@@ -107,8 +104,9 @@ shape_t* obj_cube_new(int cx, int cy, int cz, int width, int height, int type) {
  *                     p4                   p5
  */
     shape_t* new = malloc(sizeof(shape_t));
+    new->type = type;
+    new->center = vec_vec3i_new(cx, cy, cz);
     if (type == OBJ_CUBE) {
-        new->center = vec_vec3i_new(cx, cy, cz);
         new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
         new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
         int diag = round(HALF_SQRT_TWO * MIN(width, height)); 
@@ -120,17 +118,31 @@ shape_t* obj_cube_new(int cx, int cy, int cz, int width, int height, int type) {
         new->vertices[5] = vec_vec3i_new(cx+diag, cy-diag, cz+diag);
         new->vertices[6] = vec_vec3i_new(cx+diag, cy+diag, cz+diag);
         new->vertices[7] = vec_vec3i_new(cx-diag, cy+diag, cz+diag);
-        // back them up
+        // back them up so no floating point error is accumulated affter the rotations
         for (int i = 0; i < 8; ++i) {
             new->vertices_backup[i] = vec_vec3i_new(0, 0, 0);
             vec_vec3i_copy(new->vertices_backup[i], new->vertices[i]);
-
         }
-    } else {
-        // TODO: rhombus
-        new->center = vec_vec3i_new(cx, cy, cz);
+    } else if (type == OBJ_RHOMBUS) {
+        // TODO: rhombus schematic
         new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * 6);
         new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * 6);
+        const int hw = round(width/2.0);
+        new->vertices[0] = vec_vec3i_new(0,        0,                        hw);
+        new->vertices[1] = vec_vec3i_new(hw,  0,                         0);
+        new->vertices[2] = vec_vec3i_new(0,        0,                         -hw);
+        new->vertices[3] = vec_vec3i_new(-hw, 0,                         0);
+        new->vertices[4] = vec_vec3i_new(0,        round(PHI/(1+PHI)*height), 0);
+        new->vertices[5] = vec_vec3i_new(0,        round(1.0/(1+PHI)*height),   0);
+        // shift them to the origin 
+        vec3i_t origin = {cx, cy, cz};
+        for (int i = 0; i < 6; ++i)
+            vec_vec3i_add(new->vertices[i], new->vertices[i], new->center);
+        // back them up so no floating point error is accumulated affter the rotations
+        for (int i = 0; i < 6; ++i) {
+            new->vertices_backup[i] = vec_vec3i_new(0, 0, 0);
+            vec_vec3i_copy(new->vertices_backup[i], new->vertices[i]);
+        }
     }
     // colors for each of the maximum possible 16 faces - change the string below to modify them
     strncpy(new->colors, "~.=@%|O:TG?nS8*+", 16);
@@ -138,11 +150,11 @@ shape_t* obj_cube_new(int cx, int cy, int cz, int width, int height, int type) {
 }
 
 void obj_cube_rotate (shape_t* cube, float angle_x_rad, float angle_y_rad, float angle_z_rad) {
-    // first, reset the vertices so no floating point error is accumulated
-    for (int i = 0; i < 8; ++i)
+    const size_t n_corners = (cube->type == OBJ_CUBE) ? 8 : 6;
+    for (size_t i = 0; i < n_corners; ++i) {
+        // first, reset each vertex so no floating point error is accumulated
         vec_vec3i_copy(cube->vertices[i], cube->vertices_backup[i]);
 
-    for (int i = 0; i < 8; ++i) {
         // point to rotate about
         int x0 = cube->center->x, y0 = cube->center->y, z0 = cube->center->z;
         // rotate around x axis, then y, then z
@@ -154,8 +166,9 @@ void obj_cube_rotate (shape_t* cube, float angle_x_rad, float angle_y_rad, float
 
 
 void obj_cube_free(shape_t* cube) {
+    const size_t n_corners = (cube->type == OBJ_CUBE) ? 8 : 6;
     // free the data of the vertices first
-    for (int i = 0; i < 8; ++i) {
+    for (int i = 0; i < n_corners; ++i) {
         free(cube->vertices[i]);
         free(cube->vertices_backup[i]);
     }
@@ -285,14 +298,41 @@ bool obj_ray_hits_rectangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, v
     // find the intersection between the ray and the plane segment
     // defined by p0, p1, p2, p3 and if the intersection is whithin
     // that segment, return true
+    // TODO: dont malloc
     plane_t* plane = obj_plane_new(p0, p1, p2);
     vec3i_t ray_plane_intersection = obj_ray_plane_intersection(plane, ray);
     bool ret = false;
+#if 1
     if (obj__is_point_in_rect(&ray_plane_intersection, p0, p1, p2, p3))
         ret = true;;
+#else
+    if (obj__is_point_in_triangle(&ray_plane_intersection, p0, p1, p2))
+        ret = true;;
+#endif
     obj_plane_free(plane);
     return ret;
 }
+
+bool obj_ray_hits_triangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
+    // find the intersection between the ray and the plane segment
+    // defined by p0, p1, p2, p3 and if the intersection is whithin
+    // that segment, return true
+    // TODO: don't calloc
+    plane_t* plane = obj_plane_new(p0, p1, p2);
+    vec3i_t ray_plane_intersection = obj_ray_plane_intersection(plane, ray);
+    bool ret = false;
+#if 0
+    if (obj__is_point_in_rect(&ray_plane_intersection, p0, p1, p2, p3))
+        ret = true;;
+#else
+    if (obj__is_point_in_triangle(&ray_plane_intersection, p0, p1, p2))
+        ret = true;;
+#endif
+    obj_plane_free(plane);
+    return ret;
+}
+
+
 
 void obj_plane_set(plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
     // reset plane's normal and offset like obj_plane_new function computes them

@@ -103,6 +103,7 @@ void        obj_ray_free               (ray_t* ray);
 plane_t*    obj_plane_new              (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
 vec3i_t     obj_ray_plane_intersection (plane_t* plane, ray_t* ray);
 bool        obj_ray_hits_rectangle     (ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3);
+bool obj_ray_hits_triangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
 /* find the z-coordinate on a plane give x and y */
 static inline int
             obj_plane_z_at_xy          (plane_t* plane, int x, int y) {
