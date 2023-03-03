@@ -18,10 +18,43 @@
 }                            \
 )
 
+// perpendicular 2D vector, i.e. rotated by 90 degrees ccw
+#define VEC_PERP(src) (          \
+{                                \
+    __typeof__ (src) _ret;       \
+    _ret.x = -src.y;             \
+    _ret.y = src.x;              \
+    _ret.z = 0;                  \
+    _ret;                        \
+}                                \
+)
 
+#define VEC_PERP_DOT_PROD(a, b) a.x*b.y - a.y*b.x
+
+
+// Whether a point m is inside a triangle (a, b, c)
 static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c) {
-    // TODO
+/*
+ * TODO:
+ * schematic of why this works
+ */
+    // don't care about z components
+    vec3i_t ma = {a->x - m->x, a->y - m->y, 0};
+    vec3i_t mb = {b->x - m->x, b->y - m->y, 0};
+    vec3i_t mc = {c->x - m->x, c->y - m->y, 0};
+#if 1
+    return 
+        // cw case
+        (((VEC_PERP_DOT_PROD(ma, mb) < 0) &&
+        (  VEC_PERP_DOT_PROD(mb, mc) < 0) &&
+        (  VEC_PERP_DOT_PROD(mc, ma) < 0)) ||
+        // ccw case
+        (( VEC_PERP_DOT_PROD(ma, mb) > 0) &&
+        (  VEC_PERP_DOT_PROD(mb, mc) > 0) &&
+        (  VEC_PERP_DOT_PROD(mc, ma) > 0)));
+#else
     return true;
+#endif
 }
 
 static inline bool obj__is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d) {
@@ -88,18 +121,18 @@ shape_t* obj_cube_new(int cx, int cy, int cz, int width, int height, int type) {
         new->vertices[6] = vec_vec3i_new(cx+diag, cy+diag, cz+diag);
         new->vertices[7] = vec_vec3i_new(cx-diag, cy+diag, cz+diag);
         // back them up
-        new->vertices_backup[0] = vec_vec3i_new(cx-diag, cy-diag, cz-diag);
-        new->vertices_backup[1] = vec_vec3i_new(cx+diag, cy-diag, cz-diag);
-        new->vertices_backup[2] = vec_vec3i_new(cx+diag, cy+diag, cz-diag);
-        new->vertices_backup[3] = vec_vec3i_new(cx-diag, cy+diag, cz-diag);
-        new->vertices_backup[4] = vec_vec3i_new(cx-diag, cy-diag, cz+diag);
-        new->vertices_backup[5] = vec_vec3i_new(cx+diag, cy-diag, cz+diag);
-        new->vertices_backup[6] = vec_vec3i_new(cx+diag, cy+diag, cz+diag);
-        new->vertices_backup[7] = vec_vec3i_new(cx-diag, cy+diag, cz+diag);
-        // colors for each of the maximum possible 16 faces - change the string below to modify them
+        for (int i = 0; i < 8; ++i) {
+            new->vertices_backup[i] = vec_vec3i_new(0, 0, 0);
+            vec_vec3i_copy(new->vertices_backup[i], new->vertices[i]);
+
+        }
     } else {
         // TODO: rhombus
+        new->center = vec_vec3i_new(cx, cy, cz);
+        new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * 6);
+        new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * 6);
     }
+    // colors for each of the maximum possible 16 faces - change the string below to modify them
     strncpy(new->colors, "~.=@%|O:TG?nS8*+", 16);
     return new;
 }
