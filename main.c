@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
     signal(SIGINT, interrupt_handler);
 
     draw_init();
-    cube_t* cube = obj_cube_new(g_cx, g_cy, g_cz, g_cube_size);
+    shape_t* cube = obj_cube_new(g_cx, g_cy, g_cz, g_cube_size, g_cube_size, OBJ_CUBE);
     // spinning parameters in case random rotation was selected
 #ifndef _WIN32
     const float random_rot_speed_x = 0.002, random_rot_speed_y = 0.002, random_rot_speed_z = 0.002;

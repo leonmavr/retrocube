@@ -37,7 +37,7 @@ void draw_flush_screen();
  * @brief Clears the screen and restores the cursor.
  */
 void draw_end();
-void draw_cube(cube_t* cube);
+void draw_cube(shape_t* cube);
 
 
 #endif /* DRAW_H */

@@ -24,23 +24,23 @@
 //----------------------------------------------------------------------------------
 // Credits to @oogabooga:
 // https://cboard.cprogramming.com/c-programming/161186-undefined-reference.html
-#define SCREEN_CLEAR() do { \
-    COORD top_left = {0, 0}; \
-    DWORD c_chars_written; \
-    CONSOLE_SCREEN_BUFFER_INFO csbi; \
-    GetConsoleScreenBufferInfo(g_cons_out, &csbi); \
-    DWORD dw_con_size = csbi.dwSize.X * csbi.dwSize.Y; \
+#define SCREEN_CLEAR() do {                                  \
+    COORD top_left = {0, 0};                                 \
+    DWORD c_chars_written;                                   \
+    CONSOLE_SCREEN_BUFFER_INFO csbi;                         \
+    GetConsoleScreenBufferInfo(g_cons_out, &csbi);           \
+    DWORD dw_con_size = csbi.dwSize.X * csbi.dwSize.Y;       \
     FillConsoleOutputCharacter(g_cons_out, ' ', dw_con_size, \
-            top_left, &c_chars_written); \
+            top_left, &c_chars_written);                     \
     FillConsoleOutputAttribute(g_cons_out, csbi.wAttributes, \
-            dw_con_size, top_left, &c_chars_written); \
-    SetConsoleCursorPosition(g_cons_out, top_left); \
+            dw_con_size, top_left, &c_chars_written);        \
+    SetConsoleCursorPosition(g_cons_out, top_left);          \
 } while(0)
 // Credits to @Jerry Coffin: https://stackoverflow.com/a/2732327
-#define SCREEN_GOTO_TOPLEFT() do { \
-    COORD pos = {0, 0}; \
-    HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE); \
-    SetConsoleCursorPosition(output, pos); \
+#define SCREEN_GOTO_TOPLEFT() do {                           \
+    COORD pos = {0, 0};                                      \
+    HANDLE output = GetStdHandle(STD_OUTPUT_HANDLE);         \
+    SetConsoleCursorPosition(output, pos);                   \
 } while(0)
 #define SCREEN_HIDE_CURSOR() ;
 #define SCREEN_SHOW_CURSOR() ;
@@ -175,7 +175,7 @@ void draw_end() {
     SCREEN_SHOW_CURSOR();
 }
 
-void draw_cube(cube_t* cube) {
+void draw_cube(shape_t* cube) {
 /*
  * This function renders the given cube by the basic ray tracing principle.
  *

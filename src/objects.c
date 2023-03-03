@@ -9,6 +9,21 @@
 #define HALF_SQRT_TWO 0.7071065 
 
 
+// the min below is generic and avoids double evaluation by redefining `a`, `b`
+#define MIN(a, b) (          \
+{                            \
+    __typeof__ (a) _a = (a); \
+    __typeof__ (b) _b = (b); \
+    _a < _b ? _a : _b;       \
+}                            \
+)
+
+
+static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c) {
+    // TODO
+    return true;
+}
+
 static inline bool obj__is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d) {
 /* 
  * The diagram below visualises the conditions for M to be inside rectangle ABCD:
@@ -38,7 +53,7 @@ static inline bool obj__is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec
 //----------------------------------------------------------------------------------------------------------
 // Cube
 //----------------------------------------------------------------------------------------------------------
-cube_t* obj_cube_new(int cx, int cy, int cz, int side) {
+shape_t* obj_cube_new(int cx, int cy, int cz, int width, int height, int type) {
 /*
  *          p3                  p2 
  *           +-------------------+
@@ -58,11 +73,12 @@ cube_t* obj_cube_new(int cx, int cy, int cz, int side) {
  *                    \+-------------------+
  *                     p4                   p5
  */
-        cube_t* new = malloc(sizeof(cube_t));
+    shape_t* new = malloc(sizeof(shape_t));
+    if (type == OBJ_CUBE) {
         new->center = vec_vec3i_new(cx, cy, cz);
         new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
         new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
-        int diag = round(HALF_SQRT_TWO * side); 
+        int diag = round(HALF_SQRT_TWO * MIN(width, height)); 
         new->vertices[0] = vec_vec3i_new(cx-diag, cy-diag, cz-diag);
         new->vertices[1] = vec_vec3i_new(cx+diag, cy-diag, cz-diag);
         new->vertices[2] = vec_vec3i_new(cx+diag, cy+diag, cz-diag);
@@ -80,12 +96,15 @@ cube_t* obj_cube_new(int cx, int cy, int cz, int side) {
         new->vertices_backup[5] = vec_vec3i_new(cx+diag, cy-diag, cz+diag);
         new->vertices_backup[6] = vec_vec3i_new(cx+diag, cy+diag, cz+diag);
         new->vertices_backup[7] = vec_vec3i_new(cx-diag, cy+diag, cz+diag);
-        // colors for each of the 6 faces - change the hardcoded string below to modify them
-        strcpy(new->colors, "~.=@%|");
-        return new;
+        // colors for each of the maximum possible 16 faces - change the string below to modify them
+    } else {
+        // TODO: rhombus
+    }
+    strncpy(new->colors, "~.=@%|O:TG?nS8*+", 16);
+    return new;
 }
 
-void obj_cube_rotate (cube_t* cube, float angle_x_rad, float angle_y_rad, float angle_z_rad) {
+void obj_cube_rotate (shape_t* cube, float angle_x_rad, float angle_y_rad, float angle_z_rad) {
     // first, reset the vertices so no floating point error is accumulated
     for (int i = 0; i < 8; ++i)
         vec_vec3i_copy(cube->vertices[i], cube->vertices_backup[i]);
@@ -101,7 +120,7 @@ void obj_cube_rotate (cube_t* cube, float angle_x_rad, float angle_y_rad, float 
 }
 
 
-void obj_cube_free(cube_t* cube) {
+void obj_cube_free(shape_t* cube) {
     // free the data of the vertices first
     for (int i = 0; i < 8; ++i) {
         free(cube->vertices[i]);

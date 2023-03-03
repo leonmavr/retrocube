@@ -5,7 +5,7 @@ CC = gcc
 EXEC = cube
 SRC_DIR = src
 INC_DIR = include
-CFLAGS = -Wall -Wno-maybe-uninitialized -I$(INC_DIR) -O3 -std=gnu99
+CFLAGS = -Wall -Wno-stringop-truncation -Wno-maybe-uninitialized -I$(INC_DIR) -O3 -std=gnu99
 LDFLAGS = -lm
 SOURCES = $(wildcard $(SRC_DIR)/*.c) \
 	main.c

@@ -5,14 +5,24 @@
 #include <stdbool.h> // true/false
 #include <math.h> // round
 
+enum {
+    OBJ_CUBE=0,
+    OBJ_RHOMBUS
+};
+
 typedef char color_t;
 
-typedef struct cube {
+typedef struct shape {
     vec3i_t** vertices;
     vec3i_t** vertices_backup;
     vec3i_t* center;
-    color_t colors[6];
-} cube_t;
+    // number of vertices
+    size_t n_vertices;
+    // an array of characters defining the color of each face
+    color_t colors[16];
+    // type of shape to render, e.g. cube or rhumb
+    int type;
+} shape_t;
 
 typedef struct ray {
     // origin is the centre of perspective in pinhole camera model
@@ -49,9 +59,9 @@ typedef struct plane {
  *
  * @return A pointer to the newly constructed cube
  */
-cube_t*     obj_cube_new               (int cx, int cy, int cz, int size);
-void        obj_cube_rotate            (cube_t* cube, float angle_x_rad, float angle_y_rad, float angle_z_rad);
-void        obj_cube_free              (cube_t* cube);
+shape_t*    obj_cube_new               (int cx, int cy, int cz, int width, int height, int type);
+void        obj_cube_rotate            (shape_t* cube, float angle_x_rad, float angle_y_rad, float angle_z_rad);
+void        obj_cube_free              (shape_t* cube);
 
 //-------------------------------------------------------------------------------------------------------------
 // Ray
