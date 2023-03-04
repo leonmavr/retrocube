@@ -4,6 +4,7 @@
 #include "vector.h"
 #include <stdbool.h> // true/false
 #include <math.h> // round
+#include <stddef.h> // size_t
 
 enum {
     OBJ_CUBE=0,
