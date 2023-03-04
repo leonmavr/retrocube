@@ -132,10 +132,9 @@ shape_t* obj_cube_new(int cx, int cy, int cz, int width, int height, int type) {
         new->vertices[1] = vec_vec3i_new(hw,  0,                         0);
         new->vertices[2] = vec_vec3i_new(0,        0,                         -hw);
         new->vertices[3] = vec_vec3i_new(-hw, 0,                         0);
-        new->vertices[4] = vec_vec3i_new(0,        round(PHI/(1+PHI)*height), 0);
+        new->vertices[4] = vec_vec3i_new(0,        -round(PHI/(1+PHI)*height), 0);
         new->vertices[5] = vec_vec3i_new(0,        round(1.0/(1+PHI)*height),   0);
         // shift them to the origin 
-        vec3i_t origin = {cx, cy, cz};
         for (int i = 0; i < 6; ++i)
             vec_vec3i_add(new->vertices[i], new->vertices[i], new->center);
         // back them up so no floating point error is accumulated affter the rotations
