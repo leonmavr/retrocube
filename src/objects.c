@@ -1,24 +1,11 @@
 #include "vector.h"
 #include "objects.h"
+#include "utils.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h> // strncpy
 #include <stddef.h> // size_t 
-
-#define SQRT_TWO 1.414213
-#define HALF_SQRT_TWO 0.7071065 
-// the golden ratio
-#define PHI 1.6180
-
-// the min below is generic and avoids double evaluation by redefining `a`, `b`
-#define MIN(a, b) (          \
-{                            \
-    __typeof__ (a) _a = (a); \
-    __typeof__ (b) _b = (b); \
-    _a < _b ? _a : _b;       \
-}                            \
-)
 
 // perpendicular 2D vector, i.e. rotated by 90 degrees ccw
 #define VEC_PERP(src) (      \
@@ -32,7 +19,6 @@
 )
 
 #define VEC_PERP_DOT_PROD(a, b) a.x*b.y - a.y*b.x
-
 
 // Whether a point m is inside a triangle (a, b, c)
 static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c) {
@@ -117,7 +103,7 @@ shape_t* obj_cube_new(int cx, int cy, int cz, int width, int height, int type) {
         *                    \+-------------------+
         *                     p4                   p5
         */
-        int diag = round(HALF_SQRT_TWO * MIN(width, height)); 
+        int diag = round(UT_SQRT_TWO * UT_MIN(width, height)); 
         new->vertices[0] = vec_vec3i_new(-diag, -diag, -diag);
         new->vertices[1] = vec_vec3i_new( diag, -diag, -diag);
         new->vertices[2] = vec_vec3i_new( diag,  diag, -diag);
@@ -155,8 +141,8 @@ shape_t* obj_cube_new(int cx, int cy, int cz, int width, int height, int type) {
         new->vertices[1] = vec_vec3i_new(width/2,  0,                          0);
         new->vertices[2] = vec_vec3i_new(0,        0,                          -width/2);
         new->vertices[3] = vec_vec3i_new(-width/2, 0,                          0);
-        new->vertices[4] = vec_vec3i_new(0,        -round(PHI/(1+PHI)*height), 0);
-        new->vertices[5] = vec_vec3i_new(0,        round(1.0/(1+PHI)*height),  0);
+        new->vertices[4] = vec_vec3i_new(0,        -round(UT_PHI/(1+UT_PHI)*height), 0);
+        new->vertices[5] = vec_vec3i_new(0,        round(1.0/(1+UT_PHI)*height),  0);
     }
     for (int i = 0; i < new->n_vertices; ++i) {
         // shift them to the origin
