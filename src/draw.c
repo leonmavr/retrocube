@@ -301,9 +301,6 @@ void draw_cube(shape_t* cube) {
                 draw_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
             } /* for columns */
         } /* for rows */
-
-
-
     }
     // free ray-tracing-related constructs
     obj_plane_free(plane);

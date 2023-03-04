@@ -3,7 +3,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <string.h> // strcpy
+#include <string.h> // strncpy
+#include <stddef.h> // size_t 
 
 #define SQRT_TWO 1.414213
 #define HALF_SQRT_TWO 0.7071065 
@@ -104,8 +105,12 @@ shape_t* obj_cube_new(int cx, int cy, int cz, int width, int height, int type) {
  *                     p4                   p5
  */
     shape_t* new = malloc(sizeof(shape_t));
+    //// common attributes
     new->type = type;
     new->center = vec_vec3i_new(cx, cy, cz);
+    // colors for each of the maximum possible 8 faces - change the string below to modify them
+    strncpy(new->colors, "~.=@%|O+?Tn", 8);
+    //// attributes that depend on number of type
     if (type == OBJ_CUBE) {
         new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
         new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * 8);
@@ -128,12 +133,12 @@ shape_t* obj_cube_new(int cx, int cy, int cz, int width, int height, int type) {
         new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * 6);
         new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * 6);
         const int hw = round(width/2.0);
-        new->vertices[0] = vec_vec3i_new(0,        0,                        hw);
-        new->vertices[1] = vec_vec3i_new(hw,  0,                         0);
-        new->vertices[2] = vec_vec3i_new(0,        0,                         -hw);
-        new->vertices[3] = vec_vec3i_new(-hw, 0,                         0);
+        new->vertices[0] = vec_vec3i_new(0,        0,                          width/2);
+        new->vertices[1] = vec_vec3i_new(width/2,  0,                          0);
+        new->vertices[2] = vec_vec3i_new(0,        0,                          -width/2);
+        new->vertices[3] = vec_vec3i_new(-width/2, 0,                          0);
         new->vertices[4] = vec_vec3i_new(0,        -round(PHI/(1+PHI)*height), 0);
-        new->vertices[5] = vec_vec3i_new(0,        round(1.0/(1+PHI)*height),   0);
+        new->vertices[5] = vec_vec3i_new(0,        round(1.0/(1+PHI)*height),  0);
         // shift them to the origin 
         for (int i = 0; i < 6; ++i)
             vec_vec3i_add(new->vertices[i], new->vertices[i], new->center);
@@ -143,8 +148,6 @@ shape_t* obj_cube_new(int cx, int cy, int cz, int width, int height, int type) {
             vec_vec3i_copy(new->vertices_backup[i], new->vertices[i]);
         }
     }
-    // colors for each of the maximum possible 16 faces - change the string below to modify them
-    strncpy(new->colors, "~.=@%|O:TG?nS8*+", 16);
     return new;
 }
 

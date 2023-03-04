@@ -20,7 +20,7 @@ typedef struct shape {
     // number of vertices
     size_t n_vertices;
     // an array of characters defining the color of each face
-    color_t colors[16];
+    color_t colors[8];
     // type of shape to render, e.g. cube or rhumb
     int type;
 } shape_t;
