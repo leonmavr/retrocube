@@ -243,12 +243,12 @@ void draw_cube(cube_t* cube) {
                 obj_plane_set(plane, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]);
                 // we keep the z to find the furthest one from the origin and we draw its x and y
                 // which z the ray currently hits the plane - can be up to two hits
-                int z_hit = obj_plane_z_at_xy(plane, r, c);
-                obj_ray_send(ray, r, c, z_hit);
+                int z_hit = obj_plane_z_at_xy(plane, c, r);
+                obj_ray_send(ray, c, r, z_hit);
                 if (obj_ray_hits_rectangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2], surfaces[isurf][3]) &&
                 (z_hit > rendered_point.z)) {
                     rendered_color = cube->colors[isurf];
-                    rendered_point = (vec3i_t) {r, c, z_hit};
+                    rendered_point = (vec3i_t) {c, r, z_hit};
                 }
             }
             draw_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
