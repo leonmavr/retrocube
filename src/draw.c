@@ -8,6 +8,7 @@
 #include <stdlib.h> // exit
 #include <stdbool.h> // true/false 
 #include <string.h> // memset
+#include <stddef.h> // size_t 
 
 #ifndef _WIN32
 #define IOCTL_SIZE_INVALID 0
@@ -59,7 +60,7 @@ static float g_cols_over_rows;
 // screen resolution (pixels over pixels) 
 static float g_screen_res;
 color_t* g_screen_buffer;
-int g_screen_buffer_size;
+size_t g_screen_buffer_size;
 
 /**
  * @brief Checks whether a null-terminated array of characters represents
@@ -102,7 +103,7 @@ static void draw__get_screen_info() {
     g_max_rows = g_rows+1;
     g_min_cols = -g_cols/2+1;
     g_max_cols = g_cols/2;
-    if ((wsize.ws_xpixel != IOCTL_SIZE_INVALID) && (wsize.ws_ypixel != IOCTL_SIZE_INVALID)) {
+    if ((wsize.ws_xpixel != IOCTL_SIZE_INVALID) || (wsize.ws_ypixel != IOCTL_SIZE_INVALID)) {
         g_screen_res = (float)wsize.ws_xpixel/wsize.ws_ypixel;
         return;
     }
@@ -211,10 +212,11 @@ void draw_cube(shape_t* cube) {
  *                                           \
  *                                            V
  */
-    ray_t* ray;
-    plane_t* plane;
+    ray_t* ray = obj_ray_new(0, 0, 0);
+    vec3i_t dummy_vec = {0, 0, 0};
+    plane_t* plane = obj_plane_new(&dummy_vec, &dummy_vec, &dummy_vec);
     const color_t background = ' ';
-    if (cube->type == OBJ_CUBE) {
+    if (cube->type == TYPE_CUBE) {
         //// initialisations
         vec3i_t* p0 = cube->vertices[0];
         vec3i_t* p1 = cube->vertices[1];
@@ -233,9 +235,6 @@ void draw_cube(shape_t* cube) {
             {p7, p6, p2, p3},
             {p0, p4, p5, p1}
         };
-        ray = obj_ray_new(0, 0, 0);
-        // plane (cube's face) the ray will hit - initialised with some dummy values
-        plane = obj_plane_new(p0, p0, p0);
         //// main processing
         for (int r = g_min_rows; r <= g_max_rows; ++r) {
             for (int c = g_min_cols; c <= g_max_cols; ++c) {
@@ -257,7 +256,7 @@ void draw_cube(shape_t* cube) {
                 draw_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
             } /* for columns */
         } /* for rows */
-    } else if (cube->type == OBJ_RHOMBUS) {
+    } else if (cube->type == TYPE_RHOMBUS) {
         //// initialisations
         vec3i_t* p0 = cube->vertices[0];
         vec3i_t* p1 = cube->vertices[1];
@@ -276,9 +275,6 @@ void draw_cube(shape_t* cube) {
             {p1, p5, p2},
             {p3, p2, p5}
         };
-        ray = obj_ray_new(0, 0, 0);
-        // plane (cube's face) the ray will hit - initialised with some dummy values
-        plane = obj_plane_new(p0, p0, p0);
         //// main processing
         for (int r = g_min_rows; r <= g_max_rows; ++r) {
             for (int c = g_min_cols; c <= g_max_cols; ++c) {

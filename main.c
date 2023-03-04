@@ -81,14 +81,14 @@ int main(int argc, char** argv) {
     signal(SIGINT, interrupt_handler);
 
     draw_init();
-    shape_t* cube = obj_cube_new(g_cx, g_cy, g_cz, g_cube_size, 1.5*g_cube_size, OBJ_RHOMBUS);
+    shape_t* cube = obj_cube_new(g_cx, g_cy, g_cz, g_cube_size, 1.5*g_cube_size, TYPE_RHOMBUS);
     // spinning parameters in case random rotation was selected
 #ifndef _WIN32
     const float random_rot_speed_x = 0.002, random_rot_speed_y = 0.002, random_rot_speed_z = 0.002;
     const float amplitude_x = 4.25, amplitude_y = 4.25, amplitude_z = 4.25;
 #else
     // make it spin faster on Windows because terminal refresh functions are sluggish there
-    const float random_rot_speed_x = 0.01, random_rot_speed_y = 0.01, random_rot_speed_z = 0.01;
+    const float random_rot_speed_x = 0.0125, random_rot_speed_y = 0.0125, random_rot_speed_z = 0.0125;
     const float amplitude_x = 10.0, amplitude_y = 10.0, amplitude_z = 10.0;
 #endif
     for (size_t t = 0; t < g_max_iterations; ++t) {

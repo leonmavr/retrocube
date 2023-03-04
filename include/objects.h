@@ -6,9 +6,9 @@
 #include <math.h> // round
 #include <stddef.h> // size_t
 
-enum {
-    OBJ_CUBE=0,
-    OBJ_RHOMBUS
+enum type_t {
+    TYPE_CUBE=0,
+    TYPE_RHOMBUS
 };
 
 typedef char color_t;
@@ -22,7 +22,7 @@ typedef struct shape {
     // an array of characters defining the color of each face
     color_t colors[8];
     // type of shape to render, e.g. cube or rhumb
-    int type;
+    enum type_t type;
 } shape_t;
 
 typedef struct ray {
