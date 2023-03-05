@@ -23,8 +23,51 @@
 // Whether a point m is inside a triangle (a, b, c)
 static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c) {
 /*
- * TODO:
- * schematic of why this works
+ * To test whether a point is inside a triangle,    | a_perp(-a_y, a,x)
+ * we use the concept of perpendicular (perp)       | ^                     <----
+ * vectors and perpendicular dot product. Perp      |  \                        |
+ * dot product (pdot) formulates whether vector b is|  |                        |
+ * clockwise (cw) or counterclockwise (ccw) of a.   |   \   
+ * Given vector a(a_x, a_y), its perp vector a_perp |    \                  a(a_x, a_y)
+ * is defined as the same vector rotated by 90      |     \             ---->
+ * degrees ccw:                                     |     |   ---------/     
+ * a_perp = (-a_y, a_x)                             |      \-/               
+ *                                                  |
+ * The dot product alone doesn't tell us whether b  |
+ * is (c)cw of a. We need the pdot for that.        |  ^ a_perp        angle(a, b) > 90
+ * As shown in the sketch on the right half:        |  |               a_perp . b < 0
+ *                                                  |   \            
+ * a_perp . b < 0 when b is ccw from a and the      |   |       ----->
+ * angle between a, b is obtuse and                 |    |-----/     a 
+ * a_perp . b < 0 when b is ccw from a and the      |    |
+ * angle between a, b is acute.                     |    |
+ *                                                  |    v b
+ * Therefore a_perp . b < 0 when b is ccw from a.   |         
+ * Similarly, a_perp . b > when b is cw from a.     |  ^ a_perp         angle(a, b) < 90
+ * .                                               .|   \               a_perp . b > 0
+ * .                                               .|   |       ----->
+ * .                                               .|   -------/     a
+ * .                                               .|    \    
+ * .               (cont'ed)                       .|     \-  
+ * .                                               .|       \ 
+ * .                                               .|        > b
+ * .                                               .|
+ * The scematic below shows that for point M to be  | For M to be inside triangle (ABC),
+ * inside triangle (ABC) the following condition    | MB needs to be (c)cw from MA, MC
+ * must be satisfied:                               | (c)cw from MB and MA (c)cw from MC
+ *                                                  |                   A
+ * (MB ccw from MA) => MA_perp . MB > 0 and         |                  _+         
+ * (MC ccw from MB) => MB_perp . MC > 0 and         |                 / ^\_       
+ * (MA ccw from MC) => MC_perp . MA > 0 and         |               _/ /   \      
+ * or                                               |              /   |    \_    
+ * (MB cw from MA) => MA_perp . MB < 0 and          |             /   /       \   
+ * (MC cw from MB) => MB_perp . MC < 0 and          |           _/  M*------   \_ 
+ * (MA cw from MC) => MC_perp . MA < 0 and          |          /  --/       \---->
+ *                                                  |         / -/     ______/   + 
+ *                                                  |       _--/______/           C
+ *                                                  |      </_/                   
+ *                                                  |      +
+ *                                                  |      B
  */
     // don't care about z components
     vec3i_t ma = {a->x - m->x, a->y - m->y, 0};
@@ -287,9 +330,9 @@ vec3i_t obj_ray_plane_intersection(plane_t* plane, ray_t* ray) {
     * This is what this function returns.
     */
     int nornmal_dot_rayend = vec_vec3i_dotprod(plane->normal, ray->end);
-    float t0 = ((float)plane->offset/nornmal_dot_rayend);
+    float t0 = (float)plane->offset / nornmal_dot_rayend;
     // only interested in intersections along the positive direction
-    t0 = (t0 < 0.0) ? -t0 : t0 ;
+    t0 = (t0 < 0.0) ? -t0 : t0;
     vec3i_t ray_at_intersection;
     ray_at_intersection.x = round(t0*ray->end->x);
     ray_at_intersection.y = round(t0*ray->end->y);
@@ -319,7 +362,6 @@ bool obj_ray_hits_triangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
     free(plane.normal);
     return obj__is_point_in_triangle(&ray_plane_intersection, p0, p1, p2);
 }
-
 
 
 void obj_plane_set(plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
