@@ -69,10 +69,10 @@ static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b,
  *                                                  |      +
  *                                                  |      B
  */
-    // don't care about z components
-    vec3i_t ma = {a->x - m->x, a->y - m->y, 0};
-    vec3i_t mb = {b->x - m->x, b->y - m->y, 0};
-    vec3i_t mc = {c->x - m->x, c->y - m->y, 0};
+    vec3i_t ma, mb, mc;
+    vec_vec3i_sub(&ma, m, a);
+    vec_vec3i_sub(&mb, m, b);
+    vec_vec3i_sub(&mc, m, c);
     return 
         // cw case
         (((VEC_PERP_DOT_PROD(ma, mb) < 0) &&
@@ -252,51 +252,51 @@ void obj_ray_free(ray_t* ray) {
 //----------------------------------------------------------------------------------------------------------
 
 plane_t* obj_plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
-/*
- * Determine the plane through 3 3D points p0, p1, p2 by determining:
- *     1. the normal vector
- *     2. the offset
- *
- *                                     normal
- *                                       ^
- *                                      /
- *                    +----------------/-----------+
- *                   /     *p0        /           /
- *                  /       <_       /           /
- *                 /          \__   /           /
- *                /              \ /           /
- *               /               *p1          /
- *              /             _/             / 
- *             /           _/               /
- *            /           <                /
- *           /         p2*                /
- *          /                            /
- *         +----------------------------+
- * If p0, p1, p2 are co-planar, then the normal through p1 is
- * perpendicular to both * p1p2 = p2 - p1 and p1p0 = p0 - p1.
- * Thererefore it's determined as the cross product of the two:
- * normal = p1p2 x p1p0 = (p2 - p1) x (p0 - p1)
- *
- *                                    normal
- *                                    ^
- *                                   /     
- *                  +---------------/-----------+
- *                 /               /           /
- *                /               /           /
- *               /              *p1          /
- *              /              /            / 
- *             /           ___/            /
- *            /           /               /
- *           /       * <_/               /
- *          /        x                  /
- *         +---------------------------+
- * If x = (x,y,z) is any point on the plane, then the normal
- * through p1 is perpendicular to p1x = x - p1 therefore their
- * dot product is zero:
- * n.(x - p1) = 0 => 
- * n.x - n.p1 = 0
- * -n.p1 is the offset from the origin 
-*/
+    /*
+    * Determine the plane through 3 3D points p0, p1, p2 by determining:
+    *     1. the normal vector
+    *     2. the offset
+    *
+    *                                     normal
+    *                                       ^
+    *                                      /
+    *                    +----------------/-----------+
+    *                   /     *p0        /           /
+    *                  /       <_       /           /
+    *                 /          \__   /           /
+    *                /              \ /           /
+    *               /               *p1          /
+    *              /             _/             / 
+    *             /           _/               /
+    *            /           <                /
+    *           /         p2*                /
+    *          /                            /
+    *         +----------------------------+
+    * If p0, p1, p2 are co-planar, then the normal through p1 is
+    * perpendicular to both * p1p2 = p2 - p1 and p1p0 = p0 - p1.
+    * Thererefore it's determined as the cross product of the two:
+    * normal = p1p2 x p1p0 = (p2 - p1) x (p0 - p1)
+    *
+    *                                    normal
+    *                                    ^
+    *                                   /     
+    *                  +---------------/-----------+
+    *                 /               /           /
+    *                /               /           /
+    *               /              *p1          /
+    *              /              /            / 
+    *             /           ___/            /
+    *            /           /               /
+    *           /       * <_/               /
+    *          /        x                  /
+    *         +---------------------------+
+    * If x = (x,y,z) is any point on the plane, then the normal
+    * through p1 is perpendicular to p1x = x - p1 therefore their
+    * dot product is zero:
+    * n.(x - p1) = 0 => 
+    * n.x - n.p1 = 0
+    * -n.p1 is the offset from the origin 
+    */
     plane_t* new = malloc(sizeof(plane_t));
     new->normal = malloc(sizeof(vec3_t));
     vec3i_t p1p2;
