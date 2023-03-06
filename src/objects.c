@@ -192,12 +192,12 @@ shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) 
         *               X 
         *               p4
         */
-        new->vertices[0] = vec_vec3i_new(0,        0,                                width/2);
-        new->vertices[1] = vec_vec3i_new(width/2,  0,                                0);
-        new->vertices[2] = vec_vec3i_new(0,        0,                                -width/2);
-        new->vertices[3] = vec_vec3i_new(-width/2, 0,                                0);
-        new->vertices[4] = vec_vec3i_new(0,        -round(UT_PHI/(1+UT_PHI)*height), 0);
-        new->vertices[5] = vec_vec3i_new(0,        round(1.0/(1+UT_PHI)*height),     0);
+        new->vertices[0] = vec_vec3i_new(0       , 0                               , width/2);
+        new->vertices[1] = vec_vec3i_new(width/2 , 0                               , 0);
+        new->vertices[2] = vec_vec3i_new(0       , 0                               , -width/2);
+        new->vertices[3] = vec_vec3i_new(-width/2, 0                               , 0);
+        new->vertices[4] = vec_vec3i_new(0       , -round(UT_PHI/(1+UT_PHI)*height), 0);
+        new->vertices[5] = vec_vec3i_new(0       , round(1.0/(1+UT_PHI)*height)    , 0);
     } else if (type == TYPE_TRIANGLE) {
         new->vertices[0] = vec_vec3i_new(-width/2, 0     , 0);
         new->vertices[1] = vec_vec3i_new( width/2, 0     , 0);
@@ -215,8 +215,7 @@ shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) 
 }
 
 void obj_shape_rotate (shape_t* shape, float angle_x_rad, float angle_y_rad, float angle_z_rad) {
-    const size_t n_corners = (shape->type == TYPE_CUBE) ? 8 : 6;
-    for (size_t i = 0; i < n_corners; ++i) {
+    for (size_t i = 0; i < shape->n_vertices; ++i) {
         // first, reset each vertex so no floating point error is accumulated
         vec_vec3i_copy(shape->vertices[i], shape->vertices_backup[i]);
 
@@ -230,17 +229,15 @@ void obj_shape_rotate (shape_t* shape, float angle_x_rad, float angle_y_rad, flo
 }
 
 void obj_shape_translate(shape_t* shape, float dx, float dy, float dz) {
-    const size_t n_corners = (shape->type == TYPE_CUBE) ? 8 : 6;
     vec3i_t translation = {round(dx), round(dy), round(dz)};
     *shape->center = vec_vec3i_add(shape->center, &translation);
-    for (size_t i = 0; i < n_corners; ++i)
+    for (size_t i = 0; i < shape->n_vertices; ++i)
         *shape->vertices[i] = vec_vec3i_add(shape->vertices[i], &translation);
 }
 
 void obj_shape_free(shape_t* shape) {
-    const size_t n_corners = (shape->type == TYPE_CUBE) ? 8 : 6;
     // free the data of the vertices first
-    for (size_t i = 0; i < n_corners; ++i) {
+    for (size_t i = 0; i < shape->n_vertices; ++i) {
         free(shape->vertices[i]);
         free(shape->vertices_backup[i]);
     }

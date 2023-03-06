@@ -84,7 +84,7 @@ static bool draw__is_decimal(char* string) {
 }
 
 /**
- * @brief Attempt to get the screen resolution in three ways:
+ * @brief Attempt to get the screen info (size and resolution) in three ways:
  *            1.`ioctl` call - fails on some terminals
  *            2. (fallback) xrandr command
  *            3. (fallback) assume a common screen resolution, e.g. 1920/1080
@@ -139,19 +139,19 @@ void draw_init() {
     g_screen_buffer = malloc(sizeof(color_t) * g_screen_buffer_size);
 }
 
-/* Uses the following coordinate system:
- *
- *      ^ y
- *      |
- *      |
- *      |
- *      |
- *      o---------> x
- *       \
- *        \
- *         v z
- */
 void draw_write_pixel(int x, int y, color_t c) {
+    /* Uses the following coordinate system:
+    *
+    *      ^ y
+    *      |
+    *      |
+    *      |
+    *      |
+    *      o---------> x
+    *       \
+    *        \
+    *         v z
+    */
     int y_scaled = y/(g_cols_over_rows/g_screen_res) + g_rows/2;
     x += g_cols/2;
     if (y_scaled*g_cols + x < g_screen_buffer_size)
@@ -176,7 +176,7 @@ void draw_end() {
     SCREEN_SHOW_CURSOR();
 }
 
-void draw_shape(shape_t* cube) {
+void draw_shape(shape_t* shape) {
 /*
  * This function renders the given cube by the basic ray tracing principle.
  *
@@ -216,16 +216,16 @@ void draw_shape(shape_t* cube) {
     vec3i_t dummy_vec = {0, 0, 0};
     plane_t* plane = obj_plane_new(&dummy_vec, &dummy_vec, &dummy_vec);
     const color_t background = ' ';
-    if (cube->type == TYPE_CUBE) {
+    if (shape->type == TYPE_CUBE) {
         //// initialisations
-        vec3i_t* p0 = cube->vertices[0];
-        vec3i_t* p1 = cube->vertices[1];
-        vec3i_t* p2 = cube->vertices[2];
-        vec3i_t* p3 = cube->vertices[3];
-        vec3i_t* p4 = cube->vertices[4];
-        vec3i_t* p5 = cube->vertices[5];
-        vec3i_t* p6 = cube->vertices[6];
-        vec3i_t* p7 = cube->vertices[7];
+        vec3i_t* p0 = shape->vertices[0];
+        vec3i_t* p1 = shape->vertices[1];
+        vec3i_t* p2 = shape->vertices[2];
+        vec3i_t* p3 = shape->vertices[3];
+        vec3i_t* p4 = shape->vertices[4];
+        vec3i_t* p5 = shape->vertices[5];
+        vec3i_t* p6 = shape->vertices[6];
+        vec3i_t* p7 = shape->vertices[7];
         // each quad of points p0 to p5 represents a cube's face
         vec3i_t* surfaces[6][4] = {
             {p0, p1, p2, p3},
@@ -249,21 +249,21 @@ void draw_shape(shape_t* cube) {
                     obj_ray_send(ray, c, r, z_hit);
                     if (obj_ray_hits_rectangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2], surfaces[isurf][3]) &&
                     (z_hit > rendered_point.z)) {
-                        rendered_color = cube->colors[isurf];
+                        rendered_color = shape->colors[isurf];
                         rendered_point = (vec3i_t) {c, r, z_hit};
                     }
                 }
                 draw_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
             } /* for columns */
         } /* for rows */
-    } else if (cube->type == TYPE_RHOMBUS) {
+    } else if (shape->type == TYPE_RHOMBUS) {
         //// initialisations
-        vec3i_t* p0 = cube->vertices[0];
-        vec3i_t* p1 = cube->vertices[1];
-        vec3i_t* p2 = cube->vertices[2];
-        vec3i_t* p3 = cube->vertices[3];
-        vec3i_t* p4 = cube->vertices[4];
-        vec3i_t* p5 = cube->vertices[5];
+        vec3i_t* p0 = shape->vertices[0];
+        vec3i_t* p1 = shape->vertices[1];
+        vec3i_t* p2 = shape->vertices[2];
+        vec3i_t* p3 = shape->vertices[3];
+        vec3i_t* p4 = shape->vertices[4];
+        vec3i_t* p5 = shape->vertices[5];
         // each quad of points p0 to p5 represents a rhombus' face
         vec3i_t* surfaces[8][3] = {
             {p3, p4, p0},
@@ -289,14 +289,27 @@ void draw_shape(shape_t* cube) {
                     obj_ray_send(ray, c, r, z_hit);
                     if (obj_ray_hits_triangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]) &&
                     (z_hit > rendered_point.z)) {
-                        rendered_color = cube->colors[isurf];
+                        rendered_color = shape->colors[isurf];
                         rendered_point = (vec3i_t) {c, r, z_hit};
-                        draw_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
                     }
                 }
                 draw_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
             } /* for columns */
         } /* for rows */
+    } else if (shape->type == TYPE_TRIANGLE) {
+        // render a simple triangle - no need to account for surfaces
+        vec3i_t* p0 = shape->vertices[0];
+        vec3i_t* p1 = shape->vertices[1];
+        vec3i_t* p2 = shape->vertices[2];
+        for (int r = g_min_rows; r <= g_max_rows; ++r) {
+            for (int c = g_min_cols; c <= g_max_cols; ++c) {
+                obj_plane_set(plane, p0, p1, p2);
+                int z_hit = obj_plane_z_at_xy(plane, c, r);
+                obj_ray_send(ray, c, r, z_hit);
+                if (obj_ray_hits_triangle(ray, p0, p1, p2))
+                    draw_write_pixel(r, c, shape->colors[0]);
+            }
+        }
     }
     // free ray-tracing-related constructs
     obj_plane_free(plane);

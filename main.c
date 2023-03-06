@@ -30,7 +30,7 @@ static unsigned g_max_iterations = UINT_MAX;
 
 
 /* Clears the screen and makes the cursor visible when the user hits Ctr+C */
-void interrupt_handler(int int_num) {
+static void interrupt_handler(int int_num) {
     if (int_num == SIGINT) {
         draw_end();
         exit(0);
@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
     signal(SIGINT, interrupt_handler);
 
     draw_init();
-    shape_t* shape = obj_shape_new(g_cx, g_cy, g_cz, g_cube_size, 1.5*g_cube_size, TYPE_RHOMBUS);
+    shape_t* shape = obj_shape_new(g_cx, g_cy, g_cz, g_cube_size, 1.5*g_cube_size, TYPE_TRIANGLE);
     // spinning parameters in case random rotation was selected
 #ifndef _WIN32
     const float random_rot_speed_x = 0.002, random_rot_speed_y = 0.002, random_rot_speed_z = 0.002;
@@ -99,7 +99,10 @@ int main(int argc, char** argv) {
             obj_shape_rotate(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
         draw_shape(shape);
         draw_flush_screen();
+#ifndef _WIN32
+        // nanosleep does not work on Windows
         nanosleep((const struct timespec[]) {{0, (int)(1.0 / g_fps * 1e9)}}, NULL);
+#endif
     }
     obj_shape_free(shape);
     draw_end();
