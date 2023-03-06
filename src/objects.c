@@ -27,7 +27,7 @@ static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b,
  * we use the concept of perpendicular (perp)       | ^                     <----
  * vectors and perpendicular dot product. Perp      |  \                        |
  * dot product (pdot) formulates whether vector b is|  |                        |
- * clockwise (cw) or counterclockwise (ccw) of a.   |   \   
+ * clockwise (cw) or counterclockwise (ccw) of a.   |   \
  * Given vector a(a_x, a_y), its perp vector a_perp |    \                  a(a_x, a_y)
  * is defined as the same vector rotated by 90      |     \             ---->
  * degrees ccw:                                     |     |   ---------/     
@@ -36,7 +36,7 @@ static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b,
  * The dot product alone doesn't tell us whether b  |
  * is (c)cw of a. We need the pdot for that.        |  ^ a_perp        angle(a, b) > 90
  * As shown in the sketch on the right half:        |  |               a_perp . b < 0
- *                                                  |   \            
+ *                                                  |   \
  * a_perp . b < 0 when b is ccw from a and the      |   |       ----->
  * angle between a, b is obtuse and                 |    |-----/     a 
  * a_perp . b < 0 when b is ccw from a and the      |    |
@@ -47,9 +47,9 @@ static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b,
  * .                                               .|   \               a_perp . b > 0
  * .                                               .|   |       ----->
  * .                                               .|   -------/     a
- * .                                               .|    \    
+ * .                                               .|    \
  * .               (cont'ed)                       .|     \-  
- * .                                               .|       \ 
+ * .                                               .|       \
  * .                                               .|        > b
  * .                                               .|
  * The scematic below shows that for point M to be  | For M to be inside triangle (ABC),
@@ -58,9 +58,9 @@ static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b,
  *                                                  |                   A
  * (MB ccw from MA) => MA_perp . MB > 0 and         |                  _+         
  * (MC ccw from MB) => MB_perp . MC > 0 and         |                 / ^\_       
- * (MA ccw from MC) => MC_perp . MA > 0 and         |               _/ /   \      
+ * (MA ccw from MC) => MC_perp . MA > 0 and         |               _/ /   \
  * or                                               |              /   |    \_    
- * (MB cw from MA) => MA_perp . MB < 0 and          |             /   /       \   
+ * (MB cw from MA) => MA_perp . MB < 0 and          |             /   /       \
  * (MC cw from MB) => MB_perp . MC < 0 and          |           _/  M*------   \_ 
  * (MA cw from MC) => MC_perp . MA < 0 and          |          /  --/       \---->
  *                                                  |         / -/     ______/   + 
@@ -69,10 +69,9 @@ static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b,
  *                                                  |      +
  *                                                  |      B
  */
-    vec3i_t ma, mb, mc;
-    vec_vec3i_sub(&ma, m, a);
-    vec_vec3i_sub(&mb, m, b);
-    vec_vec3i_sub(&mc, m, c);
+    vec3i_t ma = vec_vec3i_sub(m, a);
+    vec3i_t mb = vec_vec3i_sub(m, b);
+    vec3i_t mc = vec_vec3i_sub(m, c);
     return 
         // cw case
         (((VEC_PERP_DOT_PROD(ma, mb) < 0) &&
@@ -146,7 +145,7 @@ shape_t* obj_cube_new(int cx, int cy, int cz, int width, int height, int type) {
         *                    \+-------------------+
         *                     p4                   p5
         */
-        int diag = round(UT_SQRT_TWO * UT_MIN(width, height)); 
+        int diag = round(UT_SQRT_TWO * UT_MIN(width/2, height/2)); 
         new->vertices[0] = vec_vec3i_new(-diag, -diag, -diag);
         new->vertices[1] = vec_vec3i_new( diag, -diag, -diag);
         new->vertices[2] = vec_vec3i_new( diag,  diag, -diag);
@@ -160,7 +159,7 @@ shape_t* obj_cube_new(int cx, int cy, int cz, int width, int height, int type) {
         /*
         *               p5              * center
         *               X               X vertex
-        *              / \             
+        *              / \
         *             /   \             y 
         *            /     \            ^
         *           /       \           |
@@ -187,10 +186,11 @@ shape_t* obj_cube_new(int cx, int cy, int cz, int width, int height, int type) {
         new->vertices[4] = vec_vec3i_new(0,        -round(UT_PHI/(1+UT_PHI)*height), 0);
         new->vertices[5] = vec_vec3i_new(0,        round(1.0/(1+UT_PHI)*height),     0);
     }
+    // finish creating the vertices
     for (int i = 0; i < new->n_vertices; ++i) {
         // shift them to the shape's center 
-        vec_vec3i_add(new->vertices[i], new->vertices[i], new->center);
-        // back them up so no floating point error is accumulated affter the rotations
+        *new->vertices[i] = vec_vec3i_add(new->vertices[i], new->center);
+        // back them up so no floating point error is accumulated after any rotations
         new->vertices_backup[i] = vec_vec3i_new(0, 0, 0);
         vec_vec3i_copy(new->vertices_backup[i], new->vertices[i]);
     }
@@ -216,7 +216,7 @@ void obj_cube_rotate (shape_t* cube, float angle_x_rad, float angle_y_rad, float
 void obj_cube_free(shape_t* cube) {
     const size_t n_corners = (cube->type == TYPE_CUBE) ? 8 : 6;
     // free the data of the vertices first
-    for (int i = 0; i < n_corners; ++i) {
+    for (size_t i = 0; i < n_corners; ++i) {
         free(cube->vertices[i]);
         free(cube->vertices_backup[i]);
     }
@@ -299,11 +299,9 @@ plane_t* obj_plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
     */
     plane_t* new = malloc(sizeof(plane_t));
     new->normal = malloc(sizeof(vec3_t));
-    vec3i_t p1p2;
-    vec3i_t p1p0;
-    vec_vec3i_sub(&p1p2, p2, p1);
-    vec_vec3i_sub(&p1p0, p0, p1);
-    vec_vec3i_crossprod(new->normal, &p1p2, &p1p0);
+    vec3i_t p1p2 = vec_vec3i_sub(p2, p1);
+    vec3i_t p1p0 = vec_vec3i_sub(p0, p1);
+    *new->normal = vec_vec3i_crossprod(&p1p2, &p1p0);
     new->offset = -vec_vec3i_dotprod(new->normal, p1);
     return new;
 }
@@ -329,14 +327,10 @@ vec3i_t obj_ray_plane_intersection(plane_t* plane, ray_t* ray) {
     * R(t0) = (d/(n.B))*B
     * This is what this function returns.
     */
-    int nornmal_dot_rayend = vec_vec3i_dotprod(plane->normal, ray->end);
-    float t0 = (float)plane->offset / nornmal_dot_rayend;
+    float t0 = (float)plane->offset / vec_vec3i_dotprod(plane->normal, ray->end);
     // only interested in intersections along the positive direction
     t0 = (t0 < 0.0) ? -t0 : t0;
-    vec3i_t ray_at_intersection;
-    ray_at_intersection.x = round(t0*ray->end->x);
-    ray_at_intersection.y = round(t0*ray->end->y);
-    ray_at_intersection.z = round(t0*ray->end->z);
+    vec3i_t ray_at_intersection = vec_vec3i_mul_scalar(ray->end, t0);
     return ray_at_intersection;
 }
 
@@ -366,11 +360,9 @@ bool obj_ray_hits_triangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
 
 void obj_plane_set(plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
     // reset plane's normal and offset like obj_plane_new function computes them
-    vec3i_t p1p2;
-    vec3i_t p1p0;
-    vec_vec3i_sub(&p1p2, p2, p1);
-    vec_vec3i_sub(&p1p0, p0, p1);
-    vec_vec3i_crossprod(plane->normal, &p1p2, &p1p0);
+    vec3i_t p1p2 = vec_vec3i_sub(p2, p1);
+    vec3i_t p1p0 = vec_vec3i_sub(p0, p1);
+    *plane->normal = vec_vec3i_crossprod(&p1p2, &p1p0);
     plane->offset = -vec_vec3i_dotprod(plane->normal, p1);
 }
 
