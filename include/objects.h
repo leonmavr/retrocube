@@ -56,13 +56,15 @@ typedef struct plane {
  * @param cx x-coordinate of the center
  * @param cy y-coordinate of the center
  * @param cz z-coordinate of the center
- * @param size lenght of one side
+ * @param width of the shape in pixels 
+ * @param height of the shape in pixels 
+ * @param type of the shape - supported: TYPE_CUBE, TYPE_RHOMBUS
  *
- * @return A pointer to the newly constructed cube
+ * @return A pointer to the newly constructed shape
  */
-shape_t*    obj_cube_new               (int cx, int cy, int cz, int width, int height, int type);
-void        obj_cube_rotate            (shape_t* cube, float angle_x_rad, float angle_y_rad, float angle_z_rad);
-void        obj_cube_free              (shape_t* cube);
+shape_t*    obj_shape_new               (int cx, int cy, int cz, int width, int height, int type);
+void        obj_shape_rotate            (shape_t* shape, float angle_x_rad, float angle_y_rad, float angle_z_rad);
+void        obj_shape_free              (shape_t* shape);
 
 //-------------------------------------------------------------------------------------------------------------
 // Ray

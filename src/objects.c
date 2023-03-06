@@ -111,9 +111,9 @@ static inline bool obj__is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec
 }
 
 //----------------------------------------------------------------------------------------------------------
-// Cube
+// Renderable shapes 
 //----------------------------------------------------------------------------------------------------------
-shape_t* obj_cube_new(int cx, int cy, int cz, int width, int height, int type) {
+shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) {
 
     shape_t* new = malloc(sizeof(shape_t));
     //// common attributes
@@ -197,33 +197,32 @@ shape_t* obj_cube_new(int cx, int cy, int cz, int width, int height, int type) {
     return new;
 }
 
-void obj_cube_rotate (shape_t* cube, float angle_x_rad, float angle_y_rad, float angle_z_rad) {
-    const size_t n_corners = (cube->type == TYPE_CUBE) ? 8 : 6;
+void obj_shape_rotate (shape_t* shape, float angle_x_rad, float angle_y_rad, float angle_z_rad) {
+    const size_t n_corners = (shape->type == TYPE_CUBE) ? 8 : 6;
     for (size_t i = 0; i < n_corners; ++i) {
         // first, reset each vertex so no floating point error is accumulated
-        vec_vec3i_copy(cube->vertices[i], cube->vertices_backup[i]);
+        vec_vec3i_copy(shape->vertices[i], shape->vertices_backup[i]);
 
         // point to rotate about
-        int x0 = cube->center->x, y0 = cube->center->y, z0 = cube->center->z;
+        int x0 = shape->center->x, y0 = shape->center->y, z0 = shape->center->z;
         // rotate around x axis, then y, then z
-        // We rotate as follows (* denotes matrix product, C the cube's origin):
+        // We rotate as follows (* denotes matrix product, C the shape's origin):
         // v = v - C, v = Rz*Ry*Rx*v, v = v + C
-        vec_vec3i_rotate(cube->vertices[i], angle_x_rad, angle_y_rad, angle_z_rad, x0, y0, z0);
+        vec_vec3i_rotate(shape->vertices[i], angle_x_rad, angle_y_rad, angle_z_rad, x0, y0, z0);
     }
 }
 
-
-void obj_cube_free(shape_t* cube) {
-    const size_t n_corners = (cube->type == TYPE_CUBE) ? 8 : 6;
+void obj_shape_free(shape_t* shape) {
+    const size_t n_corners = (shape->type == TYPE_CUBE) ? 8 : 6;
     // free the data of the vertices first
     for (size_t i = 0; i < n_corners; ++i) {
-        free(cube->vertices[i]);
-        free(cube->vertices_backup[i]);
+        free(shape->vertices[i]);
+        free(shape->vertices_backup[i]);
     }
-    free(cube->vertices);
-    free(cube->vertices_backup);
-    free(cube->center);
-    free(cube);
+    free(shape->vertices);
+    free(shape->vertices_backup);
+    free(shape->center);
+    free(shape);
 }
 
 //----------------------------------------------------------------------------------------------------------
