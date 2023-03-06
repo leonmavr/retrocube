@@ -87,8 +87,8 @@ int main(int argc, char** argv) {
     const float amplitude_x = 4.25, amplitude_y = 4.25, amplitude_z = 4.25;
 #else
     // make it spin faster on Windows because terminal refresh functions are sluggish there
-    const float random_rot_speed_x = 0.0125, random_rot_speed_y = 0.0125, random_rot_speed_z = 0.0125;
-    const float amplitude_x = 10.0, amplitude_y = 10.0, amplitude_z = 10.0;
+    const float random_rot_speed_x = 0.01, random_rot_speed_y = 0.01, random_rot_speed_z = 0.01;
+    const float amplitude_x = 6.0, amplitude_y = 6.0, amplitude_z = 6.0;
 #endif
     for (size_t t = 0; t < g_max_iterations; ++t) {
         if (g_use_random_rotation)

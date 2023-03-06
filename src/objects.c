@@ -118,7 +118,20 @@ shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) 
     shape_t* new = malloc(sizeof(shape_t));
     //// common attributes
     new->type = type;
-    new->n_vertices = (type == TYPE_CUBE) ? 8 : 6;
+    switch (new->type) {
+        case TYPE_CUBE:
+            new->n_vertices = 8;
+            break;
+        case TYPE_RHOMBUS:
+            new->n_vertices = 6;
+            break;
+        case TYPE_TRIANGLE:
+            new->n_vertices = 3;
+            break;
+        default:
+            new->n_vertices = 0;
+            break;
+    }
     new->center = vec_vec3i_new(cx, cy, cz);
     // colors for each of the maximum possible 8 faces - change the string below to modify them
     strncpy(new->colors, "~.=@%|O+?Tn", 8);
@@ -185,6 +198,10 @@ shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) 
         new->vertices[3] = vec_vec3i_new(-width/2, 0,                                0);
         new->vertices[4] = vec_vec3i_new(0,        -round(UT_PHI/(1+UT_PHI)*height), 0);
         new->vertices[5] = vec_vec3i_new(0,        round(1.0/(1+UT_PHI)*height),     0);
+    } else if (type == TYPE_TRIANGLE) {
+        new->vertices[0] = vec_vec3i_new(-width/2, 0     , 0);
+        new->vertices[1] = vec_vec3i_new( width/2, 0     , 0);
+        new->vertices[2] = vec_vec3i_new(       0, height, 0);
     }
     // finish creating the vertices
     for (int i = 0; i < new->n_vertices; ++i) {

@@ -8,7 +8,8 @@
 
 enum type_t {
     TYPE_CUBE=0,
-    TYPE_RHOMBUS
+    TYPE_RHOMBUS,
+    TYPE_TRIANGLE
 };
 
 typedef char color_t;

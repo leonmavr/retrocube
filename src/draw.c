@@ -264,7 +264,7 @@ void draw_shape(shape_t* cube) {
         vec3i_t* p3 = cube->vertices[3];
         vec3i_t* p4 = cube->vertices[4];
         vec3i_t* p5 = cube->vertices[5];
-        // each quad of points p0 to p5 represents a rhumbus' face
+        // each quad of points p0 to p5 represents a rhombus' face
         vec3i_t* surfaces[8][3] = {
             {p3, p4, p0},
             {p0, p4, p1},
