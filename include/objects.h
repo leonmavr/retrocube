@@ -64,6 +64,7 @@ typedef struct plane {
  */
 shape_t*    obj_shape_new               (int cx, int cy, int cz, int width, int height, int type);
 void        obj_shape_rotate            (shape_t* shape, float angle_x_rad, float angle_y_rad, float angle_z_rad);
+void        obj_shape_translate         (shape_t* shape, float dx, float dy, float dz);
 void        obj_shape_free              (shape_t* shape);
 
 //-------------------------------------------------------------------------------------------------------------

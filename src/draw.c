@@ -176,7 +176,7 @@ void draw_end() {
     SCREEN_SHOW_CURSOR();
 }
 
-void draw_cube(shape_t* cube) {
+void draw_shape(shape_t* cube) {
 /*
  * This function renders the given cube by the basic ray tracing principle.
  *

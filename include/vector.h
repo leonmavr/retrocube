@@ -41,6 +41,14 @@ vec3i_t* vec_vec3i_new          (int x, int y, int z);
 void     vec_vec3i_copy         (vec3i_t* dest, vec3i_t* src);
 bool     vec_vec3i_are_equal    (vec3i_t* vec1, vec3i_t* vec2);
 vec3i_t  vec_vec3i_add          (vec3i_t* src1, vec3i_t* src2);
+/**
+ * @brief Subtracts the second vector from the first 
+ *
+ * @param src1 Pointer to subtractee vector
+ * @param src2 Pointer to subtractor vector
+ *
+ * @return src1-src2
+ */
 vec3i_t  vec_vec3i_sub          (vec3i_t* src1, vec3i_t* src2);
 vec3i_t  vec_vec3i_mul_scalar   (vec3i_t* src, float scalar);
 int      vec_vec3i_dotprod      (vec3i_t* src1, vec3i_t* src2);

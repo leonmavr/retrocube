@@ -38,7 +38,6 @@ void interrupt_handler(int int_num) {
 }
 
 int main(int argc, char** argv) {
-    int i = 0;
     // initialise pseudo randomness generator for random rotations
     srand(time(NULL));
     const float rand_min = 0.75, rand_max = 2.25;
@@ -47,6 +46,7 @@ int main(int argc, char** argv) {
     const float random_bias_z = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
     // TODO: width and height cmd args
     // parse command line arguments - if followed by an argument, e.g. -sx 0.9, increment `i`
+    int i = 0;
     while (++i < argc) {
         if ((strcmp(argv[i], "--speedx") == 0) || (strcmp(argv[i], "-sx") == 0)) {
             g_rot_speed_x = atof(argv[++i]);
@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
     signal(SIGINT, interrupt_handler);
 
     draw_init();
-    shape_t* cube = obj_shape_new(g_cx, g_cy, g_cz, g_cube_size, 1.5*g_cube_size, TYPE_CUBE);
+    shape_t* shape = obj_shape_new(g_cx, g_cy, g_cz, g_cube_size, 1.5*g_cube_size, TYPE_RHOMBUS);
     // spinning parameters in case random rotation was selected
 #ifndef _WIN32
     const float random_rot_speed_x = 0.002, random_rot_speed_y = 0.002, random_rot_speed_z = 0.002;
@@ -92,16 +92,16 @@ int main(int argc, char** argv) {
 #endif
     for (size_t t = 0; t < g_max_iterations; ++t) {
         if (g_use_random_rotation)
-            obj_shape_rotate(cube, amplitude_x*sin(random_rot_speed_x*sin(random_rot_speed_x*t) + 2*random_bias_x),
-                                  amplitude_y*sin(random_rot_speed_y*random_bias_y*t           + 2*random_bias_y),
-                                  amplitude_z*sin(random_rot_speed_z*random_bias_z*t           + 2*random_bias_z));
+            obj_shape_rotate(shape, amplitude_x*sin(random_rot_speed_x*sin(random_rot_speed_x*t) + 2*random_bias_x),
+                                    amplitude_y*sin(random_rot_speed_y*random_bias_y*t           + 2*random_bias_y),
+                                    amplitude_z*sin(random_rot_speed_z*random_bias_z*t           + 2*random_bias_z));
         else
-            obj_shape_rotate(cube, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
-        draw_cube(cube);
+            obj_shape_rotate(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
+        draw_shape(shape);
         draw_flush_screen();
         nanosleep((const struct timespec[]) {{0, (int)(1.0 / g_fps * 1e9)}}, NULL);
     }
-    obj_shape_free(cube);
+    obj_shape_free(shape);
     draw_end();
 
     return 0;

@@ -63,11 +63,11 @@ static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b,
  * (MB cw from MA) => MA_perp . MB < 0 and          |             /   /       \
  * (MC cw from MB) => MB_perp . MC < 0 and          |           _/  M*------   \_ 
  * (MA cw from MC) => MC_perp . MA < 0 and          |          /  --/       \---->
- *                                                  |         / -/     ______/   + 
- *                                                  |       _--/______/           C
- *                                                  |      </_/                   
- *                                                  |      +
- *                                                  |      B
+ * .                                               .|         / -/     ______/   + 
+ * .                                               .|       _--/______/           C
+ * .                                               .|      </_/                   
+ * .                                               .|      +
+ * .                                               .|      B
  */
     vec3i_t ma = vec_vec3i_sub(m, a);
     vec3i_t mb = vec_vec3i_sub(m, b);
@@ -84,26 +84,26 @@ static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b,
 }
 
 static inline bool obj__is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d) {
-/* 
- * The diagram below visualises the conditions for M to be inside rectangle ABCD:
- *
- *                  A        (AM.AB).unit(AB)     B    AM.AB > 0
- *                  +---------->-----------------+     AM.AB < AB.AB 
- *                  |          .                 |
- *                  |          .                 |
- *                  |          .                 |
- *                  |          .                 |     AM.AD > 0
- * (AD.AM).unit(AD) v. . . . . *M                |     AM.AD < AD.AD 
- *                  |                            |
- *                  |                            |
- *                  |                            |
- *                  +----------------------------+ 
- *                  D                            C
- *
- */
-    vec3i_t ab = (vec3i_t) {b->x - a->x, b->y - a->y, b->z - a->z};
-    vec3i_t ad = (vec3i_t) {d->x - a->x, d->y - a->y, d->z - a->z};
-    vec3i_t am = (vec3i_t) {m->x - a->x, m->y - a->y, m->z - a->z};
+    /* 
+    * The diagram below visualises the conditions for M to be inside rectangle ABCD:
+    *
+    *                  A        (AM.AB).unit(AB)     B    AM.AB > 0
+    *                  +---------->-----------------+     AM.AB < AB.AB 
+    *                  |          .                 |
+    *                  |          .                 |
+    *                  |          .                 |
+    *                  |          .                 |     AM.AD > 0
+    * (AD.AM).unit(AD) v. . . . . *M                |     AM.AD < AD.AD 
+    *                  |                            |
+    *                  |                            |
+    *                  |                            |
+    *                  +----------------------------+ 
+    *                  D                            C
+    *
+    */
+    vec3i_t ab = vec_vec3i_sub(a, b);
+    vec3i_t ad = vec_vec3i_sub(a, d);
+    vec3i_t am = vec_vec3i_sub(a, m);
     return (0 < vec_vec3i_dotprod(&am, &ab)) &&
            (vec_vec3i_dotprod(&am, &ab) < vec_vec3i_dotprod(&ab, &ab)) &&
            (0 < vec_vec3i_dotprod(&am, &ad)) &&
@@ -210,6 +210,14 @@ void obj_shape_rotate (shape_t* shape, float angle_x_rad, float angle_y_rad, flo
         // v = v - C, v = Rz*Ry*Rx*v, v = v + C
         vec_vec3i_rotate(shape->vertices[i], angle_x_rad, angle_y_rad, angle_z_rad, x0, y0, z0);
     }
+}
+
+void obj_shape_translate(shape_t* shape, float dx, float dy, float dz) {
+    const size_t n_corners = (shape->type == TYPE_CUBE) ? 8 : 6;
+    vec3i_t translation = {round(dx), round(dy), round(dz)};
+    *shape->center = vec_vec3i_add(shape->center, &translation);
+    for (size_t i = 0; i < n_corners; ++i)
+        *shape->vertices[i] = vec_vec3i_add(shape->vertices[i], &translation);
 }
 
 void obj_shape_free(shape_t* shape) {
