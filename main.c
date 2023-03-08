@@ -27,6 +27,8 @@ static int g_cz = 250;
 static unsigned g_cube_size = 24;
 // how many frames to run the program for
 static unsigned g_max_iterations = UINT_MAX;
+// whether to use perspective or not
+static bool g_use_perspective = false;
 
 
 /* Clears the screen and makes the cursor visible when the user hits Ctr+C */
@@ -71,6 +73,8 @@ int main(int argc, char** argv) {
             g_cube_size = atoi(argv[++i]);
         } else if ((strcmp(argv[i], "--max-iterations") == 0) || (strcmp(argv[i], "-mi") == 0)) {
             g_max_iterations = atoi(argv[++i]);
+        } else if ((strcmp(argv[i], "--use-perspective") == 0) || (strcmp(argv[i], "-up") == 0)) {
+            g_use_perspective = true;
         }
         assert((-1.0 < g_rot_speed_x) && (g_rot_speed_x < 1.0) &&
                (-1.0 < g_rot_speed_y) && (g_rot_speed_y < 1.0) &&
@@ -81,7 +85,7 @@ int main(int argc, char** argv) {
 
     draw_init();
     shape_t* shape = obj_shape_new(g_cx, g_cy, g_cz, g_cube_size, 1.5*g_cube_size, TYPE_RHOMBUS);
-    camera_t cam = (camera_t) {.x0 = -60, .y0 = -40, .focal_length = 160};
+    camera_t camera = (camera_t) {.x0 = -60, .y0 = -40, .focal_length = 160};
     // spinning parameters in case random rotation was selected
 #ifndef _WIN32
     const float random_rot_speed_x = 0.002, random_rot_speed_y = 0.002, random_rot_speed_z = 0.002;
@@ -99,7 +103,10 @@ int main(int argc, char** argv) {
         else
             obj_shape_rotate(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
         // pass &cam instead of NULL to use perspective
-        draw_shape(shape, NULL);
+        if (g_use_perspective)
+            draw_shape(shape, &camera);
+        else
+            draw_shape(shape, NULL);
         draw_flush_screen();
 #ifndef _WIN32
         // nanosleep does not work on Windows

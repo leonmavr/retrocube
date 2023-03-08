@@ -113,6 +113,7 @@ By default the program runs forever so you can stop it with `Ctr+C`. Below are t
 | -cz             | --cz                      | int           | 0       |z-coordinate of the cube's center in pixels                                                  |
 | -s              | --size                    | int           | 24      |Length of cube's sides in pixels                                                             |
 | -mi             | --maximum-iterations      | int           | Inf/ty  |How many frames to run the program for                                                       |
+| -up             | --use-perspective         | no argument   | Off     |Whether or not to use pinhole camera's perspective transform on rendered pixels              |
 
 If everyhing works, this is what it looks like on the command line:
 
