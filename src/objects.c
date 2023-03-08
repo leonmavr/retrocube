@@ -250,10 +250,10 @@ void obj_shape_free(shape_t* shape) {
 //----------------------------------------------------------------------------------------------------------
 // Ray
 //----------------------------------------------------------------------------------------------------------
-ray_t* obj_ray_new(int x, int y, int z) {
+ray_t* obj_ray_new(int x0, int y0, int z0, int x1, int y1, int z1) {
     ray_t* new = malloc(sizeof(ray_t));
-    new->orig = vec_vec3i_new(0, 0, 0);
-    new->end = vec_vec3i_new(x, y, z);
+    new->orig = vec_vec3i_new(x0, y0, z0);
+    new->end = vec_vec3i_new(x1, y1, z1);
     return new;
 }
 

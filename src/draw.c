@@ -129,7 +129,6 @@ static void draw__get_screen_info() {
     g_screen_res = 1920.0/1080.0;
 }
 
-
 void draw_init() {
     SCREEN_HIDE_CURSOR();
     SCREEN_CLEAR();
@@ -176,7 +175,7 @@ void draw_end() {
     SCREEN_SHOW_CURSOR();
 }
 
-void draw_shape(shape_t* shape) {
+void draw_shape(shape_t* shape, camera_t* camera) {
 /*
  * This function renders the given cube by the basic ray tracing principle.
  *
@@ -184,7 +183,7 @@ void draw_shape(shape_t* shape) {
  * For each screen coordinate, there can zero to two intersections with the cube.
  * If there is one, render the (x, y) of the intersection (not the x,y of the screen!).
  * If there are two, render the (x, y) of the closer intersection. In the figure below,
- * z_hit are the z of the two intersections and z_rend is the furthest one.
+ * z_hit are the z of the two intersections and z_rend is the closest one.
  *
  * The ray below intersects faces (p0, p1, p2, p3) and  (p4, p5, p6, p7)
  * 
@@ -195,7 +194,7 @@ void draw_shape(shape_t* shape) {
  *                    p3    \            p2                      o cube's centre 
  *                    +-------------------+                      + cube's vertices
  *                    | \     \           | \                    # ray-cube intersections
- *                    |    \   #          |    \                   (z_hit)
+ *                    |    \   # z_rend   |    \                   (z_hit)
  *                    |      \  p7        |       \
  *                    |         +-------------------+ p6         ^ y
  *                    |         | \       .         |            |
@@ -205,17 +204,22 @@ void draw_shape(shape_t* shape) {
  *                    |         |     \   .         |              \
  *                 p0 +---------|......\..+ p1      |               V z
  *                     \        |       \    .      |
- *                       \      | z_rend #     .    |
+ *                       \      |        #     .    |
  *                          \   |         \      .  |
  *                             \+----------\--------+
  *                              p4          \        p5
  *                                           \
  *                                            V
  */
-    ray_t* ray = obj_ray_new(0, 0, 0);
+    // whether we want to use the perspective transform or not
+    const bool use_persp = camera != NULL;
+    const unsigned focal_length = (camera != NULL) ? camera->focal_length : 1;
+    const vec3i_t ray_origin = (camera != NULL) ? (vec3i_t) {camera->x0, camera->y0, camera->focal_length} : (vec3i_t) {0, 0, 0};
+    ray_t* ray = obj_ray_new(ray_origin.x, ray_origin.y, ray_origin.z, ray_origin.x, ray_origin.y, ray_origin.z);
     vec3i_t dummy_vec = {0, 0, 0};
     plane_t* plane = obj_plane_new(&dummy_vec, &dummy_vec, &dummy_vec);
     const color_t background = ' ';
+
     if (shape->type == TYPE_CUBE) {
         //// initialisations
         vec3i_t* p0 = shape->vertices[0];
@@ -239,7 +243,7 @@ void draw_shape(shape_t* shape) {
         for (int r = g_min_rows; r <= g_max_rows; ++r) {
             for (int c = g_min_cols; c <= g_max_cols; ++c) {
                 // the final pixel and color to render
-                vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MIN};
+                vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MAX};
                 color_t rendered_color = background;
                 for (size_t isurf = 0; isurf < 6; ++isurf) {
                     obj_plane_set(plane, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]);
@@ -248,9 +252,13 @@ void draw_shape(shape_t* shape) {
                     int z_hit = obj_plane_z_at_xy(plane, c, r);
                     obj_ray_send(ray, c, r, z_hit);
                     if (obj_ray_hits_rectangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2], surfaces[isurf][3]) &&
-                    (z_hit > rendered_point.z)) {
+                    (z_hit < rendered_point.z)) {
                         rendered_color = shape->colors[isurf];
-                        rendered_point = (vec3i_t) {c, r, z_hit};
+                        // use perspective transform if passed camera struct wasn't NULL:
+                        // x' = x*f/z, y' = y*f/z
+                        rendered_point = (vec3i_t) {c*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*c,
+                                                    r*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*r,
+                                                    z_hit};
                     }
                 }
                 draw_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
@@ -279,7 +287,7 @@ void draw_shape(shape_t* shape) {
         for (int r = g_min_rows; r <= g_max_rows; ++r) {
             for (int c = g_min_cols; c <= g_max_cols; ++c) {
                 // the final pixel and color to render
-                vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MIN};
+                vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MAX};
                 color_t rendered_color = background;
                 for (size_t isurf = 0; isurf < 8; ++isurf) {
                     obj_plane_set(plane, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]);
@@ -288,9 +296,11 @@ void draw_shape(shape_t* shape) {
                     int z_hit = obj_plane_z_at_xy(plane, c, r);
                     obj_ray_send(ray, c, r, z_hit);
                     if (obj_ray_hits_triangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]) &&
-                    (z_hit > rendered_point.z)) {
+                    (z_hit < rendered_point.z)) {
                         rendered_color = shape->colors[isurf];
-                        rendered_point = (vec3i_t) {c, r, z_hit};
+                        rendered_point = (vec3i_t) {c*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*c,
+                                                    r*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*r,
+                                                    z_hit};
                     }
                 }
                 draw_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
@@ -306,8 +316,11 @@ void draw_shape(shape_t* shape) {
                 obj_plane_set(plane, p0, p1, p2);
                 int z_hit = obj_plane_z_at_xy(plane, c, r);
                 obj_ray_send(ray, c, r, z_hit);
-                if (obj_ray_hits_triangle(ray, p0, p1, p2))
-                    draw_write_pixel(r, c, shape->colors[0]);
+                if (obj_ray_hits_triangle(ray, p0, p1, p2)) {
+                    draw_write_pixel(c*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*c,
+                                     r*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*r,
+                                     shape->colors[0]);
+                    }
             }
         }
     }

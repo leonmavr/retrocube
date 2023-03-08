@@ -81,7 +81,7 @@ void        obj_shape_free              (shape_t* shape);
  *
  * @return A pointer to the newly constructed ray
  */
-ray_t*      obj_ray_new                (int x, int y, int z);
+ray_t*      obj_ray_new                (int x0, int y0, int z0, int x1, int y1, int z1);
 /**
  * @brief Sets the destination (`end` member) of a ray
  *

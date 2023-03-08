@@ -80,7 +80,8 @@ int main(int argc, char** argv) {
     signal(SIGINT, interrupt_handler);
 
     draw_init();
-    shape_t* shape = obj_shape_new(g_cx, g_cy, g_cz, g_cube_size, 1.5*g_cube_size, TYPE_TRIANGLE);
+    shape_t* shape = obj_shape_new(g_cx, g_cy, g_cz, g_cube_size, 1.5*g_cube_size, TYPE_RHOMBUS);
+    camera_t cam = (camera_t) {.x0 = -60, .y0 = -40, .focal_length = 160};
     // spinning parameters in case random rotation was selected
 #ifndef _WIN32
     const float random_rot_speed_x = 0.002, random_rot_speed_y = 0.002, random_rot_speed_z = 0.002;
@@ -97,7 +98,8 @@ int main(int argc, char** argv) {
                                     amplitude_z*sin(random_rot_speed_z*random_bias_z*t           + 2*random_bias_z));
         else
             obj_shape_rotate(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
-        draw_shape(shape);
+        // pass &cam instead of NULL to use perspective
+        draw_shape(shape, NULL);
         draw_flush_screen();
 #ifndef _WIN32
         // nanosleep does not work on Windows

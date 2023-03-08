@@ -15,6 +15,14 @@ extern int g_max_cols;
 extern color_t* g_screen_buffer;
 extern size_t g_screen_buffer_size;
 
+typedef struct camera {
+    // origin
+    int x0;
+    int y0;
+    // focal length
+    float focal_length;
+} camera_t;
+
 /**
  * @brief Initialises the screen buffer and prepares terminal for writing
  */
@@ -38,7 +46,7 @@ void draw_flush_screen();
  * @brief Clears the screen and restores the cursor.
  */
 void draw_end();
-void draw_shape(shape_t* cube);
+void draw_shape(shape_t* cube, camera_t* camera);
 
 
 #endif /* DRAW_H */
