@@ -14,6 +14,8 @@ extern int g_max_cols;
 // stores the pixels to be drawn on the screen
 extern color_t* g_screen_buffer;
 extern size_t g_screen_buffer_size;
+// checks whether the ray hits each pixel
+extern plane_t* g_plane_test;
 
 typedef struct camera {
     // origin

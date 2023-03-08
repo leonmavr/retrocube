@@ -1,6 +1,7 @@
 #include "vector.h"
 #include "objects.h"
 #include "utils.h"
+#include "draw.h" // g_plane_test
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -359,22 +360,16 @@ bool obj_ray_hits_rectangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, v
     // find the intersection between the ray and the plane segment
     // defined by p0, p1, p2, p3 and if the intersection is whithin
     // that segment, return true
-    plane_t plane;
-    plane.normal = malloc(sizeof(vec3i_t));
-    obj_plane_set(&plane, p0, p1, p2);
-    vec3i_t ray_plane_intersection = obj_ray_plane_intersection(&plane, ray);
-    free(plane.normal);
+    obj_plane_set(g_plane_test, p0, p1, p2);
+    vec3i_t ray_plane_intersection = obj_ray_plane_intersection(g_plane_test, ray);
     return obj__is_point_in_rect(&ray_plane_intersection, p0, p1, p2, p3);
 }
 
 bool obj_ray_hits_triangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
     // Find the intersection between the ray and the triangle (p0, p1, p2).
     // Return whether the intersection is whithin that triangle
-    plane_t plane;
-    plane.normal = malloc(sizeof(vec3i_t));
-    obj_plane_set(&plane, p0, p1, p2);
-    vec3i_t ray_plane_intersection = obj_ray_plane_intersection(&plane, ray);
-    free(plane.normal);
+    obj_plane_set(g_plane_test, p0, p1, p2);
+    vec3i_t ray_plane_intersection = obj_ray_plane_intersection(g_plane_test, ray);
     return obj__is_point_in_triangle(&ray_plane_intersection, p0, p1, p2);
 }
 
