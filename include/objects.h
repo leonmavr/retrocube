@@ -24,6 +24,12 @@ typedef struct shape {
     color_t colors[8];
     // type of shape to render, e.g. cube or rhumb
     enum type_t type;
+    struct bounding_box {
+        // top left
+        int x0, y0;
+        // bottop right
+        int x1, y1;
+    } bounding_box;
 } shape_t;
 
 typedef struct ray {

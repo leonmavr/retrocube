@@ -111,6 +111,14 @@ static inline bool obj__is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec
            (vec_vec3i_dotprod(&am, &ad) < vec_vec3i_dotprod(&ad, &ad));
 }
 
+static inline void obj__shape_update_bbox(shape_t* shape, int cx, int cy, int width, int height) {
+    const int m = UT_MAX(width, height);
+    shape->bounding_box.x0 = shape->center->x - m/UT_SQRT_TWO;
+    shape->bounding_box.y0 = shape->center->y - m/UT_SQRT_TWO;
+    shape->bounding_box.x1 = shape->center->x + m/UT_SQRT_TWO;
+    shape->bounding_box.y1 = shape->center->y + m/UT_SQRT_TWO;
+}
+
 //----------------------------------------------------------------------------------------------------------
 // Renderable shapes 
 //----------------------------------------------------------------------------------------------------------
@@ -138,6 +146,7 @@ shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) 
     strncpy(new->colors, "~.=@%|O+?Tn", 8);
     new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
     new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
+    obj__shape_update_bbox(new, new->center->x, new->center->y, width, height);
     //// attributes that depend on number of vertices
     if (type == TYPE_CUBE) {
         /*
@@ -159,15 +168,15 @@ shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) 
         *                    \+-------------------+
         *                     p4                   p5
         */
-        int diag = round(UT_SQRT_TWO * UT_MIN(width/2, height/2)); 
+        int diag = round(UT_MIN(width/2, height/2)/UT_SQRT_TWO); 
         new->vertices[0] = vec_vec3i_new(-diag, -diag, -diag);
         new->vertices[1] = vec_vec3i_new( diag, -diag, -diag);
         new->vertices[2] = vec_vec3i_new( diag,  diag, -diag);
         new->vertices[3] = vec_vec3i_new(-diag,  diag, -diag);
-        new->vertices[4] = vec_vec3i_new(-diag, -diag, diag);
-        new->vertices[5] = vec_vec3i_new( diag, -diag, diag);
-        new->vertices[6] = vec_vec3i_new( diag,  diag, diag);
-        new->vertices[7] = vec_vec3i_new(-diag,  diag, diag);
+        new->vertices[4] = vec_vec3i_new(-diag, -diag,  diag);
+        new->vertices[5] = vec_vec3i_new( diag, -diag,  diag);
+        new->vertices[6] = vec_vec3i_new( diag,  diag,  diag);
+        new->vertices[7] = vec_vec3i_new(-diag,  diag,  diag);
         // back them up so no floating point error is accumulated affter the rotations
     } else if (type == TYPE_RHOMBUS) {
         /*
@@ -230,10 +239,15 @@ void obj_shape_rotate (shape_t* shape, float angle_x_rad, float angle_y_rad, flo
 }
 
 void obj_shape_translate(shape_t* shape, float dx, float dy, float dz) {
+    // to update bounding box after the translation
+    const unsigned width = abs(shape->bounding_box.x0 - shape->bounding_box.x0);
+    const unsigned height = abs(shape->bounding_box.y0 - shape->bounding_box.y0);
     vec3i_t translation = {round(dx), round(dy), round(dz)};
     *shape->center = vec_vec3i_add(shape->center, &translation);
     for (size_t i = 0; i < shape->n_vertices; ++i)
         *shape->vertices[i] = vec_vec3i_add(shape->vertices[i], &translation);
+
+    obj__shape_update_bbox(shape, shape->center->x, shape->center->y, width, height);
 }
 
 void obj_shape_free(shape_t* shape) {

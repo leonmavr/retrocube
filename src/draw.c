@@ -1,6 +1,7 @@
 #include "vector.h"
 #include "draw.h"
 #include "objects.h"
+#include "utils.h"
 #include <sys/ioctl.h>
 #include <stdio.h>
 #include <limits.h> // INT_MIN
@@ -157,7 +158,7 @@ void draw_write_pixel(int x, int y, color_t c) {
     */
     int y_scaled = y/(g_cols_over_rows/g_screen_res) + g_rows/2;
     x += g_cols/2;
-    if (y_scaled*g_cols + x < g_screen_buffer_size)
+    if ((y_scaled*g_cols + x < g_screen_buffer_size) && (y_scaled*g_cols + x >= 0))
         g_screen_buffer[y_scaled*g_cols + x] = c;
 }
 
@@ -228,6 +229,11 @@ void draw_shape(shape_t* shape, camera_t* camera) {
         dummy_vec.x, dummy_vec.y, dummy_vec.z);
     plane_t* plane = obj_plane_new(&dummy_vec, &dummy_vec, &dummy_vec);
     const color_t background = ' ';
+    // bounding box pixel indexes
+    int xmin = UT_MIN(shape->bounding_box.x0, shape->bounding_box.x1);
+    int ymin = UT_MIN(shape->bounding_box.y0, shape->bounding_box.y1);
+    int xmax = UT_MAX(shape->bounding_box.x0, shape->bounding_box.x1);
+    int ymax = UT_MAX(shape->bounding_box.y0, shape->bounding_box.y1);
 
     if (shape->type == TYPE_CUBE) {
         //// initialisations
@@ -249,8 +255,8 @@ void draw_shape(shape_t* shape, camera_t* camera) {
             {p0, p4, p5, p1}
         };
         //// main processing
-        for (int r = g_min_rows; r <= g_max_rows; ++r) {
-            for (int c = g_min_cols; c <= g_max_cols; ++c) {
+        for (int r = ymin; r <= ymax; ++r) {
+            for (int c = xmin; c <= xmax; ++c) {
                 // the final pixel and color to render
                 vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MAX};
                 color_t rendered_color = background;
@@ -293,8 +299,8 @@ void draw_shape(shape_t* shape, camera_t* camera) {
             {p3, p2, p5}
         };
         //// main processing
-        for (int r = g_min_rows; r <= g_max_rows; ++r) {
-            for (int c = g_min_cols; c <= g_max_cols; ++c) {
+        for (int r = ymin; r <= ymax; ++r) {
+            for (int c = xmin; c <= xmax; ++c) {
                 // the final pixel and color to render
                 vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MAX};
                 color_t rendered_color = background;
