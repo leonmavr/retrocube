@@ -1,6 +1,8 @@
 #ifndef UTILS_H
 #define UTILS_H 
 
+#include <stdbool.h>
+
 // TODO:
 // #define INLINE inline __attribute__((always_inline))
 
@@ -26,4 +28,16 @@
     _a > _b ? _a : _b;       \
 }                            \
 )
+
+
+/**
+ * @brief Checks whether a null-terminated array of characters represents
+ *        a positive decimal number, e.g. 1.8999 or 1,002
+ *
+ * @param string A null-terminated array of chars
+ *
+ * @return true if the given string is numerical
+ */
+bool ut_is_decimal(char* string);
+
 #endif /* UTILS_H */

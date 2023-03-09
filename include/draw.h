@@ -13,14 +13,6 @@ extern size_t g_screen_buffer_size;
 // checks whether the ray hits each pixel
 extern plane_t* g_plane_test;
 
-typedef struct camera {
-    // origin
-    int x0;
-    int y0;
-    // focal length
-    float focal_length;
-} camera_t;
-
 /**
  * @brief Initialises the screen buffer and prepares terminal for writing
  */
@@ -44,7 +36,6 @@ void draw_flush_screen();
  * @brief Clears the screen and restores the cursor.
  */
 void draw_end();
-void draw_shape(shape_t* cube, camera_t* camera);
 
 
 #endif /* DRAW_H */

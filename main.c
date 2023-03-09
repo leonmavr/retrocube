@@ -1,5 +1,6 @@
 #include "draw.h"
 #include "objects.h"
+#include "renderer.h"
 #include <math.h> // sin, cos
 #include <stdlib.h> // atof, atoi, random, exit
 #include <unistd.h> // for usleep
