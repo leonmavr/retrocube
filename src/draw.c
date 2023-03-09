@@ -102,10 +102,6 @@ static void draw__get_screen_info() {
     g_rows = wsize.ws_row;
     g_cols = wsize.ws_col;
     g_cols_over_rows = (float)g_cols/g_rows;
-    g_min_rows = -g_rows;
-    g_max_rows = g_rows+1;
-    g_min_cols = -g_cols/2+1;
-    g_max_cols = g_cols/2;
     if ((wsize.ws_xpixel != IOCTL_SIZE_INVALID) || (wsize.ws_ypixel != IOCTL_SIZE_INVALID)) {
         g_screen_res = (float)wsize.ws_xpixel/wsize.ws_ypixel;
         return;
@@ -144,22 +140,22 @@ void draw_init() {
 }
 
 void draw_write_pixel(int x, int y, color_t c) {
-    /* Uses the following coordinate system:
+    /*
+ * Uses the following coordinate system:
     *
     *      ^ y
     *      |
     *      |
     *      |
-    *      |
-    *      o---------> x
+    *      o--------> x
     *       \
     *        \
     *         v z
     */
-    int y_scaled = y/(g_cols_over_rows/g_screen_res) + g_rows/2;
-    x += g_cols/2;
-    if ((y_scaled*g_cols + x < g_screen_buffer_size) && (y_scaled*g_cols + x >= 0))
-        g_screen_buffer[y_scaled*g_cols + x] = c;
+    const int y_scaled = y/(g_cols_over_rows/g_screen_res) + g_rows/2;
+    const size_t ind_buffer = y_scaled*g_cols + x +  g_cols/2;
+    if ((ind_buffer < g_screen_buffer_size) && (ind_buffer >= 0))
+        g_screen_buffer[ind_buffer] = c;
 }
 
 void draw_flush_screen() {
@@ -326,8 +322,8 @@ void draw_shape(shape_t* shape, camera_t* camera) {
         vec3i_t* p0 = shape->vertices[0];
         vec3i_t* p1 = shape->vertices[1];
         vec3i_t* p2 = shape->vertices[2];
-        for (int r = g_min_rows; r <= g_max_rows; ++r) {
-            for (int c = g_min_cols; c <= g_max_cols; ++c) {
+        for (int r = ymin; r <= ymax; ++r) {
+            for (int c = xmin; c <= xmax; ++c) {
                 obj_plane_set(plane, p0, p1, p2);
                 int z_hit = obj_plane_z_at_xy(plane, c, r);
                 obj_ray_send(ray, c, r, z_hit);
