@@ -4,6 +4,10 @@
 #include "objects.h"
 #include "draw.h"
 
+// checks whether the ray hits each pixel
+extern plane_t* g_plane_test;
+
+
 typedef struct camera {
     // origin
     int x0;

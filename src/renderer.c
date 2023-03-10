@@ -7,7 +7,6 @@
 #include <limits.h> // INT_MAX
 
 
-
 // perpendicular 2D vector, i.e. rotated by 90 degrees ccw
 #define VEC_PERP(src) (      \
 {                            \
@@ -20,6 +19,10 @@
 )
 
 #define VEC_PERP_DOT_PROD(a, b) a.x*b.y - a.y*b.x
+
+
+// defines a plane each time we're about to hit a pixel
+plane_t* g_plane_test;
 
 // Whether a point m is inside a triangle (a, b, c)
 static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c) {
@@ -176,6 +179,8 @@ static inline int
 
 void renderer_init(int cam_x0, int cam_y0, float focal_length) {
     // TODO
+    vec3i_t dummy = {0, 0, 0};
+    g_plane_test = obj_plane_new(&dummy, &dummy, &dummy);
 }
 
 void draw_shape(shape_t* shape, camera_t* camera) {
@@ -343,4 +348,8 @@ void draw_shape(shape_t* shape, camera_t* camera) {
 
 void render_from_obj_file(char* filepath) {
     // TODO
+}
+
+void render_end() {
+    obj_plane_free(g_plane_test);
 }

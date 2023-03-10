@@ -57,8 +57,6 @@ static float g_cols_over_rows;
 static float g_screen_res;
 color_t* g_screen_buffer;
 size_t g_screen_buffer_size;
-// defines a plane each time we're about to hit a pixel
-plane_t* g_plane_test;
 
 
 /**
@@ -110,8 +108,6 @@ void draw_init() {
     draw__get_screen_info();
     g_screen_buffer_size = g_rows*g_cols;
     g_screen_buffer = malloc(sizeof(color_t) * g_screen_buffer_size);
-    vec3i_t dummy = {0, 0, 0};
-    g_plane_test = obj_plane_new(&dummy, &dummy, &dummy);
 }
 
 void draw_write_pixel(int x, int y, color_t c) {
@@ -148,7 +144,6 @@ void draw_flush_screen() {
 
 void draw_end() {
     free(g_screen_buffer);
-    obj_plane_free(g_plane_test);
     SCREEN_CLEAR();
     SCREEN_SHOW_CURSOR();
 }
