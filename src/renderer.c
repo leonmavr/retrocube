@@ -27,7 +27,7 @@ plane_t* g_plane_test;
 camera_t g_camera;
 
 // Whether a point m is inside a triangle (a, b, c)
-static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c) {
+static inline bool render__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c) {
 /*
  * To test whether a point is inside a triangle,    | a_perp(-a_y, a,x)
  * we use the concept of perpendicular (perp)       | ^                     <----
@@ -89,7 +89,7 @@ static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b,
         (  VEC_PERP_DOT_PROD(mc, ma) > 0)));
 }
 
-static inline bool obj__is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d) {
+static inline bool render__is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d) {
     /* 
     * The diagram below visualises the conditions for M to be inside rectangle ABCD:
     *
@@ -115,8 +115,6 @@ static inline bool obj__is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec
            (0 < vec_vec3i_dotprod(&am, &ad)) &&
            (vec_vec3i_dotprod(&am, &ad) < vec_vec3i_dotprod(&ad, &ad));
 }
-
-
 
 
 static vec3i_t obj_ray_plane_intersection(plane_t* plane, ray_t* ray) {
@@ -146,32 +144,25 @@ static vec3i_t obj_ray_plane_intersection(plane_t* plane, ray_t* ray) {
     return ray_at_intersection;
 }
 
-static bool obj_ray_hits_rectangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3) {
+static bool render__ray_hits_rectangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3) {
     // find the intersection between the ray and the plane segment
     // defined by p0, p1, p2, p3 and if the intersection is whithin
     // that segment, return true
     obj_plane_set(g_plane_test, p0, p1, p2);
     vec3i_t ray_plane_intersection = obj_ray_plane_intersection(g_plane_test, ray);
-    return obj__is_point_in_rect(&ray_plane_intersection, p0, p1, p2, p3);
+    return render__is_point_in_rect(&ray_plane_intersection, p0, p1, p2, p3);
 }
 
-static bool obj_ray_hits_triangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
+static bool render__ray_hits_triangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
     // Find the intersection between the ray and the triangle (p0, p1, p2).
     // Return whether the intersection is whithin that triangle
     obj_plane_set(g_plane_test, p0, p1, p2);
     vec3i_t ray_plane_intersection = obj_ray_plane_intersection(g_plane_test, ray);
-    return obj__is_point_in_triangle(&ray_plane_intersection, p0, p1, p2);
+    return render__is_point_in_triangle(&ray_plane_intersection, p0, p1, p2);
 }
 
-
-#if 0
-vec3i_t     obj_ray_plane_intersection (plane_t* plane, ray_t* ray);
-bool        obj_ray_hits_rectangle     (ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3);
-bool obj_ray_hits_triangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
-#endif 
 /* find the z-coordinate on a plane give x and y */
-static inline int
-            obj_plane_z_at_xy          (plane_t* plane, int x, int y) {
+static inline int obj_plane_z_at_xy(plane_t* plane, int x, int y) {
     // solve for z in plane's eq/n: n.x*x + n.y*y + n.z*z + offset = 0
     vec3i_t coeffs = (vec3i_t) {plane->normal->x, plane->normal->y, plane->offset};
     vec3i_t xyz = (vec3i_t) {x, y, 1};
@@ -179,16 +170,13 @@ static inline int
 }
 
 
-void renderer_init(int cam_x0, int cam_y0, float focal_length) {
-    // TODO
+void render_init(int cam_x0, int cam_y0, float focal_length) {
     vec3i_t dummy = {0, 0, 0};
     g_plane_test = obj_plane_new(&dummy, &dummy, &dummy);
-    g_camera.x0 = cam_x0;
-    g_camera.y0 = cam_y0;
-    g_camera.focal_length = focal_length;
+    obj_camera_set(&g_camera, cam_x0, cam_y0, focal_length);
 }
 
-void draw_shape(shape_t* shape) {
+void render_write_shape(shape_t* shape) {
 /*
  * This function renders the given cube by the basic ray tracing principle.
  *
@@ -271,7 +259,7 @@ void draw_shape(shape_t* shape) {
                     // which z the ray currently hits the plane - can be up to two hits
                     int z_hit = obj_plane_z_at_xy(plane, c, r);
                     obj_ray_send(ray, c, r, z_hit);
-                    if (obj_ray_hits_rectangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2], surfaces[isurf][3]) &&
+                    if (render__ray_hits_rectangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2], surfaces[isurf][3]) &&
                     (z_hit < rendered_point.z)) {
                         rendered_color = shape->colors[isurf];
                         // use perspective transform if passed camera struct wasn't NULL:
@@ -281,7 +269,7 @@ void draw_shape(shape_t* shape) {
                                                     z_hit};
                     }
                 }
-                draw_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
+                screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
             } /* for columns */
         } /* for rows */
     } else if (shape->type == TYPE_RHOMBUS) {
@@ -315,7 +303,7 @@ void draw_shape(shape_t* shape) {
                     // which z the ray currently hits the plane - can be up to two hits
                     int z_hit = obj_plane_z_at_xy(plane, c, r);
                     obj_ray_send(ray, c, r, z_hit);
-                    if (obj_ray_hits_triangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]) &&
+                    if (render__ray_hits_triangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]) &&
                     (z_hit < rendered_point.z)) {
                         rendered_color = shape->colors[isurf];
                         rendered_point = (vec3i_t) {c*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*c,
@@ -323,7 +311,7 @@ void draw_shape(shape_t* shape) {
                                                     z_hit};
                     }
                 }
-                draw_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
+                screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
             } /* for columns */
         } /* for rows */
     } else if (shape->type == TYPE_TRIANGLE) {
@@ -336,8 +324,8 @@ void draw_shape(shape_t* shape) {
                 obj_plane_set(plane, p0, p1, p2);
                 int z_hit = obj_plane_z_at_xy(plane, c, r);
                 obj_ray_send(ray, c, r, z_hit);
-                if (obj_ray_hits_triangle(ray, p0, p1, p2)) {
-                    draw_write_pixel(c*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*c,
+                if (render__ray_hits_triangle(ray, p0, p1, p2)) {
+                    screen_write_pixel(c*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*c,
                                      r*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*r,
                                      shape->colors[0]);
                     }
@@ -354,6 +342,6 @@ void render_from_obj_file(char* filepath) {
     // TODO
 }
 
-void renderer_end() {
+void render_end() {
     obj_plane_free(g_plane_test);
 }

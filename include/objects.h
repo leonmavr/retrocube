@@ -64,7 +64,7 @@ typedef struct plane {
 } plane_t;
 
 //-------------------------------------------------------------------------------------------------------------
-// Cube
+// Renderable objects
 //-------------------------------------------------------------------------------------------------------------
 /**
  * @brief Allocates and sets a cube
@@ -90,23 +90,44 @@ void        obj_shape_free              (shape_t* shape);
 /**
  * @brief Allocates and sets a ray structure starting from the origin to the point (x, y, z)
  *
- * @param x x-coordinate of ray's destination
- * @param y y-coordinate of ray's destination
- * @param z z-coordinate of ray's destination
+ * @param x0 x-coordinate of ray's origin 
+ * @param y0 y-coordinate of ray's origin 
+ * @param z0 z-coordinate of ray's origin 
+ * @param x1 x-coordinate of ray's destination
+ * @param y1 y-coordinate of ray's destination
+ * @param z1 z-coordinate of ray's destination
  *
  * @return A pointer to the newly constructed ray
  */
-ray_t*      obj_ray_new                (int x0, int y0, int z0, int x1, int y1, int z1);
+ray_t*      obj_ray_new                 (int x0, int y0, int z0, int x1, int y1, int z1);
 /**
  * @brief Sets the destination (`end` member) of a ray
  *
- * @param ray Pointer to the ray to modify
- * @param x x-coordinate of ray's new destination
- * @param y y-coordinate of ray's new sestination
- * @param z z-coordinate of ray's new destination
+ * @param[in/out] ray Pointer to the ray to modify
+ * @param x0 x-coordinate of ray's origin 
+ * @param y0 y-coordinate of ray's origin 
+ * @param z0 z-coordinate of ray's origin 
+ * @param x1 x-coordinate of ray's destination
+ * @param y1 y-coordinate of ray's destination
+ * @param z1 z-coordinate of ray's destination
  */
-void        obj_ray_send               (ray_t* ray, int x, int y, int z); 
-void        obj_ray_free               (ray_t* ray);
+void        obj_ray_set                 (ray_t* ray, int x0, int y0, int z0, int x1, int y1, int z1); 
+/**
+ * @brief Sets the destination (`end` member) of a ray
+ *
+ * @param[in/out] ray Pointer to the ray to modify
+ * @param x       x-coordinate of ray's new destination
+ * @param y       y-coordinate of ray's new sestination
+ * @param z       z-coordinate of ray's new destination
+ */
+void        obj_ray_send                (ray_t* ray, int x, int y, int z); 
+void        obj_ray_free                (ray_t* ray);
+
+//-------------------------------------------------------------------------------------------------------------
+// Camera 
+//-------------------------------------------------------------------------------------------------------------
+camera_t*   obj_camera_new              (int cam_x0, int cam_y0, float focal_length);
+void        obj_camera_set              (camera_t* camera, int cam_x0, int cam_y0, float focal_length);
 
 //-------------------------------------------------------------------------------------------------------------
 // Plane

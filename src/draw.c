@@ -101,7 +101,7 @@ static void draw__get_screen_info() {
     g_screen_res = 1920.0/1080.0;
 }
 
-void draw_init() {
+void screen_init() {
     SCREEN_HIDE_CURSOR();
     SCREEN_CLEAR();
     // get terminal's size info
@@ -110,7 +110,7 @@ void draw_init() {
     g_screen_buffer = malloc(sizeof(color_t) * g_screen_buffer_size);
 }
 
-void draw_write_pixel(int x, int y, color_t c) {
+void screen_write_pixel(int x, int y, color_t c) {
     /*
  * Uses the following coordinate system:
     *
@@ -129,7 +129,7 @@ void draw_write_pixel(int x, int y, color_t c) {
         g_screen_buffer[ind_buffer] = c;
 }
 
-void draw_flush_screen() {
+void screen_flush() {
     // BUG: central pixel is colored as background - mitigate it by copying from the left
     for (size_t i = 1; i < g_screen_buffer_size - 1; ++i)
         if ((g_screen_buffer[i-1] != ' ') && (g_screen_buffer[i] == ' ') && (g_screen_buffer[i+1]  != ' ')) {
@@ -142,7 +142,7 @@ void draw_flush_screen() {
     SCREEN_GOTO_TOPLEFT();
 }
 
-void draw_end() {
+void screen_end() {
     free(g_screen_buffer);
     SCREEN_CLEAR();
     SCREEN_SHOW_CURSOR();

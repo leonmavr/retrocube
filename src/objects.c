@@ -7,6 +7,8 @@
 #include <stdbool.h>
 #include <string.h> // strncpy
 #include <stddef.h> // size_t 
+
+
 static inline void obj__shape_update_bbox(shape_t* shape, int cx, int cy, int width, int height) {
     const int m = UT_MAX(width, height);
     shape->bounding_box.x0 = shape->center->x - m/UT_SQRT_TWO;
@@ -168,6 +170,12 @@ ray_t* obj_ray_new(int x0, int y0, int z0, int x1, int y1, int z1) {
     return new;
 }
 
+void obj_ray_set(ray_t* ray, int x0, int y0, int z0, int x1, int y1, int z1) {
+    ray->orig = vec_vec3i_new(x0, y0, z0);
+    ray->end = vec_vec3i_new(x1, y1, z1);
+
+}
+
 void obj_ray_send(ray_t* ray, int x, int y, int z) {
     ray->end->x = x;
     ray->end->y = y;
@@ -179,6 +187,25 @@ void obj_ray_free(ray_t* ray) {
     free(ray->end); 
     free(ray);
 }
+
+//-------------------------------------------------------------------------------------------------------------
+// Camera 
+//-------------------------------------------------------------------------------------------------------------
+camera_t* obj_camera_new(int cam_x0, int cam_y0, float focal_length) {
+    camera_t* new = malloc(sizeof(camera_t));
+    new->x0 = cam_x0;
+    new->y0 = cam_y0;
+    new->focal_length = focal_length;
+    return new;
+}
+
+void obj_camera_set(camera_t* camera, int cam_x0, int cam_y0, float focal_length) {
+    camera->x0 = cam_x0;
+    camera->y0 = cam_y0;
+    camera->focal_length = focal_length;
+}
+
+
 //----------------------------------------------------------------------------------------------------------
 // Plane
 //----------------------------------------------------------------------------------------------------------

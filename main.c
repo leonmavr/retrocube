@@ -35,7 +35,7 @@ static bool g_use_perspective = false;
 /* Clears the screen and makes the cursor visible when the user hits Ctr+C */
 static void interrupt_handler(int int_num) {
     if (int_num == SIGINT) {
-        draw_end();
+        screen_end();
         exit(0);
     }            
 }
@@ -84,11 +84,11 @@ int main(int argc, char** argv) {
     // make sure we end gracefully if the user hits Ctr+C
     signal(SIGINT, interrupt_handler);
 
-    draw_init();
+    screen_init();
     if (g_use_perspective)
-        renderer_init(-60, -40, 160);
+        render_init(-60, -40, 160);
     else
-        renderer_init(0, 0, 0);
+        render_init(0, 0, 0);
 
     shape_t* shape = obj_shape_new(g_cx, g_cy, g_cz, g_cube_size, 1.5*g_cube_size, TYPE_CUBE);
     // spinning parameters in case random rotation was selected
@@ -108,16 +108,16 @@ int main(int argc, char** argv) {
         else
             obj_shape_rotate(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
         // pass &cam instead of NULL to use perspective
-        draw_shape(shape);
-        draw_flush_screen();
+        render_write_shape(shape);
+        screen_flush();
 #ifndef _WIN32
         // nanosleep does not work on Windows
         nanosleep((const struct timespec[]) {{0, (int)(1.0 / g_fps * 1e9)}}, NULL);
 #endif
     }
     obj_shape_free(shape);
-    draw_end();
-    renderer_end();
+    screen_end();
+    render_end();
 
     return 0;
 }
