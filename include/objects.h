@@ -39,6 +39,15 @@ typedef struct ray {
     vec3i_t* end;
 } ray_t;
 
+// pinhole camera where objects are shot from
+typedef struct camera {
+    // origin
+    int x0;
+    int y0;
+    // focal length
+    float focal_length;
+} camera_t;
+
 /* 
  * plane in 3D assuming its equation is:
  * n_x*x + n_y*y + n_z*z + d = 0 (1)

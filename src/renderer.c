@@ -23,6 +23,8 @@
 
 // defines a plane each time we're about to hit a pixel
 plane_t* g_plane_test;
+// camera where rays are shot from 
+camera_t g_camera;
 
 // Whether a point m is inside a triangle (a, b, c)
 static inline bool obj__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c) {
@@ -181,9 +183,12 @@ void renderer_init(int cam_x0, int cam_y0, float focal_length) {
     // TODO
     vec3i_t dummy = {0, 0, 0};
     g_plane_test = obj_plane_new(&dummy, &dummy, &dummy);
+    g_camera.x0 = cam_x0;
+    g_camera.y0 = cam_y0;
+    g_camera.focal_length = focal_length;
 }
 
-void draw_shape(shape_t* shape, camera_t* camera) {
+void draw_shape(shape_t* shape) {
 /*
  * This function renders the given cube by the basic ray tracing principle.
  *
@@ -199,7 +204,7 @@ void draw_shape(shape_t* shape, camera_t* camera) {
  *                       \
  *                        \
  *                         V ray
- *                    p3    \            p2                      o cube's centre 
+ *                    p3    \            p2                      o cube's centre a
  *                    +-------------------+                      + cube's vertices
  *                    | \     \           | \                    # ray-cube intersections
  *                    |    \   # z_rend   |    \                   (z_hit)
@@ -220,11 +225,10 @@ void draw_shape(shape_t* shape, camera_t* camera) {
  *                                            V
  */
     // whether we want to use the perspective transform or not
-    const bool use_persp = camera != NULL;
-    const unsigned focal_length = (camera != NULL) ? camera->focal_length : 1;
-    const vec3i_t ray_origin = (camera != NULL) ?
-        (vec3i_t) {camera->x0, camera->y0, camera->focal_length} :
-        (vec3i_t) {0, 0, 0};
+    // TODO: float comparison macro
+    const bool use_persp = (g_camera.focal_length > 1e-4) || (g_camera.focal_length < -1e-4);
+    const unsigned focal_length = (use_persp) ? g_camera.focal_length : 1;
+    const vec3i_t ray_origin = (vec3i_t) {g_camera.x0, g_camera.y0, g_camera.focal_length};
     vec3i_t dummy_vec = {0, 0, 0};
     ray_t* ray = obj_ray_new(ray_origin.x, ray_origin.y, ray_origin.z,
         dummy_vec.x, dummy_vec.y, dummy_vec.z);
@@ -350,6 +354,6 @@ void render_from_obj_file(char* filepath) {
     // TODO
 }
 
-void render_end() {
+void renderer_end() {
     obj_plane_free(g_plane_test);
 }
