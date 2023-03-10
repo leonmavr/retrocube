@@ -248,8 +248,8 @@ void render_write_shape(shape_t* shape) {
             {p0, p4, p5, p1}
         };
         //// main processing
-        for (int r = ymin; r <= ymax; ++r) {
-            for (int c = xmin; c <= xmax; ++c) {
+        for (int y = ymin; y <= ymax; ++y) {
+            for (int x = xmin; x <= xmax; ++x) {
                 // the final pixel and color to render
                 vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MAX};
                 color_t rendered_color = background;
@@ -257,15 +257,15 @@ void render_write_shape(shape_t* shape) {
                     obj_plane_set(plane, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]);
                     // we keep the z to find the furthest one from the origin and we draw its x and y
                     // which z the ray currently hits the plane - can be up to two hits
-                    int z_hit = obj_plane_z_at_xy(plane, c, r);
-                    obj_ray_send(ray, c, r, z_hit);
+                    int z_hit = obj_plane_z_at_xy(plane, x, y);
+                    obj_ray_send(ray, x, y, z_hit);
                     if (render__ray_hits_rectangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2], surfaces[isurf][3]) &&
                     (z_hit < rendered_point.z)) {
                         rendered_color = shape->colors[isurf];
                         // use perspective transform if passed camera struct wasn't NULL:
                         // x' = x*f/z, y' = y*f/z
-                        rendered_point = (vec3i_t) {c*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*c,
-                                                    r*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*r,
+                        rendered_point = (vec3i_t) {x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
+                                                    y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
                                                     z_hit};
                     }
                 }
@@ -292,8 +292,8 @@ void render_write_shape(shape_t* shape) {
             {p3, p2, p5}
         };
         //// main processing
-        for (int r = ymin; r <= ymax; ++r) {
-            for (int c = xmin; c <= xmax; ++c) {
+        for (int y = ymin; y <= ymax; ++y) {
+            for (int x = xmin; x <= xmax; ++x) {
                 // the final pixel and color to render
                 vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MAX};
                 color_t rendered_color = background;
@@ -301,13 +301,13 @@ void render_write_shape(shape_t* shape) {
                     obj_plane_set(plane, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]);
                     // we keep the z to find the furthest one from the origin and we draw its x and y
                     // which z the ray currently hits the plane - can be up to two hits
-                    int z_hit = obj_plane_z_at_xy(plane, c, r);
-                    obj_ray_send(ray, c, r, z_hit);
+                    int z_hit = obj_plane_z_at_xy(plane, x, y);
+                    obj_ray_send(ray, x, y, z_hit);
                     if (render__ray_hits_triangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]) &&
                     (z_hit < rendered_point.z)) {
                         rendered_color = shape->colors[isurf];
-                        rendered_point = (vec3i_t) {c*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*c,
-                                                    r*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*r,
+                        rendered_point = (vec3i_t) {x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
+                                                    y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
                                                     z_hit};
                     }
                 }
@@ -319,15 +319,15 @@ void render_write_shape(shape_t* shape) {
         vec3i_t* p0 = shape->vertices[0];
         vec3i_t* p1 = shape->vertices[1];
         vec3i_t* p2 = shape->vertices[2];
-        for (int r = ymin; r <= ymax; ++r) {
-            for (int c = xmin; c <= xmax; ++c) {
+        for (int y = ymin; y <= ymax; ++y) {
+            for (int x = xmin; x <= xmax; ++x) {
                 obj_plane_set(plane, p0, p1, p2);
-                int z_hit = obj_plane_z_at_xy(plane, c, r);
-                obj_ray_send(ray, c, r, z_hit);
+                int z_hit = obj_plane_z_at_xy(plane, x, y);
+                obj_ray_send(ray, x, y, z_hit);
                 if (render__ray_hits_triangle(ray, p0, p1, p2)) {
-                    screen_write_pixel(c*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*c,
-                                     r*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*r,
-                                     shape->colors[0]);
+                    screen_write_pixel(x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
+                                       y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
+                                       shape->colors[0]);
                     }
             }
         }
