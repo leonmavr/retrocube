@@ -117,7 +117,7 @@ static inline bool render__is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, 
 }
 
 
-static vec3i_t obj_ray_plane_intersection(plane_t* plane, ray_t* ray) {
+static vec3i_t rander__ray_plane_intersection(plane_t* plane, ray_t* ray) {
     /*
     * The parametric line of a ray from from the origin O through 
     * point B ('end' of the ray) is:
@@ -149,7 +149,7 @@ static bool render__ray_hits_rectangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec
     // defined by p0, p1, p2, p3 and if the intersection is whithin
     // that segment, return true
     obj_plane_set(g_plane_test, p0, p1, p2);
-    vec3i_t ray_plane_intersection = obj_ray_plane_intersection(g_plane_test, ray);
+    vec3i_t ray_plane_intersection = rander__ray_plane_intersection(g_plane_test, ray);
     return render__is_point_in_rect(&ray_plane_intersection, p0, p1, p2, p3);
 }
 
@@ -157,7 +157,7 @@ static bool render__ray_hits_triangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3
     // Find the intersection between the ray and the triangle (p0, p1, p2).
     // Return whether the intersection is whithin that triangle
     obj_plane_set(g_plane_test, p0, p1, p2);
-    vec3i_t ray_plane_intersection = obj_ray_plane_intersection(g_plane_test, ray);
+    vec3i_t ray_plane_intersection = rander__ray_plane_intersection(g_plane_test, ray);
     return render__is_point_in_triangle(&ray_plane_intersection, p0, p1, p2);
 }
 
@@ -174,6 +174,11 @@ void render_init(int cam_x0, int cam_y0, float focal_length) {
     vec3i_t dummy = {0, 0, 0};
     g_plane_test = obj_plane_new(&dummy, &dummy, &dummy);
     obj_camera_set(&g_camera, cam_x0, cam_y0, focal_length);
+}
+
+// TODO: move to vector files
+static inline float vec_magn(vec3i_t* vec) {
+    return(sqrt(vec->x*vec->x + vec->y*vec->y + vec->z*vec->z));
 }
 
 void render_write_shape(shape_t* shape) {
@@ -222,10 +227,10 @@ void render_write_shape(shape_t* shape) {
     plane_t* plane = obj_plane_new(&dummy_vec, &dummy_vec, &dummy_vec);
     const color_t background = ' ';
     // bounding box pixel indexes
-    int xmin = UT_MIN(shape->bounding_box.x0, shape->bounding_box.x1);
-    int ymin = UT_MIN(shape->bounding_box.y0, shape->bounding_box.y1);
-    int xmax = UT_MAX(shape->bounding_box.x0, shape->bounding_box.x1);
-    int ymax = UT_MAX(shape->bounding_box.y0, shape->bounding_box.y1);
+    const int xmin = UT_MIN(shape->bounding_box.x0, shape->bounding_box.x1);
+    const int ymin = UT_MIN(shape->bounding_box.y0, shape->bounding_box.y1);
+    const int xmax = UT_MAX(shape->bounding_box.x0, shape->bounding_box.x1);
+    const int ymax = UT_MAX(shape->bounding_box.y0, shape->bounding_box.y1);
 
     if (shape->type == TYPE_CUBE) {
         //// initialisations
@@ -266,6 +271,7 @@ void render_write_shape(shape_t* shape) {
                         rendered_point = (vec3i_t) {x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
                                                     y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
                                                     z_hit};
+                        printf("angle between surface and ray: %.2f\n", (float)vec_vec3i_dotprod(ray->end, plane->normal)/(vec_magn(ray->end)*vec_magn(plane->normal)));
                     }
                 }
                 screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
