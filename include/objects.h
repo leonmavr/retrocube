@@ -74,7 +74,7 @@ typedef struct plane {
  * @param cz z-coordinate of the center
  * @param width of the shape in pixels 
  * @param height of the shape in pixels 
- * @param type of the shape - supported: TYPE_CUBE, TYPE_RHOMBUS
+ * @param type of the shape - supported: TYPE_CUBE, TYPE_RHOMBUS, TYPE_TRIANGLE
  *
  * @return A pointer to the newly constructed shape
  */

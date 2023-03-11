@@ -25,7 +25,7 @@ static int g_cx = 0;
 static int g_cy = 0;
 static int g_cz = 250;
 // size of each face in "pixels" (rendered characters)
-static unsigned g_cube_size = 24;
+static unsigned g_cube_size = 42;
 // how many frames to run the program for
 static unsigned g_max_iterations = UINT_MAX;
 // whether to use perspective or not

@@ -21,13 +21,18 @@
 )
 
 // the max below is generic and avoids double evaluation by redefining `a`, `b`
-#define UT_MAX(a, b) (          \
+#define UT_MAX(a, b) (       \
 {                            \
     __typeof__ (a) _a = (a); \
     __typeof__ (b) _b = (b); \
     _a > _b ? _a : _b;       \
 }                            \
 )
+
+// float equality
+inline bool ut_float_equal(float a, float b) {
+    return (-1e-4 < a - b) && (a - b < 1e-4);
+}
 
 
 /**

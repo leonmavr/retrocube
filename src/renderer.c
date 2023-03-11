@@ -213,9 +213,8 @@ void render_write_shape(shape_t* shape) {
  *                                            V
  */
     // whether we want to use the perspective transform or not
-    // TODO: float comparison macro
-    const bool use_persp = (g_camera.focal_length > 1e-4) || (g_camera.focal_length < -1e-4);
-    const unsigned focal_length = (use_persp) ? g_camera.focal_length : 1;
+    const bool use_persp = !ut_float_equal(g_camera.focal_length, 0.f);
+    const unsigned focal_length = g_camera.focal_length;
     const vec3i_t ray_origin = (vec3i_t) {g_camera.x0, g_camera.y0, g_camera.focal_length};
     vec3i_t dummy_vec = {0, 0, 0};
     ray_t* ray = obj_ray_new(ray_origin.x, ray_origin.y, ray_origin.z,
@@ -262,7 +261,7 @@ void render_write_shape(shape_t* shape) {
                     if (render__ray_hits_rectangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2], surfaces[isurf][3]) &&
                     (z_hit < rendered_point.z)) {
                         rendered_color = shape->colors[isurf];
-                        // use perspective transform if passed camera struct wasn't NULL:
+                        // use perspective transform if its flag is set:
                         // x' = x*f/z, y' = y*f/z
                         rendered_point = (vec3i_t) {x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
                                                     y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
