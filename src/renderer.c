@@ -271,7 +271,14 @@ void render_write_shape(shape_t* shape) {
                         rendered_point = (vec3i_t) {x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
                                                     y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
                                                     z_hit};
-                        printf("angle between surface and ray: %.2f\n", (float)vec_vec3i_dotprod(ray->end, plane->normal)/(vec_magn(ray->end)*vec_magn(plane->normal)));
+                        const bool ray_angle_ccw = ray->end->x*plane->normal->y - ray->end->y*plane->normal->x > 0;
+                        const int sign = (ray_angle_ccw > 0) ? 1 : -1;
+                        const float ray_plane_angle = sign*fabs((float)vec_vec3i_dotprod(ray->end, plane->normal)/(vec_magn(ray->end)*vec_magn(plane->normal)));
+                        if ((-0.2 < ray_plane_angle) && (ray_plane_angle < 0.2)) 
+                            rendered_color = '#';
+                        else if ((-0.4 < ray_plane_angle) && (ray_plane_angle < 0.4)) 
+                            rendered_color = 'G';
+                        //printf("angle between surface and ray: %.2f\n", ray_plane_angle);
                     }
                 }
                 screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
