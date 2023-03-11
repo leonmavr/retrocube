@@ -162,7 +162,7 @@ static bool render__ray_hits_triangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3
 }
 
 /* find the z-coordinate on a plane give x and y */
-static inline int obj_plane_z_at_xy(plane_t* plane, int x, int y) {
+static inline int plane_z_at_xy(plane_t* plane, int x, int y) {
     // solve for z in plane's eq/n: n.x*x + n.y*y + n.z*z + offset = 0
     vec3i_t coeffs = (vec3i_t) {plane->normal->x, plane->normal->y, plane->offset};
     vec3i_t xyz = (vec3i_t) {x, y, 1};
@@ -214,7 +214,7 @@ void render_write_shape(shape_t* shape) {
  */
     // whether we want to use the perspective transform or not
     const bool use_persp = !ut_float_equal(g_camera.focal_length, 0.f);
-    const unsigned focal_length = g_camera.focal_length;
+    const float focal_length = g_camera.focal_length;
     const vec3i_t ray_origin = (vec3i_t) {g_camera.x0, g_camera.y0, g_camera.focal_length};
     vec3i_t dummy_vec = {0, 0, 0};
     ray_t* ray = obj_ray_new(ray_origin.x, ray_origin.y, ray_origin.z,
@@ -256,7 +256,7 @@ void render_write_shape(shape_t* shape) {
                     obj_plane_set(plane, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]);
                     // we keep the z to find the furthest one from the origin and we draw its x and y
                     // which z the ray currently hits the plane - can be up to two hits
-                    int z_hit = obj_plane_z_at_xy(plane, x, y);
+                    int z_hit = plane_z_at_xy(plane, x, y);
                     obj_ray_send(ray, x, y, z_hit);
                     if (render__ray_hits_rectangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2], surfaces[isurf][3]) &&
                     (z_hit < rendered_point.z)) {
@@ -300,7 +300,7 @@ void render_write_shape(shape_t* shape) {
                     obj_plane_set(plane, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]);
                     // we keep the z to find the furthest one from the origin and we draw its x and y
                     // which z the ray currently hits the plane - can be up to two hits
-                    int z_hit = obj_plane_z_at_xy(plane, x, y);
+                    int z_hit = plane_z_at_xy(plane, x, y);
                     obj_ray_send(ray, x, y, z_hit);
                     if (render__ray_hits_triangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]) &&
                     (z_hit < rendered_point.z)) {
@@ -321,7 +321,7 @@ void render_write_shape(shape_t* shape) {
         for (int y = ymin; y <= ymax; ++y) {
             for (int x = xmin; x <= xmax; ++x) {
                 obj_plane_set(plane, p0, p1, p2);
-                int z_hit = obj_plane_z_at_xy(plane, x, y);
+                int z_hit = plane_z_at_xy(plane, x, y);
                 obj_ray_send(ray, x, y, z_hit);
                 if (render__ray_hits_triangle(ray, p0, p1, p2)) {
                     screen_write_pixel(x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
