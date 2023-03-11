@@ -324,8 +324,8 @@ void render_write_shape(shape_t* shape) {
                 int z_hit = plane_z_at_xy(plane, x, y);
                 obj_ray_send(ray, x, y, z_hit);
                 if (render__ray_hits_triangle(ray, p0, p1, p2)) {
-                    screen_write_pixel(x*(1 + (!!use_persp)*focal_length*x/(z_hit + 1e-4)) - (!!use_persp)*x,
-                                       y*(1 + (!!use_persp)*focal_length*y/(z_hit + 1e-4)) - (!!use_persp)*y,
+                    screen_write_pixel(x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
+                                       y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
                                        shape->colors[0]);
                     }
             }
