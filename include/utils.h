@@ -29,6 +29,9 @@
 }                            \
 )
 
+#define UT_MATRIX_ROWS(mat_2D) (sizeof(mat_2D)/sizeof(mat_2D[0]))
+#define UT_MATRIX_COLS(mat_2D) (sizeof(mat_2D[0])/sizeof(mat_2D[0][0]))
+
 // float equality
 inline bool ut_float_equal(float a, float b) {
     return (-1e-4 < a - b) && (a - b < 1e-4);

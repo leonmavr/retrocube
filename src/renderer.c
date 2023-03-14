@@ -23,9 +23,9 @@
 #define VEC_MAGN_SQUARED(vec) vec->x*vec->x + vec->y*vec->y + vec->z*vec->z
 
 static inline float render__cosine_squared(vec3i_t* vec1, vec3i_t* vec2) {
-    const float m1 = vec1->x*vec1->x + vec1->y*vec1->y + vec1->z*vec1->z;
-    const float m2 = vec2->x*vec2->x + vec2->y*vec2->y + vec2->z*vec2->z;
-    return 1.0*vec_vec3i_dotprod(vec1, vec2)*vec_vec3i_dotprod(vec1, vec2) /
+    const unsigned m1 = vec1->x*vec1->x + vec1->y*vec1->y + vec1->z*vec1->z;
+    const unsigned m2 = vec2->x*vec2->x + vec2->y*vec2->y + vec2->z*vec2->z;
+    return ((float)vec_vec3i_dotprod(vec1, vec2))*vec_vec3i_dotprod(vec1, vec2) /
            (m1*m2);
 }
 
@@ -185,10 +185,6 @@ void render_init(int cam_x0, int cam_y0, float focal_length) {
     obj_camera_set(&g_camera, cam_x0, cam_y0, focal_length);
 }
 
-// TODO: move to vector files
-static inline float vec_magn(vec3i_t* vec) {
-    return(sqrt(vec->x*vec->x + vec->y*vec->y + vec->z*vec->z));
-}
 
 void render_write_shape(shape_t* shape) {
 /*
@@ -274,50 +270,51 @@ void render_write_shape(shape_t* shape) {
                     obj_ray_send(ray, x, y, z_hit);
                     if (render__ray_hits_rectangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2], surfaces[isurf][3]) &&
                     (z_hit < rendered_point.z)) {
+                        // TODO: if we use reflectance, background else surface color
                         rendered_color = ' ';//shape->colors[isurf];
                         // use perspective transform if its flag is set:
                         // x' = x*f/z, y' = y*f/z
                         rendered_point = (vec3i_t) {x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
                                                     y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
                                                     z_hit};
-                        // TODO: multiply by focal length and then subtract ray->origin/camera from it
-                        const vec3i_t camera_axis = {-20, -20, 20};
+                        vec3i_t camera_axis = {(!!use_persp)*g_camera.x0,
+                                                     (!!use_persp)*g_camera.y0,
+                                                     1 + (!!use_persp)*g_camera.focal_length - (!!use_persp)*1};
                         const vec3i_t plane_normal = *plane->normal;
                         const int ray_angle_ccw = VEC_PERP_DOT_PROD(camera_axis, plane_normal);
                         const int sign = (ray_angle_ccw > 0) ? 1 : -1;
-                        //const float ray_plane_angle = sign*fabs((float)vec_vec3i_dotprod(ray->end, plane->normal)/(vec_magn(ray->end)*vec_magn(plane->normal)));
-                        vec3i_t plane_normal_zero_z = *plane->normal;
-                        //plane_normal_zero_z.z = 0;
                         const float ray_plane_angle = sign*render__cosine_squared(&camera_axis, plane->normal);
-                        //printf("%.2f\n", ray_plane_angle);
-                        const float a = 1.0/6; // TODO: divide by number of faces
-                        if ((-0.5*a < ray_plane_angle) && (ray_plane_angle < 0.0)) 
+                        const float quant_angle = 1.0/UT_MATRIX_ROWS(surfaces);
+#if 1
+                        if ((-0.5*quant_angle < ray_plane_angle) && (ray_plane_angle < 0.0))
+                            rendered_color = 'v';
+                        else if ((-1.5*quant_angle < ray_plane_angle) && (ray_plane_angle < 0.0))
+                            rendered_color = '~';
+                        else if ((-2.5*quant_angle < ray_plane_angle) && (ray_plane_angle < 0.0))
                             rendered_color = ',';
-                        else if ((-1.5*a < ray_plane_angle) && (ray_plane_angle < 0.0)) 
-                            rendered_color = '$';
-                        else if ((-2.5*a < ray_plane_angle) && (ray_plane_angle < 0.0)) 
-                            rendered_color = 'E';
-                        else if ((-3.5*a < ray_plane_angle) && (ray_plane_angle < 0.0)) 
-                            rendered_color = 'R';
-                        else if ((-4.5*a < ray_plane_angle) && (ray_plane_angle < 0.0)) 
-                            rendered_color = 'U';
-                        else if ((-5.5*a < ray_plane_angle) && (ray_plane_angle < 0.0)) 
-                            rendered_color = '^';
-                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 0.5*a)) 
-                            rendered_color = 'Y';
-                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 1.5*a)) 
-                            rendered_color = 'x';
-                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 2.5*a)) 
-                            rendered_color = 'a';
-                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 3.5*a)) 
-                            rendered_color = 'b';
-                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 4.5*a)) 
-                            rendered_color = 'c';
-                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 5.5*a)) 
-                            rendered_color = 'd';
+                        else if ((-3.5*quant_angle < ray_plane_angle) && (ray_plane_angle < 0.0))
+                            rendered_color = '+';
+                        else if ((-4.5*quant_angle < ray_plane_angle) && (ray_plane_angle < 0.0))
+                            rendered_color = '?';
+                        else if ((-5.5*quant_angle < ray_plane_angle) && (ray_plane_angle < 0.0))
+                            rendered_color = 'X';
+                        else if (ray_plane_angle < 0.0)
+                            rendered_color = '#';
+                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 0.5*quant_angle))
+                            rendered_color = '.';
+                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 1.5*quant_angle))
+                            rendered_color = '-';
+                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 2.5*quant_angle))
+                            rendered_color = '*';
+                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 3.5*quant_angle))
+                            rendered_color = ';';
+                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 4.5*quant_angle))
+                            rendered_color = 'S';
+                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 5.5*quant_angle))
+                            rendered_color = 'O';
                         else
-                            rendered_color = ':';
-                        //printf("angle between surface and ray: %.2f\n", ray_plane_angle);
+                            rendered_color = '#';
+#endif
                     }
                 }
                 screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
