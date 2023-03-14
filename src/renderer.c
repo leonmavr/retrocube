@@ -49,7 +49,7 @@ static inline bool render__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t*
  * angle between a, b is acute.                     |    |
  *                                                  |    v b
  * Therefore a_perp . b < 0 when b is ccw from a.   |         
- * Similarly, a_perp . b > when b is cw from a.     |  ^ a_perp         angle(a, b) < 90
+ * Similarly, a_perp . b > 0 when b is cw from a.     |  ^ a_perp         angle(a, b) < 90
  * .                                               .|   \               a_perp . b > 0
  * .                                               .|   |       ----->
  * .                                               .|   -------/     a
