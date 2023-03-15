@@ -285,36 +285,45 @@ void render_write_shape(shape_t* shape) {
                         const int sign = (ray_angle_ccw > 0) ? 1 : -1;
                         const float ray_plane_angle = sign*render__cosine_squared(&camera_axis, plane->normal);
                         const float quant_angle = 1.0/UT_MATRIX_ROWS(surfaces);
-#if 1
-                        if ((-0.5*quant_angle < ray_plane_angle) && (ray_plane_angle < 0.0))
-                            rendered_color = 'v';
-                        else if ((-1.5*quant_angle < ray_plane_angle) && (ray_plane_angle < 0.0))
-                            rendered_color = '~';
-                        else if ((-2.5*quant_angle < ray_plane_angle) && (ray_plane_angle < 0.0))
-                            rendered_color = ',';
-                        else if ((-3.5*quant_angle < ray_plane_angle) && (ray_plane_angle < 0.0))
-                            rendered_color = '+';
-                        else if ((-4.5*quant_angle < ray_plane_angle) && (ray_plane_angle < 0.0))
-                            rendered_color = '?';
-                        else if ((-5.5*quant_angle < ray_plane_angle) && (ray_plane_angle < 0.0))
-                            rendered_color = 'X';
-                        else if (ray_plane_angle < 0.0)
-                            rendered_color = '#';
-                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 0.5*quant_angle))
-                            rendered_color = '.';
-                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 1.5*quant_angle))
-                            rendered_color = '-';
-                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 2.5*quant_angle))
-                            rendered_color = '*';
-                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 3.5*quant_angle))
-                            rendered_color = ';';
-                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 4.5*quant_angle))
-                            rendered_color = 'S';
-                        else if ((0. < ray_plane_angle) && (ray_plane_angle < 5.5*quant_angle))
-                            rendered_color = 'O';
-                        else
-                            rendered_color = '#';
-#endif
+                        /*
+                        *
+                        * n_colors = 32
+                        * n_faces = 4?                w_a = 2/(n_faces+1)
+                        * angle = -0.5                <--------> 
+                        * 
+                        * (angle + 1.0)/w_a = 1.5/0.4 = 1.8
+                        * i_angle = floor(!) = 1
+                        * color_index = starting_index + i*w_c = 3 + 6 = 9
+                        * final_color = colors[color_index]
+                        *
+                        * angles: 1       -.6      -.2         .2    .4       1
+                        *         +--------+--------+----------+-------+------+
+                        *         |        |        |          |       |      |
+                        *         +--------+--------+----------+-------+------+
+                        *         |        |        |          |       |      |
+                        *         |        |        |          |       |      |
+                        *         |        |        |          |       |      |
+                        * colors: |        |        |          |       |      |
+                        *         |        |        |          |       |      |
+                        *         |        |        |          |       |      |
+                        *         v        v        v    16    v       v      v 
+                        *         +---+---+--+--+--+--+---+---+---+---+---+---+32   w_c = (32 - (32 mod 5)/5 = 6
+                        *         |   |   |  |  |  |  |   |   |   |   |   |   |     starting index = 32 mod 5 + 1 = 3
+                        *         +---+---+--+--+--+--+---+---+---+---+---+---+
+                        *             *        *      *
+                        *             3         9        15       21     27
+                        *
+                        *
+                        */
+                        // TODO: move array to header
+                        char colors_ref[32] = ",*-~?+ye$Lv:4X=#&B%U8z|ns^2i/.`";
+                        const int n = UT_MATRIX_ROWS(surfaces);
+                        const float w_a = 2.0/(n+1); 
+                        const size_t i_angle = ((ray_plane_angle + 1)/1)/w_a;
+                        const int w_c = (32 - (32 % (n+1)))/(n+1);
+                        const size_t ind_colors_start = (32 % (n+1)) + 1;
+                        const size_t ind_colors = ind_colors_start + i_angle*w_c;
+                        rendered_color =  colors_ref[ind_colors];
                     }
                 }
                 screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
