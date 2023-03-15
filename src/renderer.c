@@ -39,19 +39,19 @@ static inline bool render__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t*
  * degrees ccw:                                     |     |   ---------/     
  * a_perp = (-a_y, a_x)                             |      \-/               
  *                                                  |
- * The dot product alone doesn't tell us whether b  |
- * is (c)cw of a. We need the pdot for that.        |  ^ a_perp        angle(a, b) > 90
- * As shown in the sketch on the right half:        |  |               a_perp . b < 0
- *                                                  |   \
- * a_perp . b < 0 when b is ccw from a and the      |   |       ----->
+ * The dot product (.) alone doesn't tell us whether|
+ * b is (c)cw of a. We need the pdot for that.      |  ^ a_perp        b cw from a
+ * As shown in the sketch on the right half:        |  |               angle(a, b) > 90
+ *                                                  |   \              a_perp . b < 0
+ * a_perp . b < 0 when b is cw from a and the       |   |       ----->
  * angle between a, b is obtuse and                 |    |-----/     a 
- * a_perp . b < 0 when b is ccw from a and the      |    |
+ * a_perp . b < 0 when b is cw from a and the       |    |
  * angle between a, b is acute.                     |    |
  *                                                  |    v b
- * Therefore a_perp . b < 0 when b is ccw from a.   |         
- * Similarly, a_perp . b > 0 when b is cw from a.   |  ^ a_perp         angle(a, b) < 90
- * .                                               .|   \               a_perp . b > 0
- * .                                               .|   |       ----->
+ * Therefore a_perp . b < 0 when b is cw from a.    |         
+ * Similarly, a_perp . b > 0 when b is ccw from a.  |  ^ a_perp         b cw from a
+ * .                                               .|   \               angle(a, b) < 90
+ * .                                               .|   |       ----->  a_perp . b < 0
  * .                                               .|   -------/     a
  * .                                               .|    \
  * .               (cont'ed)                       .|     \-  
