@@ -8,6 +8,7 @@
 extern plane_t* g_plane_test;
 // camera where rays are shot from 
 extern camera_t g_camera;
+extern color_t g_colors_refl[32];
 
 /**
  * @brief Initializes renderer by setting the point of persperctive and focal length

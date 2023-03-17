@@ -4,6 +4,7 @@
 #include "vector.h"
 #include "utils.h"
 #include <stdio.h>
+#include <string.h>
 #include <limits.h> // INT_MAX
 
 
@@ -34,6 +35,8 @@ static inline float render__cosine_squared(vec3i_t* vec1, vec3i_t* vec2) {
 plane_t* g_plane_test;
 // camera where rays are shot from 
 camera_t g_camera;
+// stores the colors of a surfaces after it reflects light - from brightest to darkest
+color_t g_colors_refl[32];
 
 // Whether a point m is inside a triangle (a, b, c)
 static inline bool render__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c) {
@@ -183,6 +186,8 @@ void render_init(int cam_x0, int cam_y0, float focal_length) {
     vec3i_t dummy = {0, 0, 0};
     g_plane_test = obj_plane_new(&dummy, &dummy, &dummy);
     obj_camera_set(&g_camera, cam_x0, cam_y0, focal_length);
+    // reflection colors from brightest to darkest
+    strncpy(g_colors_refl, "#OT&=X$@%><)(nc+:;qy\"/?|+.,-`^!v", 32);
 }
 
 
@@ -277,6 +282,8 @@ void render_write_shape(shape_t* shape) {
                         rendered_point = (vec3i_t) {x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
                                                     y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
                                                     z_hit};
+                        //-----------------------------------------------------
+                        // reflectance
                         vec3i_t camera_axis = {(!!use_persp)*g_camera.x0,
                                                      (!!use_persp)*g_camera.y0,
                                                      1 + (!!use_persp)*g_camera.focal_length - (!!use_persp)*1};
@@ -284,46 +291,39 @@ void render_write_shape(shape_t* shape) {
                         const int ray_angle_ccw = VEC_PERP_DOT_PROD(camera_axis, plane_normal);
                         const int sign = (ray_angle_ccw > 0) ? 1 : -1;
                         const float ray_plane_angle = sign*render__cosine_squared(&camera_axis, plane->normal);
-                        const float quant_angle = 1.0/UT_MATRIX_ROWS(surfaces);
                         /*
-                        *
-                        * n_colors = 32
-                        * n_faces = 4?                w_a = 2/(n_faces+1)
-                        * angle = -0.5                <--------> 
-                        * 
-                        * (angle + 1.0)/w_a = 1.5/0.4 = 1.8
-                        * i_angle = floor(!) = 1
-                        * color_index = starting_index + i*w_c = 3 + 6 = 9
-                        * final_color = colors[color_index]
-                        *
-                        * angles: 1       -.6      -.2         .2    .4       1
-                        *         +--------+--------+----------+-------+------+
-                        *         |        |        |          |       |      |
-                        *         +--------+--------+----------+-------+------+
-                        *         |        |        |          |       |      |
-                        *         |        |        |          |       |      |
-                        *         |        |        |          |       |      |
-                        * colors: |        |        |          |       |      |
-                        *         |        |        |          |       |      |
-                        *         |        |        |          |       |      |
-                        *         v        v        v    16    v       v      v 
-                        *         +---+---+--+--+--+--+---+---+---+---+---+---+32   w_c = (32 - (32 mod 5)/5 = 6
-                        *         |   |   |  |  |  |  |   |   |   |   |   |   |     starting index = 32 mod 5 + 1 = 3
-                        *         +---+---+--+--+--+--+---+---+---+---+---+---+
-                        *             *        *      *
-                        *             3         9        15       21     27
-                        *
-                        *
-                        */
-                        // TODO: move array to header
-                        char colors_ref[32] = ",*-~&+ye$Lv:<X=#?B%U8z|ns^2i/.`";
-                        const int n = UT_MATRIX_ROWS(surfaces);
-                        const float w_a = 2.0/(n+1); 
-                        const size_t i_angle = ((ray_plane_angle + 1)/1)/w_a;
-                        const int w_c = (32 - (32 % (n+1)))/(n+1);
-                        const size_t ind_colors_start = 32 % (n+1);
-                        const size_t ind_colors = ind_colors_start + i_angle*w_c;
-                        rendered_color =  colors_ref[ind_colors];
+                         *
+                         *   w_a = 2/n
+                         *   <--------->
+                         *
+                         *  -1       -.66      -.33       0         .33       .66        1
+                         *   +---------+---------+---------+---------+---------+---------+
+                         *   |         |         |         |         |         |         |
+                         *   +---------+---------+---------+---------+---------+---------+
+                         *        |         |         |         |         |         |
+                         *        |         |         |         |         |         |
+                         *        |         |         |         |         |         |
+                         *        |         |         |         |         |         |
+                         *   0    v         v         v         v         v         v    31
+                         *   +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+                         *   |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+                         *   +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+                         *
+                         *   <-------->
+                         *   w_c = floor(32/n)
+                         *
+                         * i_angle = floor((angle + 1)/(2/n))
+                         * w_c = floor(32/n)
+                         * i_color_start = (32 - (32 mod n))/2 + w_c/2
+                         * i_color = i_color_start + i_angle * wc
+                         */
+                        const int n = 2*UT_MATRIX_ROWS(surfaces);
+                        const float w_a = 2.0/n; 
+                        const size_t w_c = 32/n;
+                        rendered_color =  g_colors_refl[(size_t)(
+                                                       (32 % n)/2 + w_c/2 +
+                                                       (size_t)((ray_plane_angle+1)/w_a)*w_c)];
+                        //-----------------------------------------------------
                     }
                 }
                 screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
