@@ -316,12 +316,12 @@ void render_write_shape(shape_t* shape) {
                         *
                         */
                         // TODO: move array to header
-                        char colors_ref[32] = ",*-~?+ye$Lv:4X=#&B%U8z|ns^2i/.`";
+                        char colors_ref[32] = ",*-~&+ye$Lv:<X=#?B%U8z|ns^2i/.`";
                         const int n = UT_MATRIX_ROWS(surfaces);
                         const float w_a = 2.0/(n+1); 
                         const size_t i_angle = ((ray_plane_angle + 1)/1)/w_a;
                         const int w_c = (32 - (32 % (n+1)))/(n+1);
-                        const size_t ind_colors_start = (32 % (n+1)) + 1;
+                        const size_t ind_colors_start = 32 % (n+1);
                         const size_t ind_colors = ind_colors_start + i_angle*w_c;
                         rendered_color =  colors_ref[ind_colors];
                     }
