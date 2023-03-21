@@ -156,18 +156,25 @@ static vec3i_t rander__ray_plane_intersection(plane_t* plane, ray_t* ray) {
     return ray_at_intersection;
 }
 
-static bool render__ray_hits_rectangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, vec3i_t* p3) {
+static bool render__ray_hits_rectangle(ray_t* ray, vec3i_t** points) {
     // find the intersection between the ray and the plane segment
     // defined by p0, p1, p2, p3 and if the intersection is whithin
     // that segment, return true
+    vec3i_t* p0 = points[0];
+    vec3i_t* p1 = points[1];
+    vec3i_t* p2 = points[2];
+    vec3i_t* p3 = points[3];
     obj_plane_set(g_plane_test, p0, p1, p2);
     vec3i_t ray_plane_intersection = rander__ray_plane_intersection(g_plane_test, ray);
     return render__is_point_in_rect(&ray_plane_intersection, p0, p1, p2, p3);
 }
 
-static bool render__ray_hits_triangle(ray_t* ray, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
+static bool render__ray_hits_triangle(ray_t* ray, vec3i_t** points) {
     // Find the intersection between the ray and the triangle (p0, p1, p2).
     // Return whether the intersection is whithin that triangle
+    vec3i_t* p0 = points[0];
+    vec3i_t* p1 = points[1];
+    vec3i_t* p2 = points[2];
     obj_plane_set(g_plane_test, p0, p1, p2);
     vec3i_t ray_plane_intersection = rander__ray_plane_intersection(g_plane_test, ray);
     return render__is_point_in_triangle(&ray_plane_intersection, p0, p1, p2);
@@ -189,6 +196,7 @@ void render_init(int cam_x0, int cam_y0, float focal_length) {
     // reflection colors from brightest to darkest
     strncpy(g_colors_refl, "#OT&=X$@%><)(nc+:;qy\"/?|+.,-`^!v", 32);
 }
+
 
 
 void render_write_shape(shape_t* shape) {
@@ -241,6 +249,13 @@ void render_write_shape(shape_t* shape) {
     const int ymin = UT_MIN(shape->bounding_box.y0, shape->bounding_box.y1);
     const int xmax = UT_MAX(shape->bounding_box.x0, shape->bounding_box.x1);
     const int ymax = UT_MAX(shape->bounding_box.y0, shape->bounding_box.y1);
+    // TODO: move these function pointers in an enum or something
+    bool (*intersect_surface)(ray_t* , vec3i_t**);
+    if (shape->type == TYPE_CUBE)
+        intersect_surface = &render__ray_hits_rectangle;
+    else
+        intersect_surface = &render__ray_hits_triangle;
+
 
     if (shape->type == TYPE_CUBE) {
         //// initialisations
@@ -273,7 +288,7 @@ void render_write_shape(shape_t* shape) {
                     // which z the ray currently hits the plane - can be up to two hits
                     int z_hit = plane_z_at_xy(plane, x, y);
                     obj_ray_send(ray, x, y, z_hit);
-                    if (render__ray_hits_rectangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2], surfaces[isurf][3]) &&
+                    if (intersect_surface(ray, surfaces[isurf]) &&
                     (z_hit < rendered_point.z)) {
                         // TODO: if we use reflectance, background else surface color
                         rendered_color = ' ';//shape->colors[isurf];
@@ -360,7 +375,7 @@ void render_write_shape(shape_t* shape) {
                     // which z the ray currently hits the plane - can be up to two hits
                     int z_hit = plane_z_at_xy(plane, x, y);
                     obj_ray_send(ray, x, y, z_hit);
-                    if (render__ray_hits_triangle(ray, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]) &&
+                    if (render__ray_hits_triangle(ray, surfaces[isurf]) &&
                     (z_hit < rendered_point.z)) {
                         rendered_color = shape->colors[isurf];
                         rendered_point = (vec3i_t) {x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
@@ -371,7 +386,9 @@ void render_write_shape(shape_t* shape) {
                 screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
             } /* for columns */
         } /* for rows */
-    } else if (shape->type == TYPE_TRIANGLE) {
+    }
+#if 0
+    else if (shape->type == TYPE_TRIANGLE) {
         // render a simple triangle - no need to account for surfaces
         vec3i_t* p0 = shape->vertices[0];
         vec3i_t* p1 = shape->vertices[1];
@@ -389,6 +406,7 @@ void render_write_shape(shape_t* shape) {
             }
         }
     }
+#endif
     // free ray-tracing-related constructs
     obj_plane_free(plane);
     obj_ray_free(ray);
