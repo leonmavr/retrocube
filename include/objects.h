@@ -12,6 +12,11 @@ enum type_t {
     TYPE_TRIANGLE
 };
 
+enum connection_t {
+    CONNECTION_RECT=0,
+    CONNECTION_TRIANGLE
+};
+
 typedef char color_t;
 
 typedef struct shape {
@@ -20,9 +25,11 @@ typedef struct shape {
     vec3i_t* center;
     // number of vertices
     size_t n_vertices;
+    // number of surfaces
+    size_t n_faces;
     // an array of characters defining the color of each face
     color_t colors[8];
-    // type of shape to render, e.g. cube or rhumb
+    // type of shape to render, e.g. cube or rhombus
     enum type_t type;
     struct bounding_box {
         // top left
@@ -30,6 +37,16 @@ typedef struct shape {
         // bottop right
         int x1, y1;
     } bounding_box;
+    /*
+     * 2D array that defines the surfaces of the solid.
+     * Its rows consist of the following data:
+     * 4 indexes, connection type (connection_t enum), a character that indicates
+     * the color of the current surface, e.g.:
+     * {3, 4, 6, 7, CONNECTION_RECT, 'o'},
+     * will create a rectangular surface spanned by vertices[3], [4], [6], [7]
+     * painted with 'o'
+     */
+    int** connections;
 } shape_t;
 
 typedef struct ray {

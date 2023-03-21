@@ -28,15 +28,19 @@ shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) 
     switch (new->type) {
         case TYPE_CUBE:
             new->n_vertices = 8;
+            new->n_faces = 6;
             break;
         case TYPE_RHOMBUS:
             new->n_vertices = 6;
+            new->n_faces = 8;
             break;
         case TYPE_TRIANGLE:
             new->n_vertices = 3;
+            new->n_faces = 0;
             break;
         default:
             new->n_vertices = 0;
+            new->n_faces = 0;
             break;
     }
     new->center = vec_vec3i_new(cx, cy, cz);
@@ -45,6 +49,10 @@ shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) 
     new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
     new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
     obj__shape_update_bbox(new, new->center->x, new->center->y, width, height);
+    // allocate 2D array that indicates how vertices are connected at each surface
+    new->connections = malloc(new->n_faces * sizeof(int*));
+    for (int i = 0; i < new->n_faces; ++i)
+        new->connections[i] = malloc(6 * sizeof(int));
     //// attributes that depend on number of vertices
     if (type == TYPE_CUBE) {
         /*
@@ -75,7 +83,22 @@ shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) 
         new->vertices[5] = vec_vec3i_new( diag, -diag,  diag);
         new->vertices[6] = vec_vec3i_new( diag,  diag,  diag);
         new->vertices[7] = vec_vec3i_new(-diag,  diag,  diag);
-        // back them up so no floating point error is accumulated affter the rotations
+        // TODO: change colors
+        // TODO: free it at free function
+        int connections[6][6] = 
+        {
+            {0, 1, 2, 3, CONNECTION_RECT, '#'},
+            {0, 4, 7, 3, CONNECTION_RECT, '|'},
+            {4, 5, 6, 7, CONNECTION_RECT, 'o'},
+            {5, 1, 2, 6, CONNECTION_RECT, ','},
+            {7, 6, 2, 3, CONNECTION_RECT, '$'},
+            {0, 4, 5, 1, CONNECTION_RECT, 'v'}
+        };
+        for (int r = 0; r < new->n_faces; ++r) {
+            for (int c = 0; c < 6; ++c) {
+                new->connections[r][c] = connections[r][c];
+            }
+        }
     } else if (type == TYPE_RHOMBUS) {
         /*
         *               p5              * center
