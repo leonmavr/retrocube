@@ -40,18 +40,22 @@ typedef struct shape {
     /*
      * 2D array that defines the surfaces of the solid.
      * Its rows consist of the following data:
-     * 4 indexes, connection type (connection_t enum), a character that indicates
-     * the color of the current surface, e.g.:
+     *   -- 4 indexes
+     *   -- connection type (connection_t enum)
+     *   -- a character that indicates the color of the current surface
+     * To define a rectangular surface, use:
      * {3, 4, 6, 7, CONNECTION_RECT, 'o'},
-     * will create a rectangular surface spanned by vertices[3], [4], [6], [7]
-     * painted with 'o'
+     * For a triangular surface:
+     * {3, 4, 6, -1, CONNECTION_TRIANGLE, 'o'},
+     * Last index in triangular surface is always ignored. The generated surface
+     * will be spanned by vertices[3], [4], [6], [7] or [3], [4], [6] respectively
+     * and painted with the 'o' character.
      */
     int** connections;
 } shape_t;
 
 typedef struct ray {
     // origin is the centre of perspective in pinhole camera model
-    // for now it is always set to (0, 0, 0)
     vec3i_t* orig;
     vec3i_t* end;
 } ray_t;

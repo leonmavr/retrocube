@@ -4,6 +4,7 @@
 #include "vector.h"
 #include "utils.h"
 #include <stdio.h>
+#include <stdlib.h> // malloc, free
 #include <string.h>
 #include <limits.h> // INT_MAX
 
@@ -255,8 +256,10 @@ void render_write_shape(shape_t* shape) {
         intersect_surface = &render__ray_hits_rectangle;
     else
         intersect_surface = &render__ray_hits_triangle;
+    // stores the surface points to connect together
+    vec3i_t** surf_points = malloc(sizeof(vec3i_t*) * 4);
 
-
+#if 0
     if (shape->type == TYPE_CUBE) {
         //// initialisations
         vec3i_t* p0 = shape->vertices[0];
@@ -276,13 +279,14 @@ void render_write_shape(shape_t* shape) {
             {p7, p6, p2, p3},
             {p0, p4, p5, p1}
         };
+
         //// main processing
         for (int y = ymin; y <= ymax; ++y) {
             for (int x = xmin; x <= xmax; ++x) {
                 // the final pixel and color to render
                 vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MAX};
                 color_t rendered_color = background;
-                for (size_t isurf = 0; isurf < 6; ++isurf) {
+                for (size_t isurf = 0; isurf < shape->n_faces; ++isurf) {
                     obj_plane_set(plane, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]);
                     // we keep the z to find the furthest one from the origin and we draw its x and y
                     // which z the ray currently hits the plane - can be up to two hits
@@ -291,12 +295,13 @@ void render_write_shape(shape_t* shape) {
                     if ((*intersect_surface)(ray, surfaces[isurf]) &&
                     (z_hit < rendered_point.z)) {
                         // TODO: if we use reflectance, background else surface color
-                        rendered_color = ' ';//shape->colors[isurf];
+                        rendered_color = shape->colors[isurf];
                         // use perspective transform if its flag is set:
                         // x' = x*f/z, y' = y*f/z
                         rendered_point = (vec3i_t) {x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
                                                     y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
                                                     z_hit};
+#if 0
                         //-----------------------------------------------------
                         // reflectance
                         vec3i_t camera_axis = {(!!use_persp)*g_camera.x0,
@@ -315,7 +320,6 @@ void render_write_shape(shape_t* shape) {
                          *   +---------+---------+---------+---------+---------+---------+
                          *   |         |         |         |         |         |         |
                          *   +---------+---------+---------+---------+---------+---------+
-                         *        |         |         |         |         |         |
                          *        |         |         |         |         |         |
                          *        |         |         |         |         |         |
                          *        |         |         |         |         |         |
@@ -339,54 +343,48 @@ void render_write_shape(shape_t* shape) {
                                                        (32 % n)/2 + w_c/2 +
                                                        (size_t)((ray_plane_angle+1)/w_a)*w_c)];
                         //-----------------------------------------------------
+#endif
                     }
                 }
                 screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
             } /* for columns */
         } /* for rows */
-    } else if (shape->type == TYPE_RHOMBUS) {
-        //// initialisations
-        vec3i_t* p0 = shape->vertices[0];
-        vec3i_t* p1 = shape->vertices[1];
-        vec3i_t* p2 = shape->vertices[2];
-        vec3i_t* p3 = shape->vertices[3];
-        vec3i_t* p4 = shape->vertices[4];
-        vec3i_t* p5 = shape->vertices[5];
-        // each quad of points p0 to p5 represents a rhombus' face
-        vec3i_t* surfaces[8][3] = {
-            {p3, p4, p0},
-            {p0, p4, p1},
-            {p4, p2, p1},
-            {p4, p2, p3},
-            {p3, p0, p5},
-            {p0, p1, p5},
-            {p1, p5, p2},
-            {p3, p2, p5}
-        };
-        //// main processing
-        for (int y = ymin; y <= ymax; ++y) {
-            for (int x = xmin; x <= xmax; ++x) {
-                // the final pixel and color to render
-                vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MAX};
-                color_t rendered_color = background;
-                for (size_t isurf = 0; isurf < 8; ++isurf) {
-                    obj_plane_set(plane, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]);
-                    // we keep the z to find the furthest one from the origin and we draw its x and y
-                    // which z the ray currently hits the plane - can be up to two hits
-                    int z_hit = plane_z_at_xy(plane, x, y);
-                    obj_ray_send(ray, x, y, z_hit);
-                    if ((**intersect_surface)(ray, surfaces[isurf]) &&
-                    (z_hit < rendered_point.z)) {
-                        rendered_color = shape->colors[isurf];
-                        rendered_point = (vec3i_t) {x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
-                                                    y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
-                                                    z_hit};
-                    }
+    } else if (shape->type == TYPE_RHOMBUS) 
+#endif
+    for (int y = ymin; y <= ymax; ++y) {
+        for (int x = xmin; x <= xmax; ++x) {
+            // the final pixel and color to render
+            vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MAX};
+            color_t rendered_color = background;
+            for (size_t isurf = 0; isurf < shape->n_faces; ++isurf) {
+                // unpack surface info, hence define surface from shape->vertices
+                const size_t ipoint0 = shape->connections[isurf][0];
+                const size_t ipoint1 = shape->connections[isurf][1];
+                const size_t ipoint2 = shape->connections[isurf][2];
+                const size_t ipoint3 = shape->connections[isurf][3];
+                const int connection_type = shape->connections[isurf][4];
+                const color_t surf_color = shape->connections[isurf][5];
+                surf_points[0] = shape->vertices[ipoint0];
+                surf_points[1] = shape->vertices[ipoint1];
+                surf_points[2] = shape->vertices[ipoint2];
+                surf_points[3] = shape->vertices[ipoint3];
+                
+                // find intersections of ray and surface and set colour accordingly
+                obj_plane_set(plane, surf_points[0], surf_points[1], surf_points[2]);
+                // we keep the z to find the furthest one from the origin and we draw its x and y
+                // which z the ray currently hits the plane - can be up to two hits
+                int z_hit = plane_z_at_xy(plane, x, y);
+                obj_ray_send(ray, x, y, z_hit);
+                if ((**intersect_surface)(ray, surf_points) && (z_hit < rendered_point.z)) {
+                    rendered_color = surf_color;
+                    rendered_point = (vec3i_t) {x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
+                                                y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
+                                                z_hit};
                 }
-                screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
-            } /* for columns */
-        } /* for rows */
-    }
+            }
+            screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
+        } /* for x */
+    } /* for y */
 #if 0
     else if (shape->type == TYPE_TRIANGLE) {
         // render a simple triangle - no need to account for surfaces
@@ -410,6 +408,7 @@ void render_write_shape(shape_t* shape) {
     // free ray-tracing-related constructs
     obj_plane_free(plane);
     obj_ray_free(ray);
+    free(surf_points);
 }
 
 
