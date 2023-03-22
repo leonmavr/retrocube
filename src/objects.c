@@ -55,7 +55,7 @@ shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) 
         new->connections[i] = malloc(6 * sizeof(int));
     //// attributes that depend on number of vertices
     if (type == TYPE_CUBE) {
-        /*
+       /*
         *          p3                  p2 
         *           +-------------------+
         *           | \                 | \
@@ -83,19 +83,19 @@ shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) 
         new->vertices[5] = vec_vec3i_new( diag, -diag,  diag);
         new->vertices[6] = vec_vec3i_new( diag,  diag,  diag);
         new->vertices[7] = vec_vec3i_new(-diag,  diag,  diag);
-        // TODO: change colors
+        // define surfaces
         // TODO: free it at free function
         int connections[6][6] = 
         {
-            {0, 1, 2, 3, CONNECTION_RECT, '#'},
-            {0, 4, 7, 3, CONNECTION_RECT, '|'},
-            {4, 5, 6, 7, CONNECTION_RECT, 'o'},
-            {5, 1, 2, 6, CONNECTION_RECT, ','},
-            {7, 6, 2, 3, CONNECTION_RECT, '$'},
-            {0, 4, 5, 1, CONNECTION_RECT, 'v'}
+            {0, 1, 2, 3, CONNECTION_RECT, '~'},
+            {0, 4, 7, 3, CONNECTION_RECT, '.'},
+            {4, 5, 6, 7, CONNECTION_RECT, '='},
+            {5, 1, 2, 6, CONNECTION_RECT, '@'},
+            {7, 6, 2, 3, CONNECTION_RECT, '?'},
+            {0, 4, 5, 1, CONNECTION_RECT, '+'}
         };
-        for (int r = 0; r < new->n_faces; ++r) {
-            for (int c = 0; c < 6; ++c) {
+        for (int r = 0; r < UT_MATRIX_ROWS(connections); ++r) {
+            for (int c = 0; c < UT_MATRIX_COLS(connections); ++c) {
                 new->connections[r][c] = connections[r][c];
             }
         }
@@ -129,16 +129,32 @@ shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) 
         new->vertices[3] = vec_vec3i_new(-width/2, 0                               , 0);
         new->vertices[4] = vec_vec3i_new(0       , -round(UT_PHI/(1+UT_PHI)*height), 0);
         new->vertices[5] = vec_vec3i_new(0       , round(1.0/(1+UT_PHI)*height)    , 0);
+
+        // define surfaces
+        int connections[8][6] = {
+            {3, 4, 0, 0, CONNECTION_TRIANGLE, '~'},
+            {0, 4, 1, 0, CONNECTION_TRIANGLE, '.'},
+            {4, 2, 1, 0, CONNECTION_TRIANGLE, '='},
+            {4, 2, 3, 0, CONNECTION_TRIANGLE, '@'},
+            {3, 0, 5, 0, CONNECTION_TRIANGLE, '%'},
+            {0, 1, 5, 0, CONNECTION_TRIANGLE, '|'},
+            {1, 5, 2, 0, CONNECTION_TRIANGLE, 'O'},
+            {3, 2, 5, 0, CONNECTION_TRIANGLE, '+'}
+        };
+        for (int r = 0; r < UT_MATRIX_ROWS(connections); ++r) {
+            for (int c = 0; c < UT_MATRIX_COLS(connections); ++c) {
+                new->connections[r][c] = connections[r][c];
+            }
+        }
     } else if (type == TYPE_TRIANGLE) {
         new->vertices[0] = vec_vec3i_new(-width/2, 0     , 0);
         new->vertices[1] = vec_vec3i_new( width/2, 0     , 0);
         new->vertices[2] = vec_vec3i_new(       0, height, 0);
     }
-    // finish creating the vertices
+
+    // finish creating the vertices - shift the to the shape's origin, back them up
     for (int i = 0; i < new->n_vertices; ++i) {
-        // shift them to the shape's center 
         *new->vertices[i] = vec_vec3i_add(new->vertices[i], new->center);
-        // back them up so no floating point error is accumulated after any rotations
         new->vertices_backup[i] = vec_vec3i_new(0, 0, 0);
         vec_vec3i_copy(new->vertices_backup[i], new->vertices[i]);
     }
