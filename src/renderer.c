@@ -375,7 +375,7 @@ void render_write_shape(shape_t* shape) {
                 // which z the ray currently hits the plane - can be up to two hits
                 int z_hit = plane_z_at_xy(plane, x, y);
                 obj_ray_send(ray, x, y, z_hit);
-                if ((**intersect_surface)(ray, surf_points) && (z_hit < rendered_point.z)) {
+                if ((*intersect_surface)(ray, surf_points) && (z_hit < rendered_point.z)) {
                     rendered_color = surf_color;
                     rendered_point = (vec3i_t) {x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
                                                 y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
