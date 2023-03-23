@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h> // malloc, free
 #include <string.h>
-#include <limits.h> // INT_MAX
+#include <limits.h> // INT_MAX, INT_MIN
 
 
 // perpendicular 2D vector, i.e. rotated by 90 degrees ccw
@@ -24,11 +24,28 @@
 
 #define VEC_MAGN_SQUARED(vec) vec->x*vec->x + vec->y*vec->y + vec->z*vec->z
 
+/*
+ * Note for programmers:
+ *
+ * The table below maps each connection type (defined as enum in renderer.h)
+ * to a render function. Thefore if you want to render a new 2D shape, define
+ * your connection type and refine your custom rendering function.
+ * It uses the X-macro pattern for the mapping.
+ * After defining the render functions, it generated a function table whose
+ * index is the connection type and the value a pointer to its corresponding
+ * render function.
+ * As a final note, all functions must take the same parameter types.
+ */
+#define CONNECTION_TO_FUNC                                 \
+        X(CONNECTION_RECT,     render__ray_hits_rectangle) \
+        X(CONNECTION_TRIANGLE, render__ray_hits_triangle)
+
+
 static inline float render__cosine_squared(vec3i_t* vec1, vec3i_t* vec2) {
     const unsigned m1 = vec1->x*vec1->x + vec1->y*vec1->y + vec1->z*vec1->z;
     const unsigned m2 = vec2->x*vec2->x + vec2->y*vec2->y + vec2->z*vec2->z;
     return ((float)vec_vec3i_dotprod(vec1, vec2))*vec_vec3i_dotprod(vec1, vec2) /
-           (m1*m2);
+           ((float)m1*m2);
 }
 
 
@@ -103,7 +120,7 @@ static inline bool render__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t*
 }
 
 static inline bool render__is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d) {
-    /* 
+   /* 
     * The diagram below visualises the conditions for M to be inside rectangle ABCD:
     *
     *                  A        (AM.AB).unit(AB)     B    AM.AB > 0
@@ -129,9 +146,8 @@ static inline bool render__is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, 
            (vec_vec3i_dotprod(&am, &ad) < vec_vec3i_dotprod(&ad, &ad));
 }
 
-
 static vec3i_t rander__ray_plane_intersection(plane_t* plane, ray_t* ray) {
-    /*
+   /*
     * The parametric line of a ray from from the origin O through 
     * point B ('end' of the ray) is:
     * R(t) = O + t(B - O) = tB
@@ -188,6 +204,15 @@ static inline int plane_z_at_xy(plane_t* plane, int x, int y) {
     vec3i_t xyz = (vec3i_t) {x, y, 1};
     return round(1.0/plane->normal->z*(-vec_vec3i_dotprod(&coeffs, &xyz)));
 }
+
+
+// expand the second column of `CONNECTION_TO_FUNC`, mapping connections
+// to intersection functions in an 1-1 manner
+static bool (*func_table_intersection[NUM_CONNECTIONS])(ray_t* ray, vec3i_t** points) = {
+#define X(a, b) b,
+    CONNECTION_TO_FUNC
+#undef X
+};
 
 
 void render_init(int cam_x0, int cam_y0, float focal_length) {
@@ -250,12 +275,6 @@ void render_write_shape(shape_t* shape) {
     const int ymin = UT_MIN(shape->bounding_box.y0, shape->bounding_box.y1);
     const int xmax = UT_MAX(shape->bounding_box.x0, shape->bounding_box.x1);
     const int ymax = UT_MAX(shape->bounding_box.y0, shape->bounding_box.y1);
-    // TODO: move these function pointers in an enum or something
-    bool (*intersect_surface)(ray_t* , vec3i_t**);
-    if (shape->type == TYPE_CUBE)
-        intersect_surface = &render__ray_hits_rectangle;
-    else
-        intersect_surface = &render__ray_hits_triangle;
     // stores the surface points to connect together
     vec3i_t** surf_points = malloc(sizeof(vec3i_t*) * 4);
 
@@ -375,7 +394,7 @@ void render_write_shape(shape_t* shape) {
                 // which z the ray currently hits the plane - can be up to two hits
                 int z_hit = plane_z_at_xy(plane, x, y);
                 obj_ray_send(ray, x, y, z_hit);
-                if ((*intersect_surface)(ray, surf_points) && (z_hit < rendered_point.z)) {
+                if ((*func_table_intersection[connection_type])(ray, surf_points) && (z_hit < rendered_point.z)) {
                     rendered_color = surf_color;
                     rendered_point = (vec3i_t) {x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
                                                 y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,

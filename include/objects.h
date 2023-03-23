@@ -14,7 +14,8 @@ enum type_t {
 
 enum connection_t {
     CONNECTION_RECT=0,
-    CONNECTION_TRIANGLE
+    CONNECTION_TRIANGLE,
+    NUM_CONNECTIONS
 };
 
 typedef char color_t;
