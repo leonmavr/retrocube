@@ -24,17 +24,29 @@
 
 #define VEC_MAGN_SQUARED(vec) vec->x*vec->x + vec->y*vec->y + vec->z*vec->z
 
+bool g_use_perspective = false;
+bool g_use_reflectance = false;
+
 /*
  * Note for programmers:
  *
  * The table below maps each connection type (defined as enum in renderer.h)
  * to a render function. Thefore if you want to render a new 2D shape, define
  * your connection type and refine your custom rendering function.
- * It uses the X-macro pattern for the mapping.
- * After defining the render functions, it generated a function table whose
+ *
+ * It uses the X macro pattern for the mapping. X macro does not need to be
+ * defined yet. However it needs to be defined every time we want to expand
+ * the table.
+ *
+ * We typically define X one time to expand the first column into an enum
+ * type in order to get the indexes (this is not done in this case as the
+ * indexes are already defined). We then expand the second column to get
+ * an array of pointers to functions.
+ *
+ * After defining the render functions, it generates a function table whose
  * index is the connection type and the value a pointer to its corresponding
- * render function.
- * As a final note, all functions must take the same parameter types.
+ * render function. As a final note, all functions must take the same parameter
+ * types.
  */
 #define CONNECTION_TO_FUNC                                 \
         X(CONNECTION_RECT,     render__ray_hits_rectangle) \
@@ -55,6 +67,10 @@ plane_t* g_plane_test;
 camera_t g_camera;
 // stores the colors of a surfaces after it reflects light - from brightest to darkest
 color_t g_colors_refl[32];
+
+//------------------------------------------------------------------------------------
+// Static functions
+//------------------------------------------------------------------------------------
 
 // Whether a point m is inside a triangle (a, b, c)
 static inline bool render__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c) {
@@ -108,15 +124,14 @@ static inline bool render__is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t*
     const vec3i_t ma = vec_vec3i_sub(m, a);
     const vec3i_t mb = vec_vec3i_sub(m, b);
     const vec3i_t mc = vec_vec3i_sub(m, c);
-    return 
-        // cw case
-        (((VEC_PERP_DOT_PROD(ma, mb) < 0) &&
-        (  VEC_PERP_DOT_PROD(mb, mc) < 0) &&
-        (  VEC_PERP_DOT_PROD(mc, ma) < 0)) ||
-        // ccw case
-        (( VEC_PERP_DOT_PROD(ma, mb) > 0) &&
-        (  VEC_PERP_DOT_PROD(mb, mc) > 0) &&
-        (  VEC_PERP_DOT_PROD(mc, ma) > 0)));
+    // cw = clockwise, ccw = counter-clockwise
+    const bool are_all_cw =  ((VEC_PERP_DOT_PROD(ma, mb) < 0) &&
+                              (VEC_PERP_DOT_PROD(mb, mc) < 0) &&
+                              (VEC_PERP_DOT_PROD(mc, ma) < 0));
+    const bool are_all_ccw = ((VEC_PERP_DOT_PROD(ma, mb) > 0) &&
+                              (VEC_PERP_DOT_PROD(mb, mc) > 0) &&
+                              (VEC_PERP_DOT_PROD(mc, ma) > 0));
+    return are_all_cw || are_all_ccw;
 }
 
 static inline bool render__is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d) {
@@ -215,10 +230,22 @@ static bool (*func_table_intersection[NUM_CONNECTIONS])(ray_t* ray, vec3i_t** po
 };
 
 
-void render_init(int cam_x0, int cam_y0, float focal_length) {
+//------------------------------------------------------------------------------------
+// External functions
+//------------------------------------------------------------------------------------
+
+void render_use_perspective(int center_x0, int center_y0, float focal_length) {
+    g_use_perspective = true;
+    obj_camera_set(&g_camera, center_x0, center_y0, focal_length);
+}
+
+void render_use_reflectance() {
+    g_use_reflectance = true;
+}
+
+void render_init() {
     vec3i_t dummy = {0, 0, 0};
     g_plane_test = obj_plane_new(&dummy, &dummy, &dummy);
-    obj_camera_set(&g_camera, cam_x0, cam_y0, focal_length);
     // reflection colors from brightest to darkest
     strncpy(g_colors_refl, "#OT&=X$@%><)(nc+:;qy\"/?|+.,-`^!v", 32);
 }
@@ -394,7 +421,8 @@ void render_write_shape(shape_t* shape) {
                 // which z the ray currently hits the plane - can be up to two hits
                 int z_hit = plane_z_at_xy(plane, x, y);
                 obj_ray_send(ray, x, y, z_hit);
-                if ((*func_table_intersection[connection_type])(ray, surf_points) && (z_hit < rendered_point.z)) {
+                if ((*func_table_intersection[connection_type])(ray, surf_points) &&
+                (z_hit < rendered_point.z)) {
                     rendered_color = surf_color;
                     rendered_point = (vec3i_t) {x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
                                                 y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
@@ -405,17 +433,17 @@ void render_write_shape(shape_t* shape) {
         } /* for x */
     } /* for y */
 #if 0
-    else if (shape->type == TYPE_TRIANGLE) {
+    if (shape->type == TYPE_TRIANGLE) {
         // render a simple triangle - no need to account for surfaces
-        vec3i_t* p0 = shape->vertices[0];
-        vec3i_t* p1 = shape->vertices[1];
-        vec3i_t* p2 = shape->vertices[2];
+        surf_points[0] = shape->vertices[0];
+        surf_points[1] = shape->vertices[1];
+        surf_points[2] = shape->vertices[2];
         for (int y = ymin; y <= ymax; ++y) {
             for (int x = xmin; x <= xmax; ++x) {
-                obj_plane_set(plane, p0, p1, p2);
+                obj_plane_set(plane, surf_points[0], surf_points[1], surf_points[2]);
                 int z_hit = plane_z_at_xy(plane, x, y);
                 obj_ray_send(ray, x, y, z_hit);
-                if (render__ray_hits_triangle(ray, p0, p1, p2)) {
+                if (render__ray_hits_triangle(ray, surf_points)) {
                     screen_write_pixel(x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
                                        y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
                                        shape->colors[0]);

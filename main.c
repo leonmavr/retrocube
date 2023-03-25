@@ -28,8 +28,6 @@ static int g_cz = 250;
 static unsigned g_cube_size = 42;
 // how many frames to run the program for
 static unsigned g_max_iterations = UINT_MAX;
-// whether to use perspective or not
-static bool g_use_perspective = false;
 
 
 /* Clears the screen and makes the cursor visible when the user hits Ctr+C */
@@ -75,7 +73,7 @@ int main(int argc, char** argv) {
         } else if ((strcmp(argv[i], "--max-iterations") == 0) || (strcmp(argv[i], "-mi") == 0)) {
             g_max_iterations = atoi(argv[++i]);
         } else if ((strcmp(argv[i], "--use-perspective") == 0) || (strcmp(argv[i], "-up") == 0)) {
-            g_use_perspective = true;
+            render_use_perspective(0, 0, -200);
         }
         assert((-1.0 < g_rot_speed_x) && (g_rot_speed_x < 1.0) &&
                (-1.0 < g_rot_speed_y) && (g_rot_speed_y < 1.0) &&
@@ -85,10 +83,7 @@ int main(int argc, char** argv) {
     signal(SIGINT, interrupt_handler);
 
     screen_init();
-    if (g_use_perspective)
-        render_init(-60, -40, 160);
-    else
-        render_init(0, 0, 0);
+    render_init();
 
     shape_t* shape = obj_shape_new(g_cx, g_cy, g_cz, g_cube_size, 1.5*g_cube_size, TYPE_CUBE);
     // spinning parameters in case random rotation was selected
