@@ -89,18 +89,29 @@ typedef struct plane {
 // Renderable objects
 //-------------------------------------------------------------------------------------------------------------
 /**
- * @brief Allocates and sets a cube
+ * @brief Allocates and sets a 3D polygon
  *
  * @param cx x-coordinate of the center
  * @param cy y-coordinate of the center
  * @param cz z-coordinate of the center
  * @param width of the shape in pixels 
  * @param height of the shape in pixels 
- * @param type of the shape - supported: TYPE_CUBE, TYPE_RHOMBUS, TYPE_TRIANGLE
+ * @param type of the shape - supported: TYPE_CUBE, TYPE_RHOMBUS
  *
  * @return A pointer to the newly constructed shape
  */
 shape_t*    obj_shape_new               (int cx, int cy, int cz, int width, int height, int type);
+/**
+* @brief Allocates and sets a 2D triangle
+*
+* @param p0 A triangle vertex
+* @param p1 A triangle vertex
+* @param p2 A triangle vertex
+* @param color Triangle's fill color
+*
+* @returns A pointer to the newly constructed shape
+*/
+shape_t*    obj_triangle_new            (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color);
 void        obj_shape_rotate            (shape_t* shape, float angle_x_rad, float angle_y_rad, float angle_z_rad);
 void        obj_shape_translate         (shape_t* shape, float dx, float dy, float dz);
 void        obj_shape_free              (shape_t* shape);

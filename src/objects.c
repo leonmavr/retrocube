@@ -34,10 +34,6 @@ shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) 
             new->n_vertices = 6;
             new->n_faces = 8;
             break;
-        case TYPE_TRIANGLE:
-            new->n_vertices = 3;
-            new->n_faces = 0;
-            break;
         default:
             new->n_vertices = 0;
             new->n_faces = 0;
@@ -151,6 +147,45 @@ shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) 
         new->vertices[1] = vec_vec3i_new( width/2, 0     , 0);
         new->vertices[2] = vec_vec3i_new(       0, height, 0);
     }
+
+    // finish creating the vertices - shift the to the shape's origin, back them up
+    for (int i = 0; i < new->n_vertices; ++i) {
+        *new->vertices[i] = vec_vec3i_add(new->vertices[i], new->center);
+        new->vertices_backup[i] = vec_vec3i_new(0, 0, 0);
+        vec_vec3i_copy(new->vertices_backup[i], new->vertices[i]);
+    }
+    return new;
+}
+
+shape_t* obj_triangle_new(vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color) {
+    shape_t* new = malloc(sizeof(shape_t));
+    new->center = malloc(sizeof(vec3i_t));
+    new->center->x = (p0->x + p1->x + p2->x)/3;
+    new->center->y = (p0->y + p1->y + p2->y)/3;
+    new->n_vertices = 3;
+    new->n_faces = 1;
+    new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
+    new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
+    unsigned width = UT_MAX( UT_MAX(abs(p0->x - p1->x), abs(p0->x - p2->x)),
+                             UT_MAX(abs(p0->x - p1->x), abs(p1->x - p2->x)));
+    unsigned height = UT_MAX(UT_MAX(abs(p0->y - p1->y), abs(p0->y - p2->y)),
+                             UT_MAX(abs(p0->y - p1->y), abs(p1->y - p2->y)));
+    new->vertices[0] = vec_vec3i_new(p0->x, p0->y, p0->z);
+    new->vertices[1] = vec_vec3i_new(p1->x, p1->y, p1->z);
+    new->vertices[2] = vec_vec3i_new(p2->x, p2->y, p2->z);
+    obj__shape_update_bbox(new, new->center->x, new->center->y, width, height);
+
+    // allocate 2D array that indicates how vertices are connected at each surface
+    new->connections = malloc(new->n_faces * sizeof(int*));
+    for (int i = 0; i < new->n_faces; ++i)
+        new->connections[i] = malloc(6 * sizeof(int));
+    // define surfaces
+    new->connections[0][0] = 0;
+    new->connections[0][1] = 1;
+    new->connections[0][2] = 2;
+    new->connections[0][3] = 0;
+    new->connections[0][4] = CONNECTION_TRIANGLE;
+    new->connections[0][5] = color;
 
     // finish creating the vertices - shift the to the shape's origin, back them up
     for (int i = 0; i < new->n_vertices; ++i) {
