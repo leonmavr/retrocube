@@ -70,6 +70,7 @@ static inline float render__cosine_squared(vec3i_t* vec1, vec3i_t* vec2) {
 
 // defines a plane each time we're about to hit a pixel
 plane_t* g_plane_test;
+ray_t* g_ray_test;
 // camera where rays are shot from 
 camera_t g_camera;
 // stores the colors of a surfaces after it reflects light - from brightest to darkest
@@ -293,7 +294,6 @@ static inline color_t render__reflect(ray_t* ray, plane_t* plane, mesh_t* shape)
     return g_colors_refl[(size_t)(
                          (32 % n)/2 + w_c/2 +
                          (size_t)((ray_plane_angle+1)/w_a)*w_c)];
-
 }
 
 
@@ -313,10 +313,10 @@ void render_use_reflectance() {
 void render_init() {
     vec3i_t dummy = {0, 0, 0};
     g_plane_test = obj_plane_new(&dummy, &dummy, &dummy);
+    g_ray_test = obj_ray_new(0, 0, 0, 0, 0, 0);
     // reflection colors from brightest to darkest
     strncpy(g_colors_refl, "#OT&=@$x%><)(nc+:;qy\"/?|+.,-v^!`", 32);
 }
-
 
 
 void render_write_shape(mesh_t* shape) {
@@ -356,18 +356,18 @@ void render_write_shape(mesh_t* shape) {
  *                                            V
  */
     // whether we want to use the perspective transform or not
-    const vec3i_t ray_origin = (vec3i_t) {g_camera.x0, g_camera.y0, g_camera.focal_length};
-    vec3i_t dummy_vec = {0, 0, 0};
-    ray_t* ray = obj_ray_new(ray_origin.x, ray_origin.y, ray_origin.z,
-        dummy_vec.x, dummy_vec.y, dummy_vec.z);
-    plane_t* plane = obj_plane_new(&dummy_vec, &dummy_vec, &dummy_vec);
+    vec3i_t ray_origin = (vec3i_t) {g_camera.x0, g_camera.y0, g_camera.focal_length};
+    vec_vec3i_copy(g_ray_test->orig, &ray_origin);
+    //vec3i_t dummy_vec = {0, 0, 0};
+    //iray_t* ray = obj_ray_new(ray_origin.x, ray_origin.y, ray_origin.z,
+    //    dummy_vec.x, dummy_vec.y, dummy_vec.z);
     const color_t background = ' ';
     // bounding box pixel indexes
     const int xmin = UT_MIN(shape->bounding_box.x0, shape->bounding_box.x1);
     const int ymin = UT_MIN(shape->bounding_box.y0, shape->bounding_box.y1);
     const int xmax = UT_MAX(shape->bounding_box.x0, shape->bounding_box.x1);
     const int ymax = UT_MAX(shape->bounding_box.y0, shape->bounding_box.y1);
-    // stores the surface points to connect together
+    // stores the 4 surface points to connect together
     vec3i_t** surf_points = malloc(sizeof(vec3i_t*) * 4);
 
     for (int y = ymin; y <= ymax; ++y) {
@@ -389,27 +389,26 @@ void render_write_shape(mesh_t* shape) {
                 surf_points[3] = shape->vertices[ipoint3];
                 
                 // find intersections of ray and surface and set colour accordingly
-                obj_plane_set(plane, surf_points[0], surf_points[1], surf_points[2]);
+                obj_plane_set(g_plane_test, surf_points[0], surf_points[1], surf_points[2]);
                 // we keep the z to find the furthest one from the origin and we draw its x and y
                 // which z the ray currently hits the plane - can be up to two hits
-                int z_hit = plane_z_at_xy(plane, x, y);
-                obj_ray_send(ray, x, y, z_hit);
-                if ((*func_table_intersection[connection_type])(ray, surf_points) &&
+                int z_hit = plane_z_at_xy(g_plane_test, x, y);
+                obj_ray_send(g_ray_test, x, y, z_hit);
+                if ((*func_table_intersection[connection_type])(g_ray_test, surf_points) &&
                 (z_hit < rendered_point.z)) {
                     rendered_color = surf_color;
                     rendered_point = (vec3i_t) {x, y, z_hit};
+                    // modern compilers (gcc >= 4.0, clang >= 3.0) know how to optimize this:
                     if (g_use_perspective)
                         rendered_point = render__persp_transform(&rendered_point);
                     if (g_use_reflectance)
-                        rendered_color = render__reflect(ray, plane, shape);
+                        rendered_color = render__reflect(g_ray_test, g_plane_test, shape);
                 }
             } /* for surfaces */
             screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
         } /* for x */
     } /* for y */
     // free ray-tracing-related constructs
-    obj_plane_free(plane);
-    obj_ray_free(ray);
     free(surf_points);
 }
 

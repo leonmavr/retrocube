@@ -8,6 +8,8 @@
 
 // checks whether the ray hits each pixel
 extern plane_t* g_plane_test;
+// checks whether the ray hits each pixel
+extern ray_t* g_ray_test;
 // camera where rays are shot from 
 extern camera_t g_camera;
 extern color_t g_colors_refl[32];
