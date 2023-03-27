@@ -231,6 +231,9 @@ void obj_mesh_free(mesh_t* mesh) {
     }
     free(mesh->vertices);
     free(mesh->vertices_backup);
+    for (int i = 0; i < mesh->n_faces; ++i)
+        free(mesh->connections[i]);
+    free(mesh->connections);
     free(mesh->center);
     free(mesh);
 }
