@@ -74,6 +74,8 @@ int main(int argc, char** argv) {
             g_max_iterations = atoi(argv[++i]);
         } else if ((strcmp(argv[i], "--use-perspective") == 0) || (strcmp(argv[i], "-up") == 0)) {
             render_use_perspective(0, 0, -200);
+        } else if ((strcmp(argv[i], "--use-reflection") == 0) || (strcmp(argv[i], "-ur") == 0)) {
+            render_use_reflectance();
         }
         assert((-1.0 < g_rot_speed_x) && (g_rot_speed_x < 1.0) &&
                (-1.0 < g_rot_speed_y) && (g_rot_speed_y < 1.0) &&

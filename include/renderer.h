@@ -29,7 +29,7 @@ extern bool g_use_reflectance;
 void render_use_perspective(int center_x0, int center_y0, float focal_length);
 
 /**
- * @brief Reflect rays based on the hit angle
+ * @brief Sets flag to change the surface color based on the hit angle 
  */
 void render_use_reflectance();
 

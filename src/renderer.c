@@ -56,6 +56,13 @@ bool g_use_reflectance = false;
 static inline float render__cosine_squared(vec3i_t* vec1, vec3i_t* vec2) {
     const unsigned m1 = vec1->x*vec1->x + vec1->y*vec1->y + vec1->z*vec1->z;
     const unsigned m2 = vec2->x*vec2->x + vec2->y*vec2->y + vec2->z*vec2->z;
+#if 0
+    printf("v1 = %d, %d, %d\n", vec1->x, vec1->y, vec1->z);
+    printf("v2 = %d, %d, %d\n", vec2->x, vec2->y, vec2->z);
+    printf("angle = %.2f\n", ((float)vec_vec3i_dotprod(vec1, vec2))*vec_vec3i_dotprod(vec1, vec2) /
+        ((float)m1*m2)
+);
+#endif
     return ((float)vec_vec3i_dotprod(vec1, vec2))*vec_vec3i_dotprod(vec1, vec2) /
            ((float)m1*m2);
 }
@@ -229,6 +236,13 @@ static bool (*func_table_intersection[NUM_CONNECTIONS])(ray_t* ray, vec3i_t** po
 #undef X
 };
 
+/* perspective trasnform to map world point (3D) to screen (2D) */
+static inline vec3i_t render__persp_transform(vec3i_t* xyz) {
+    return (vec3i_t) {xyz->x*g_camera.focal_length/(xyz->z + 1e-8),
+                      xyz->y*g_camera.focal_length/(xyz->z + 1e-8),
+                      xyz->z};
+}
+
 
 //------------------------------------------------------------------------------------
 // External functions
@@ -247,7 +261,7 @@ void render_init() {
     vec3i_t dummy = {0, 0, 0};
     g_plane_test = obj_plane_new(&dummy, &dummy, &dummy);
     // reflection colors from brightest to darkest
-    strncpy(g_colors_refl, "#OT&=X$@%><)(nc+:;qy\"/?|+.,-`^!v", 32);
+    strncpy(g_colors_refl, "#OT&=@$x%><)(nc+:;qy\"/?|+.,-v^!`", 32);
 }
 
 
@@ -289,8 +303,6 @@ void render_write_shape(shape_t* shape) {
  *                                            V
  */
     // whether we want to use the perspective transform or not
-    const bool use_persp = !ut_float_equal(g_camera.focal_length, 0.f);
-    const float focal_length = g_camera.focal_length;
     const vec3i_t ray_origin = (vec3i_t) {g_camera.x0, g_camera.y0, g_camera.focal_length};
     vec3i_t dummy_vec = {0, 0, 0};
     ray_t* ray = obj_ray_new(ray_origin.x, ray_origin.y, ray_origin.z,
@@ -305,98 +317,6 @@ void render_write_shape(shape_t* shape) {
     // stores the surface points to connect together
     vec3i_t** surf_points = malloc(sizeof(vec3i_t*) * 4);
 
-#if 0
-    if (shape->type == TYPE_CUBE) {
-        //// initialisations
-        vec3i_t* p0 = shape->vertices[0];
-        vec3i_t* p1 = shape->vertices[1];
-        vec3i_t* p2 = shape->vertices[2];
-        vec3i_t* p3 = shape->vertices[3];
-        vec3i_t* p4 = shape->vertices[4];
-        vec3i_t* p5 = shape->vertices[5];
-        vec3i_t* p6 = shape->vertices[6];
-        vec3i_t* p7 = shape->vertices[7];
-        // each quad of points p0 to p5 represents a cube's face
-        vec3i_t* surfaces[6][4] = {
-            {p0, p1, p2, p3},
-            {p0, p4, p7, p3},
-            {p4, p5, p6, p7},
-            {p5, p1, p2, p6},
-            {p7, p6, p2, p3},
-            {p0, p4, p5, p1}
-        };
-
-        //// main processing
-        for (int y = ymin; y <= ymax; ++y) {
-            for (int x = xmin; x <= xmax; ++x) {
-                // the final pixel and color to render
-                vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MAX};
-                color_t rendered_color = background;
-                for (size_t isurf = 0; isurf < shape->n_faces; ++isurf) {
-                    obj_plane_set(plane, surfaces[isurf][0], surfaces[isurf][1], surfaces[isurf][2]);
-                    // we keep the z to find the furthest one from the origin and we draw its x and y
-                    // which z the ray currently hits the plane - can be up to two hits
-                    int z_hit = plane_z_at_xy(plane, x, y);
-                    obj_ray_send(ray, x, y, z_hit);
-                    if ((*intersect_surface)(ray, surfaces[isurf]) &&
-                    (z_hit < rendered_point.z)) {
-                        // TODO: if we use reflectance, background else surface color
-                        rendered_color = shape->colors[isurf];
-                        // use perspective transform if its flag is set:
-                        // x' = x*f/z, y' = y*f/z
-                        rendered_point = (vec3i_t) {x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
-                                                    y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
-                                                    z_hit};
-#if 0
-                        //-----------------------------------------------------
-                        // reflectance
-                        vec3i_t camera_axis = {(!!use_persp)*g_camera.x0,
-                                                     (!!use_persp)*g_camera.y0,
-                                                     1 + (!!use_persp)*g_camera.focal_length - (!!use_persp)*1};
-                        const vec3i_t plane_normal = *plane->normal;
-                        const int ray_angle_ccw = VEC_PERP_DOT_PROD(camera_axis, plane_normal);
-                        const int sign = (ray_angle_ccw > 0) ? 1 : -1;
-                        const float ray_plane_angle = sign*render__cosine_squared(&camera_axis, plane->normal);
-                        /*
-                         *
-                         *   w_a = 2/n
-                         *   <--------->
-                         *
-                         *  -1       -.66      -.33       0         .33       .66        1
-                         *   +---------+---------+---------+---------+---------+---------+
-                         *   |         |         |         |         |         |         |
-                         *   +---------+---------+---------+---------+---------+---------+
-                         *        |         |         |         |         |         |
-                         *        |         |         |         |         |         |
-                         *        |         |         |         |         |         |
-                         *   0    v         v         v         v         v         v    31
-                         *   +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-                         *   |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
-                         *   +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-                         *
-                         *   <-------->
-                         *   w_c = floor(32/n)
-                         *
-                         * i_angle = floor((angle + 1)/(2/n))
-                         * w_c = floor(32/n)
-                         * i_color_start = (32 - (32 mod n))/2 + w_c/2
-                         * i_color = i_color_start + i_angle * wc
-                         */
-                        const int n = 2*UT_MATRIX_ROWS(surfaces);
-                        const float w_a = 2.0/n; 
-                        const size_t w_c = 32/n;
-                        rendered_color =  g_colors_refl[(size_t)(
-                                                       (32 % n)/2 + w_c/2 +
-                                                       (size_t)((ray_plane_angle+1)/w_a)*w_c)];
-                        //-----------------------------------------------------
-#endif
-                    }
-                }
-                screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
-            } /* for columns */
-        } /* for rows */
-    } else if (shape->type == TYPE_RHOMBUS) 
-#endif
     for (int y = ymin; y <= ymax; ++y) {
         for (int x = xmin; x <= xmax; ++x) {
             // the final pixel and color to render
@@ -424,11 +344,53 @@ void render_write_shape(shape_t* shape) {
                 if ((*func_table_intersection[connection_type])(ray, surf_points) &&
                 (z_hit < rendered_point.z)) {
                     rendered_color = surf_color;
-                    rendered_point = (vec3i_t) {x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
-                                                y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
-                                                z_hit};
+                    rendered_point = (vec3i_t) {x, y, z_hit};
+                    if (g_use_perspective)
+                        rendered_point = render__persp_transform(&rendered_point);
+                    if (g_use_reflectance) {
+                        const int z_refl = (g_use_perspective) ? g_camera.focal_length : -shape->center->z/2;
+                        vec3i_t camera_axis = {g_camera.x0,
+                                               g_camera.y0,
+                                               z_refl};
+                        const vec3i_t plane_normal = *plane->normal;
+                        const int ray_angle_ccw = VEC_PERP_DOT_PROD(camera_axis, plane_normal);
+                        const int sign = (ray_angle_ccw > 0) ? 1 : -1;
+                        const float ray_plane_angle = sign*render__cosine_squared(&camera_axis, plane->normal);
+                        //-----------------------------------------------------
+                        // reflectance
+                        /*
+                         *
+                         *   w_a = 2/n
+                         *   <--------->
+                         *  -1       -.66      -.33       0         .33       .66        1
+                         *   +---------+---------+---------+---------+---------+---------+
+                         *   |         |         |         |         |         |         |
+                         *   +---------+---------+---------+---------+---------+---------+
+                         *        |         |         |         |         |         |
+                         *        |         |         |         |         |         |
+                         *        |         |         |         |         |         |
+                         *   0    v         v         v         v         v         v    31
+                         *   +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+                         *   |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+                         *   +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+                         *   <-------->
+                         *   w_c = floor(32/n)
+                         *
+                         * i_angle = floor((angle + 1)/(2/n))
+                         * w_c = floor(32/n)
+                         * i_color_start = (32 - (32 mod n))/2 + w_c/2
+                         * i_color = i_color_start + i_angle * wc
+                         */
+                        const int n = 2*shape->n_faces;
+                        const float w_a = 2.0/n; 
+                        const size_t w_c = 32/n;
+                        rendered_color =  g_colors_refl[(size_t)(
+                                                       (32 % n)/2 + w_c/2 +
+                                                       (size_t)((ray_plane_angle+1)/w_a)*w_c)];
+
+                    }
                 }
-            }
+            } /* for surfaces */
             screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
         } /* for x */
     } /* for y */
