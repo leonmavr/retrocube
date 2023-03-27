@@ -407,26 +407,6 @@ void render_write_shape(shape_t* shape) {
             screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
         } /* for x */
     } /* for y */
-#if 0
-    if (shape->type == TYPE_TRIANGLE) {
-        // render a simple triangle - no need to account for surfaces
-        surf_points[0] = shape->vertices[0];
-        surf_points[1] = shape->vertices[1];
-        surf_points[2] = shape->vertices[2];
-        for (int y = ymin; y <= ymax; ++y) {
-            for (int x = xmin; x <= xmax; ++x) {
-                obj_plane_set(plane, surf_points[0], surf_points[1], surf_points[2]);
-                int z_hit = plane_z_at_xy(plane, x, y);
-                obj_ray_send(ray, x, y, z_hit);
-                if (render__ray_hits_triangle(ray, surf_points)) {
-                    screen_write_pixel(x*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*x,
-                                       y*(1 + (!!use_persp)*focal_length/(z_hit + 1e-4)) - (!!use_persp)*y,
-                                       shape->colors[0]);
-                    }
-            }
-        }
-    }
-#endif
     // free ray-tracing-related constructs
     obj_plane_free(plane);
     obj_ray_free(ray);

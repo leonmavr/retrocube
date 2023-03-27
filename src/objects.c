@@ -162,6 +162,7 @@ shape_t* obj_triangle_new(vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color) 
     new->center = malloc(sizeof(vec3i_t));
     new->center->x = (p0->x + p1->x + p2->x)/3;
     new->center->y = (p0->y + p1->y + p2->y)/3;
+    new->center->z = (p0->z + p1->z + p2->z)/3;
     new->n_vertices = 3;
     new->n_faces = 1;
     new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
