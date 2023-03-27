@@ -243,6 +243,59 @@ static inline vec3i_t render__persp_transform(vec3i_t* xyz) {
                       xyz->z};
 }
 
+/**
+* @brief Returns a color based on the angle between the ray and plane,
+*        simulating reflection
+*
+* @param[in] ray A pointer to ray
+* @param[in] plane A pointer to plane
+* @param[in] shape A pointer to shape
+*
+* @returns Reflected color
+*/
+static inline color_t render__reflect(ray_t* ray, plane_t* plane, shape_t* shape) {
+    const int z_refl = (g_use_perspective) ? g_camera.focal_length : -shape->center->z/2;
+    vec3i_t camera_axis = {g_camera.x0,
+                            g_camera.y0,
+                            z_refl};
+    const vec3i_t plane_normal = *plane->normal;
+    const int ray_angle_ccw = VEC_PERP_DOT_PROD(camera_axis, plane_normal);
+    const int sign = (ray_angle_ccw > 0) ? 1 : -1;
+    const float ray_plane_angle = sign*render__cosine_squared(&camera_axis, plane->normal);
+    //-----------------------------------------------------
+    // reflectance
+    /*
+     *
+     *   w_a = 2/n
+     *   <--------->
+     *  -1       -.66      -.33       0         .33       .66        1
+     *   +---------+---------+---------+---------+---------+---------+
+     *   |         |         |         |         |         |         |
+     *   +---------+---------+---------+---------+---------+---------+
+     *        |         |         |         |         |         |
+     *        |         |         |         |         |         |
+     *        |         |         |         |         |         |
+     *   0    v         v         v         v         v         v    31
+     *   +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+     *   |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+     *   +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+     *   <-------->
+     *   w_c = floor(32/n)
+     *
+     * i_angle = floor((angle + 1)/(2/n))
+     * w_c = floor(32/n)
+     * i_color_start = (32 - (32 mod n))/2 + w_c/2
+     * i_color = i_color_start + i_angle * wc
+     */
+    const int n = 2*shape->n_faces;
+    const float w_a = 2.0/n; 
+    const size_t w_c = 32/n;
+    return g_colors_refl[(size_t)(
+                         (32 % n)/2 + w_c/2 +
+                         (size_t)((ray_plane_angle+1)/w_a)*w_c)];
+
+}
+
 
 //------------------------------------------------------------------------------------
 // External functions
@@ -347,48 +400,8 @@ void render_write_shape(shape_t* shape) {
                     rendered_point = (vec3i_t) {x, y, z_hit};
                     if (g_use_perspective)
                         rendered_point = render__persp_transform(&rendered_point);
-                    if (g_use_reflectance) {
-                        const int z_refl = (g_use_perspective) ? g_camera.focal_length : -shape->center->z/2;
-                        vec3i_t camera_axis = {g_camera.x0,
-                                               g_camera.y0,
-                                               z_refl};
-                        const vec3i_t plane_normal = *plane->normal;
-                        const int ray_angle_ccw = VEC_PERP_DOT_PROD(camera_axis, plane_normal);
-                        const int sign = (ray_angle_ccw > 0) ? 1 : -1;
-                        const float ray_plane_angle = sign*render__cosine_squared(&camera_axis, plane->normal);
-                        //-----------------------------------------------------
-                        // reflectance
-                        /*
-                         *
-                         *   w_a = 2/n
-                         *   <--------->
-                         *  -1       -.66      -.33       0         .33       .66        1
-                         *   +---------+---------+---------+---------+---------+---------+
-                         *   |         |         |         |         |         |         |
-                         *   +---------+---------+---------+---------+---------+---------+
-                         *        |         |         |         |         |         |
-                         *        |         |         |         |         |         |
-                         *        |         |         |         |         |         |
-                         *   0    v         v         v         v         v         v    31
-                         *   +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-                         *   |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
-                         *   +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-                         *   <-------->
-                         *   w_c = floor(32/n)
-                         *
-                         * i_angle = floor((angle + 1)/(2/n))
-                         * w_c = floor(32/n)
-                         * i_color_start = (32 - (32 mod n))/2 + w_c/2
-                         * i_color = i_color_start + i_angle * wc
-                         */
-                        const int n = 2*shape->n_faces;
-                        const float w_a = 2.0/n; 
-                        const size_t w_c = 32/n;
-                        rendered_color =  g_colors_refl[(size_t)(
-                                                       (32 % n)/2 + w_c/2 +
-                                                       (size_t)((ray_plane_angle+1)/w_a)*w_c)];
-
-                    }
+                    if (g_use_reflectance)
+                        rendered_color = render__reflect(ray, plane, shape);
                 }
             } /* for surfaces */
             screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
