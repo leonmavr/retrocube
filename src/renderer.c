@@ -253,7 +253,7 @@ static inline vec3i_t render__persp_transform(vec3i_t* xyz) {
 *
 * @returns Reflected color
 */
-static inline color_t render__reflect(ray_t* ray, plane_t* plane, shape_t* shape) {
+static inline color_t render__reflect(ray_t* ray, plane_t* plane, mesh_t* shape) {
     const int z_refl = (g_use_perspective) ? g_camera.focal_length : -shape->center->z/2;
     vec3i_t camera_axis = {g_camera.x0,
                             g_camera.y0,
@@ -319,7 +319,7 @@ void render_init() {
 
 
 
-void render_write_shape(shape_t* shape) {
+void render_write_shape(mesh_t* shape) {
 /*
  * This function renders the given cube by the basic ray tracing principle.
  *

@@ -47,7 +47,7 @@ void render_init();
  * @param shape Pointer to the shape to write to the renderer. Note that it must be
  *              initialised 
  */
-void render_write_shape(shape_t* shape);
+void render_write_shape(mesh_t* shape);
 
 /**
  * @brief TODO: render blender object from .obj file 

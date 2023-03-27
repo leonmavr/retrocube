@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
     screen_init();
     render_init();
 
-    shape_t* shape = obj_shape_new(g_cx, g_cy, g_cz, g_cube_size, 1.5*g_cube_size, TYPE_CUBE);
+    mesh_t* shape = obj_mesh_new(g_cx, g_cy, g_cz, g_cube_size, 1.5*g_cube_size, TYPE_CUBE);
     // spinning parameters in case random rotation was selected
 #ifndef _WIN32
     const float random_rot_speed_x = 0.002, random_rot_speed_y = 0.002, random_rot_speed_z = 0.002;
@@ -99,11 +99,11 @@ int main(int argc, char** argv) {
 #endif
     for (size_t t = 0; t < g_max_iterations; ++t) {
         if (g_use_random_rotation)
-            obj_shape_rotate(shape, amplitude_x*sin(random_rot_speed_x*sin(random_rot_speed_x*t) + 2*random_bias_x),
+            obj_mesh_rotate(shape, amplitude_x*sin(random_rot_speed_x*sin(random_rot_speed_x*t) + 2*random_bias_x),
                                     amplitude_y*sin(random_rot_speed_y*random_bias_y*t           + 2*random_bias_y),
                                     amplitude_z*sin(random_rot_speed_z*random_bias_z*t           + 2*random_bias_z));
         else
-            obj_shape_rotate(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
+            obj_mesh_rotate(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
         // pass &cam instead of NULL to use perspective
         render_write_shape(shape);
         screen_flush();
@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
         nanosleep((const struct timespec[]) {{0, (int)(1.0 / g_fps * 1e9)}}, NULL);
 #endif
     }
-    obj_shape_free(shape);
+    obj_mesh_free(shape);
     screen_end();
     render_end();
 

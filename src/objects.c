@@ -9,20 +9,20 @@
 #include <stddef.h> // size_t 
 
 
-static inline void obj__shape_update_bbox(shape_t* shape, int cx, int cy, int width, int height) {
+static inline void obj__mesh_update_bbox(mesh_t* mesh, int cx, int cy, int width, int height) {
     const int m = UT_MAX(width, height);
-    shape->bounding_box.x0 = shape->center->x - m/UT_SQRT_TWO;
-    shape->bounding_box.y0 = shape->center->y - m/UT_SQRT_TWO;
-    shape->bounding_box.x1 = shape->center->x + m/UT_SQRT_TWO;
-    shape->bounding_box.y1 = shape->center->y + m/UT_SQRT_TWO;
+    mesh->bounding_box.x0 = mesh->center->x - m/UT_SQRT_TWO;
+    mesh->bounding_box.y0 = mesh->center->y - m/UT_SQRT_TWO;
+    mesh->bounding_box.x1 = mesh->center->x + m/UT_SQRT_TWO;
+    mesh->bounding_box.y1 = mesh->center->y + m/UT_SQRT_TWO;
 }
 
 //----------------------------------------------------------------------------------------------------------
 // Renderable shapes 
 //----------------------------------------------------------------------------------------------------------
-shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) {
+mesh_t* obj_mesh_new(int cx, int cy, int cz, int width, int height, int type) {
 
-    shape_t* new = malloc(sizeof(shape_t));
+    mesh_t* new = malloc(sizeof(mesh_t));
     //// common attributes
     new->type = type;
     switch (new->type) {
@@ -44,7 +44,7 @@ shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) 
     strncpy(new->colors, "~.=@%|O+?Tn", 8);
     new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
     new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
-    obj__shape_update_bbox(new, new->center->x, new->center->y, width, height);
+    obj__mesh_update_bbox(new, new->center->x, new->center->y, width, height);
     // allocate 2D array that indicates how vertices are connected at each surface
     new->connections = malloc(new->n_faces * sizeof(int*));
     for (int i = 0; i < new->n_faces; ++i)
@@ -148,7 +148,7 @@ shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) 
         new->vertices[2] = vec_vec3i_new(       0, height, 0);
     }
 
-    // finish creating the vertices - shift the to the shape's origin, back them up
+    // finish creating the vertices - shift the to the mesh's origin, back them up
     for (int i = 0; i < new->n_vertices; ++i) {
         *new->vertices[i] = vec_vec3i_add(new->vertices[i], new->center);
         new->vertices_backup[i] = vec_vec3i_new(0, 0, 0);
@@ -157,8 +157,8 @@ shape_t* obj_shape_new(int cx, int cy, int cz, int width, int height, int type) 
     return new;
 }
 
-shape_t* obj_triangle_new(vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color) {
-    shape_t* new = malloc(sizeof(shape_t));
+mesh_t* obj_triangle_new(vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color) {
+    mesh_t* new = malloc(sizeof(mesh_t));
     new->center = malloc(sizeof(vec3i_t));
     new->center->x = (p0->x + p1->x + p2->x)/3;
     new->center->y = (p0->y + p1->y + p2->y)/3;
@@ -174,7 +174,7 @@ shape_t* obj_triangle_new(vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color) 
     new->vertices[0] = vec_vec3i_new(p0->x, p0->y, p0->z);
     new->vertices[1] = vec_vec3i_new(p1->x, p1->y, p1->z);
     new->vertices[2] = vec_vec3i_new(p2->x, p2->y, p2->z);
-    obj__shape_update_bbox(new, new->center->x, new->center->y, width, height);
+    obj__mesh_update_bbox(new, new->center->x, new->center->y, width, height);
 
     // allocate 2D array that indicates how vertices are connected at each surface
     new->connections = malloc(new->n_faces * sizeof(int*));
@@ -188,7 +188,7 @@ shape_t* obj_triangle_new(vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color) 
     new->connections[0][4] = CONNECTION_TRIANGLE;
     new->connections[0][5] = color;
 
-    // finish creating the vertices - shift the to the shape's origin, back them up
+    // finish creating the vertices - shift the to the mesh's origin, back them up
     for (int i = 0; i < new->n_vertices; ++i) {
         *new->vertices[i] = vec_vec3i_add(new->vertices[i], new->center);
         new->vertices_backup[i] = vec_vec3i_new(0, 0, 0);
@@ -197,42 +197,42 @@ shape_t* obj_triangle_new(vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color) 
     return new;
 }
 
-void obj_shape_rotate (shape_t* shape, float angle_x_rad, float angle_y_rad, float angle_z_rad) {
-    for (size_t i = 0; i < shape->n_vertices; ++i) {
+void obj_mesh_rotate (mesh_t* mesh, float angle_x_rad, float angle_y_rad, float angle_z_rad) {
+    for (size_t i = 0; i < mesh->n_vertices; ++i) {
         // first, reset each vertex so no floating point error is accumulated
-        vec_vec3i_copy(shape->vertices[i], shape->vertices_backup[i]);
+        vec_vec3i_copy(mesh->vertices[i], mesh->vertices_backup[i]);
 
         // point to rotate about
-        int x0 = shape->center->x, y0 = shape->center->y, z0 = shape->center->z;
+        int x0 = mesh->center->x, y0 = mesh->center->y, z0 = mesh->center->z;
         // rotate around x axis, then y, then z
-        // We rotate as follows (* denotes matrix product, C the shape's origin):
+        // We rotate as follows (* denotes matrix product, C the mesh's origin):
         // v = v - C, v = Rz*Ry*Rx*v, v = v + C
-        vec_vec3i_rotate(shape->vertices[i], angle_x_rad, angle_y_rad, angle_z_rad, x0, y0, z0);
+        vec_vec3i_rotate(mesh->vertices[i], angle_x_rad, angle_y_rad, angle_z_rad, x0, y0, z0);
     }
 }
 
-void obj_shape_translate(shape_t* shape, float dx, float dy, float dz) {
+void obj_mesh_translate(mesh_t* mesh, float dx, float dy, float dz) {
     // to update bounding box after the translation
-    const unsigned width = abs(shape->bounding_box.x0 - shape->bounding_box.x0);
-    const unsigned height = abs(shape->bounding_box.y0 - shape->bounding_box.y0);
+    const unsigned width = abs(mesh->bounding_box.x0 - mesh->bounding_box.x0);
+    const unsigned height = abs(mesh->bounding_box.y0 - mesh->bounding_box.y0);
     vec3i_t translation = {round(dx), round(dy), round(dz)};
-    *shape->center = vec_vec3i_add(shape->center, &translation);
-    for (size_t i = 0; i < shape->n_vertices; ++i)
-        *shape->vertices[i] = vec_vec3i_add(shape->vertices[i], &translation);
+    *mesh->center = vec_vec3i_add(mesh->center, &translation);
+    for (size_t i = 0; i < mesh->n_vertices; ++i)
+        *mesh->vertices[i] = vec_vec3i_add(mesh->vertices[i], &translation);
 
-    obj__shape_update_bbox(shape, shape->center->x, shape->center->y, width, height);
+    obj__mesh_update_bbox(mesh, mesh->center->x, mesh->center->y, width, height);
 }
 
-void obj_shape_free(shape_t* shape) {
+void obj_mesh_free(mesh_t* mesh) {
     // free the data of the vertices first
-    for (size_t i = 0; i < shape->n_vertices; ++i) {
-        free(shape->vertices[i]);
-        free(shape->vertices_backup[i]);
+    for (size_t i = 0; i < mesh->n_vertices; ++i) {
+        free(mesh->vertices[i]);
+        free(mesh->vertices_backup[i]);
     }
-    free(shape->vertices);
-    free(shape->vertices_backup);
-    free(shape->center);
-    free(shape);
+    free(mesh->vertices);
+    free(mesh->vertices_backup);
+    free(mesh->center);
+    free(mesh);
 }
 
 //----------------------------------------------------------------------------------------------------------
