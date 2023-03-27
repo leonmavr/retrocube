@@ -358,15 +358,22 @@ void render_write_shape(mesh_t* shape) {
     // whether we want to use the perspective transform or not
     vec3i_t ray_origin = (vec3i_t) {g_camera.x0, g_camera.y0, g_camera.focal_length};
     vec_vec3i_copy(g_ray_test->orig, &ray_origin);
-    //vec3i_t dummy_vec = {0, 0, 0};
-    //iray_t* ray = obj_ray_new(ray_origin.x, ray_origin.y, ray_origin.z,
-    //    dummy_vec.x, dummy_vec.y, dummy_vec.z);
     const color_t background = ' ';
-    // bounding box pixel indexes
-    const int xmin = UT_MIN(shape->bounding_box.x0, shape->bounding_box.x1);
-    const int ymin = UT_MIN(shape->bounding_box.y0, shape->bounding_box.y1);
-    const int xmax = UT_MAX(shape->bounding_box.x0, shape->bounding_box.x1);
-    const int ymax = UT_MAX(shape->bounding_box.y0, shape->bounding_box.y1);
+    // screen boundaries
+    int xmin, xmax, ymin, ymax;
+    if (g_use_perspective) {
+        // bounding box pixel indexes
+        xmin = UT_MIN(shape->bounding_box.x0, shape->bounding_box.x1);
+        ymin = UT_MIN(shape->bounding_box.y0, shape->bounding_box.y1);
+        xmax = UT_MAX(shape->bounding_box.x0, shape->bounding_box.x1);
+        ymax = UT_MAX(shape->bounding_box.y0, shape->bounding_box.y1);
+    } else {
+        // clip to rows and columns
+        xmin = UT_MAX(-g_cols/2+1, shape->bounding_box.x0);
+        ymin = UT_MAX(-g_rows, shape->bounding_box.y0);
+        xmax = UT_MIN(g_cols/2, shape->bounding_box.x1);
+        ymax = UT_MIN(g_rows+1, shape->bounding_box.y1);
+    }
     // stores the 4 surface points to connect together
     vec3i_t** surf_points = malloc(sizeof(vec3i_t*) * 4);
 
