@@ -2,7 +2,7 @@
 #define RENDERER_H
 #include "renderer.h"
 #include "objects.h"
-#include "draw.h"
+#include "screen.h"
 #include <stdbool.h>
 
 

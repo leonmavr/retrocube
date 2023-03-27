@@ -1,5 +1,5 @@
 #include "vector.h"
-#include "draw.h"
+#include "screen.h"
 #include "objects.h"
 #include "utils.h"
 #include <sys/ioctl.h>

@@ -1,7 +1,7 @@
 #include "vector.h"
 #include "objects.h"
 #include "utils.h"
-#include "draw.h" // g_plane_test
+#include "screen.h" // g_plane_test
 #include <math.h>
 #include <stdlib.h>
 #include <stdbool.h>
