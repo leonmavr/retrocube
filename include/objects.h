@@ -34,9 +34,9 @@ typedef struct mesh {
     enum type_t type;
     struct bounding_box {
         // top left
-        int x0, y0;
+        int x0, y0, z0;
         // bottop right
-        int x1, y1;
+        int x1, y1, z1;
     } bounding_box;
     /*
      * 2D array that defines the surfaces of the solid.
@@ -100,7 +100,7 @@ typedef struct plane {
  *
  * @return A pointer to the newly constructed mesh
  */
-mesh_t*    obj_mesh_new               (int cx, int cy, int cz, int width, int height, int type);
+mesh_t*    obj_mesh_new               (int cx, int cy, int cz, int width, int height, int depth, int type);
 /**
 * @brief Allocates and sets a 2D triangle
 *

@@ -2,25 +2,27 @@
 #include "objects.h"
 #include "utils.h"
 #include "screen.h" // g_plane_test
-#include <math.h>
+#include <math.h> // round, abs
 #include <stdlib.h>
-#include <stdbool.h>
+#include <stdbool.h> // bool
 #include <string.h> // strncpy
 #include <stddef.h> // size_t 
 
 
-static inline void obj__mesh_update_bbox(mesh_t* mesh, int cx, int cy, int width, int height) {
-    const int m = UT_MAX(width, height);
+static inline void obj__mesh_update_bbox(mesh_t* mesh, int cx, int cy, int width, int height, int depth) {
+    const int m = UT_MAX(UT_MAX(abs(width), abs(height)), abs(depth));
     mesh->bounding_box.x0 = mesh->center->x - m/UT_SQRT_TWO;
     mesh->bounding_box.y0 = mesh->center->y - m/UT_SQRT_TWO;
+    mesh->bounding_box.z0 = mesh->center->z - m/UT_SQRT_TWO;
     mesh->bounding_box.x1 = mesh->center->x + m/UT_SQRT_TWO;
     mesh->bounding_box.y1 = mesh->center->y + m/UT_SQRT_TWO;
+    mesh->bounding_box.z1 = mesh->center->z + m/UT_SQRT_TWO;
 }
 
 //----------------------------------------------------------------------------------------------------------
 // Renderable shapes 
 //----------------------------------------------------------------------------------------------------------
-mesh_t* obj_mesh_new(int cx, int cy, int cz, int width, int height, int type) {
+mesh_t* obj_mesh_new(int cx, int cy, int cz, int width, int height, int depth, int type) {
 
     mesh_t* new = malloc(sizeof(mesh_t));
     //// common attributes
@@ -35,6 +37,7 @@ mesh_t* obj_mesh_new(int cx, int cy, int cz, int width, int height, int type) {
             new->n_faces = 8;
             break;
         default:
+            // TODO: throw exception
             new->n_vertices = 0;
             new->n_faces = 0;
             break;
@@ -44,7 +47,7 @@ mesh_t* obj_mesh_new(int cx, int cy, int cz, int width, int height, int type) {
     strncpy(new->colors, "~.=@%|O+?Tn", 8);
     new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
     new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
-    obj__mesh_update_bbox(new, new->center->x, new->center->y, width, height);
+    obj__mesh_update_bbox(new, new->center->x, new->center->y, width, height, depth);
     // allocate 2D array that indicates how vertices are connected at each surface
     new->connections = malloc(new->n_faces * sizeof(int*));
     for (int i = 0; i < new->n_faces; ++i)
@@ -70,17 +73,18 @@ mesh_t* obj_mesh_new(int cx, int cy, int cz, int width, int height, int type) {
         *                    \+-------------------+
         *                     p4                   p5
         */
-        int diag = round(UT_MIN(width/2, height/2)/UT_SQRT_TWO); 
-        new->vertices[0] = vec_vec3i_new(-diag, -diag, -diag);
-        new->vertices[1] = vec_vec3i_new( diag, -diag, -diag);
-        new->vertices[2] = vec_vec3i_new( diag,  diag, -diag);
-        new->vertices[3] = vec_vec3i_new(-diag,  diag, -diag);
-        new->vertices[4] = vec_vec3i_new(-diag, -diag,  diag);
-        new->vertices[5] = vec_vec3i_new( diag, -diag,  diag);
-        new->vertices[6] = vec_vec3i_new( diag,  diag,  diag);
-        new->vertices[7] = vec_vec3i_new(-diag,  diag,  diag);
+        const int x = round(width/(2*UT_SQRT_TWO));
+        const int y = round(height/(2*UT_SQRT_TWO));
+        const int z = round(depth/(2*UT_SQRT_TWO));
+        new->vertices[0] = vec_vec3i_new(-x, -y, -z);
+        new->vertices[1] = vec_vec3i_new( x, -y, -z);
+        new->vertices[2] = vec_vec3i_new( x,  y, -z);
+        new->vertices[3] = vec_vec3i_new(-x,  y, -z);
+        new->vertices[4] = vec_vec3i_new(-x, -y,  z);
+        new->vertices[5] = vec_vec3i_new( x, -y,  z);
+        new->vertices[6] = vec_vec3i_new( x,  y,  z);
+        new->vertices[7] = vec_vec3i_new(-x,  y,  z);
         // define surfaces
-        // TODO: free it at free function
         int connections[6][6] = 
         {
             {0, 1, 2, 3, CONNECTION_RECT, '~'},
@@ -119,9 +123,9 @@ mesh_t* obj_mesh_new(int cx, int cy, int cz, int width, int height, int type) {
         *               X 
         *               p4
         */
-        new->vertices[0] = vec_vec3i_new(0       , 0                               , width/2);
+        new->vertices[0] = vec_vec3i_new(0       , 0                               , depth/2);
         new->vertices[1] = vec_vec3i_new(width/2 , 0                               , 0);
-        new->vertices[2] = vec_vec3i_new(0       , 0                               , -width/2);
+        new->vertices[2] = vec_vec3i_new(0       , 0                               , -depth/2);
         new->vertices[3] = vec_vec3i_new(-width/2, 0                               , 0);
         new->vertices[4] = vec_vec3i_new(0       , -round(UT_PHI/(1+UT_PHI)*height), 0);
         new->vertices[5] = vec_vec3i_new(0       , round(1.0/(1+UT_PHI)*height)    , 0);
@@ -174,7 +178,7 @@ mesh_t* obj_triangle_new(vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color) {
     new->vertices[0] = vec_vec3i_new(p0->x, p0->y, p0->z);
     new->vertices[1] = vec_vec3i_new(p1->x, p1->y, p1->z);
     new->vertices[2] = vec_vec3i_new(p2->x, p2->y, p2->z);
-    obj__mesh_update_bbox(new, new->center->x, new->center->y, width, height);
+    obj__mesh_update_bbox(new, new->center->x, new->center->y, width, height, 0);
 
     // allocate 2D array that indicates how vertices are connected at each surface
     new->connections = malloc(new->n_faces * sizeof(int*));
@@ -213,14 +217,15 @@ void obj_mesh_rotate (mesh_t* mesh, float angle_x_rad, float angle_y_rad, float 
 
 void obj_mesh_translate(mesh_t* mesh, float dx, float dy, float dz) {
     // to update bounding box after the translation
-    const unsigned width = abs(mesh->bounding_box.x0 - mesh->bounding_box.x0);
-    const unsigned height = abs(mesh->bounding_box.y0 - mesh->bounding_box.y0);
+    const unsigned width = abs(mesh->bounding_box.x0 - mesh->bounding_box.x1);
+    const unsigned height = abs(mesh->bounding_box.y0 - mesh->bounding_box.y1);
+    const unsigned depth = abs(mesh->bounding_box.z0 - mesh->bounding_box.z1);
     vec3i_t translation = {round(dx), round(dy), round(dz)};
     *mesh->center = vec_vec3i_add(mesh->center, &translation);
     for (size_t i = 0; i < mesh->n_vertices; ++i)
         *mesh->vertices[i] = vec_vec3i_add(mesh->vertices[i], &translation);
 
-    obj__mesh_update_bbox(mesh, mesh->center->x, mesh->center->y, width, height);
+    obj__mesh_update_bbox(mesh, mesh->center->x, mesh->center->y, width, height, depth);
 }
 
 void obj_mesh_free(mesh_t* mesh) {
