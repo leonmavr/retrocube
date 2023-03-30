@@ -5,7 +5,6 @@
 #include <math.h> // round, abs
 #include <stdlib.h>
 #include <stdbool.h> // bool
-#include <string.h> // strncpy
 #include <stddef.h> // size_t 
 
 
@@ -28,7 +27,7 @@ mesh_t* obj_mesh_new(int cx, int cy, int cz, int width, int height, int depth, i
     //// common attributes
     new->type = type;
     switch (new->type) {
-        case TYPE_CUBE:
+        case TYPE_BLOCK:
             new->n_vertices = 8;
             new->n_faces = 6;
             break;
@@ -43,8 +42,6 @@ mesh_t* obj_mesh_new(int cx, int cy, int cz, int width, int height, int depth, i
             break;
     }
     new->center = vec_vec3i_new(cx, cy, cz);
-    // colors for each of the maximum possible 8 faces - change the string below to modify them
-    strncpy(new->colors, "~.=@%|O+?Tn", 8);
     new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
     new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
     obj__mesh_update_bbox(new, new->center->x, new->center->y, width, height, depth);
@@ -53,7 +50,7 @@ mesh_t* obj_mesh_new(int cx, int cy, int cz, int width, int height, int depth, i
     for (int i = 0; i < new->n_faces; ++i)
         new->connections[i] = malloc(6 * sizeof(int));
     //// attributes that depend on number of vertices
-    if (type == TYPE_CUBE) {
+    if (type == TYPE_BLOCK) {
        /*
         *          p3                  p2 
         *           +-------------------+

@@ -7,7 +7,7 @@
 #include <stddef.h> // size_t
 
 enum type_t {
-    TYPE_CUBE=0,
+    TYPE_BLOCK=0,
     TYPE_RHOMBUS,
     TYPE_TRIANGLE
 };
@@ -28,8 +28,6 @@ typedef struct mesh {
     size_t n_vertices;
     // number of surfaces
     size_t n_faces;
-    // an array of characters defining the color of each face
-    color_t colors[8];
     // type of mesh to render, e.g. cube or rhombus
     enum type_t type;
     struct bounding_box {
@@ -96,7 +94,7 @@ typedef struct plane {
  * @param cz z-coordinate of the center
  * @param width of the shape in pixels 
  * @param height of the shape in pixels 
- * @param type of the mesh - supported: TYPE_CUBE, TYPE_RHOMBUS
+ * @param type of the mesh - supported: TYPE_BLOCK, TYPE_RHOMBUS
  *
  * @return A pointer to the newly constructed mesh
  */
