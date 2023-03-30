@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
     screen_init();
     render_init();
 
-    mesh_t* shape = obj_mesh_new(g_cx, g_cy, g_cz, g_cube_size, 1.5*g_cube_size, 1.8*g_cube_size, TYPE_RHOMBUS);
+    mesh_t* shape = obj_mesh_new(g_cx, g_cy, g_cz, g_cube_size, 1.5*g_cube_size, 1.8*g_cube_size, TYPE_CUBE);
     // spinning parameters in case random rotation was selected
 #ifndef _WIN32
     const float random_rot_speed_x = 0.002, random_rot_speed_y = 0.002, random_rot_speed_z = 0.002;

@@ -362,13 +362,13 @@ void render_write_shape(mesh_t* shape) {
     // screen boundaries
     int xmin, xmax, ymin, ymax;
     if (g_use_perspective) {
-        // bounding box pixel indexes
+        // clip rendering area to bounding box
         xmin = UT_MIN(shape->bounding_box.x0, shape->bounding_box.x1);
         ymin = UT_MIN(shape->bounding_box.y0, shape->bounding_box.y1);
         xmax = UT_MAX(shape->bounding_box.x0, shape->bounding_box.x1);
         ymax = UT_MAX(shape->bounding_box.y0, shape->bounding_box.y1);
     } else {
-        // clip to rows and columns
+        // clip rendering area to screen clip to rows and columns
         xmin = UT_MAX(-g_cols/2+1, shape->bounding_box.x0);
         ymin = UT_MAX(-g_rows, shape->bounding_box.y0);
         xmax = UT_MIN(g_cols/2, shape->bounding_box.x1);
@@ -376,9 +376,14 @@ void render_write_shape(mesh_t* shape) {
     }
     // stores the 4 surface points to connect together
     vec3i_t** surf_points = malloc(sizeof(vec3i_t*) * 4);
+    // downscale by subsampling if we use perspective
+    unsigned step = (g_use_perspective) ?
+        abs(UT_MIN(abs(shape->bounding_box.z0), abs(shape->bounding_box.z1))/g_camera.focal_length) :
+        1;
+    step = (step < 1) ? 1 : step;
 
-    for (int y = ymin; y <= ymax; ++y) {
-        for (int x = xmin; x <= xmax; ++x) {
+    for (int y = ymin;  y <= ymax; y += step) {
+        for (int x = xmin; x <= xmax; x += step) {
             // the final pixel and color to render
             vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MAX};
             color_t rendered_color = background;
