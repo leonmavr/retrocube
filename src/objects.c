@@ -6,8 +6,10 @@
 #include <stdlib.h>
 #include <stdbool.h> // bool
 #include <stddef.h> // size_t 
+#include <stdio.h> // FILE, open, fclose
 
 
+// TODO: remove cx, cy parameters
 static inline void obj__mesh_update_bbox(mesh_t* mesh, int cx, int cy, int width, int height, int depth) {
     const int m = UT_MAX(UT_MAX(abs(width), abs(height)), abs(depth));
     mesh->bounding_box.x0 = mesh->center->x - m/UT_SQRT_TWO;
@@ -155,6 +157,32 @@ mesh_t* obj_mesh_new(int cx, int cy, int cz, int width, int height, int depth, i
         new->vertices_backup[i] = vec_vec3i_new(0, 0, 0);
         vec_vec3i_copy(new->vertices_backup[i], new->vertices[i]);
     }
+    return new;
+}
+
+static inline bool obj__starts_with(const char* buffer, char first) {
+    return buffer[0] == first;
+}
+
+mesh_t* obj_mesh_from_file(const char* fpath) {
+    mesh_t* new = malloc(sizeof(mesh_t));
+    //new->center = vec_vec3i_new(cx, cy, cz);
+    new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
+    new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
+    //obj__mesh_update_bbox(new, new->center->x, new->center->y, width, height, depth);
+    // allocate 2D array that indicates how vertices are connected at each surface
+    FILE* file;
+    file = fopen(fpath, "r");
+    //Code for reading a file
+    char buffer[128];
+    while((fgets (buffer, 128, file))!= NULL) {
+        printf(buffer);
+    }
+    fclose(file);  //Close the file
+    new->connections = malloc(new->n_faces * sizeof(int*));
+    for (int i = 0; i < new->n_faces; ++i)
+        new->connections[i] = malloc(6 * sizeof(int));
+    //// attributes that depend on number of vertices
     return new;
 }
 
