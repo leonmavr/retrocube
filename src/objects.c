@@ -193,14 +193,19 @@ mesh_t* obj_mesh_from_file(const char* fpath, unsigned width, unsigned height, u
         else if (obj__starts_with(fpath, 'f'))
             n_surfs++;
     }
+	printf("--------");
     //// allocate data and prepare for reading
     mesh_t* new = malloc(sizeof(mesh_t));
     new->center = vec_vec3i_new(0, 0, 0);
+	new->n_vertices = n_verts;
     new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * n_verts);
     new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * n_verts);
     obj__mesh_update_bbox(new, new->center->x, new->center->y, width, height, depth);
-    // TODO: allocate
-    int connections[n_surfs][6];
+    new->n_faces = n_surfs;
+    // allocate 2D array that indicates how vertices are connected at each surface
+    new->connections = malloc(new->n_faces * sizeof(int*));
+    for (int i = 0; i < new->n_faces; ++i)
+        new->connections[i] = malloc(6 * sizeof(int));
 
     //// set vertices and surfaces
     // go back to beginning of the file
@@ -214,7 +219,7 @@ mesh_t* obj_mesh_from_file(const char* fpath, unsigned width, unsigned height, u
             const float y = atof(pch);
             pch = strtok (NULL, " ");
             const float z = atof(pch);
-            *new->vertices[ivert++] = (vec3i_t) {x, y, z};
+            new->vertices[ivert++] = vec_vec3i_new(width*x, height*y, depth*z);
         } else if (obj__starts_with(buffer, 'f')) {
             new->connections[isurf][0] = atoi(pch);
             pch = strtok (NULL, " ");
@@ -224,13 +229,19 @@ mesh_t* obj_mesh_from_file(const char* fpath, unsigned width, unsigned height, u
             pch = strtok (NULL, " ");
             new->connections[isurf][3] = atoi(pch);
             pch = strtok (NULL, " ");
-            new->connections[isurf][4] = pch;
+            new->connections[isurf][4] = *pch;
             pch = strtok (NULL, " ");
-            new->connections[isurf][5] = pch;
+            new->connections[isurf][5] = *pch;
             isurf++;
         }
     }
+    for (int i = 0; i < new->n_vertices; ++i) {
+        new->vertices_backup[i] = vec_vec3i_new(0, 0, 0);
+        vec_vec3i_copy(new->vertices_backup[i], new->vertices[i]);
+    }
     fclose(file);
+
+    return new;
 }
 
 mesh_t* obj_triangle_new(vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color) {
