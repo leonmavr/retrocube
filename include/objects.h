@@ -110,7 +110,7 @@ mesh_t*    obj_mesh_new               (int cx, int cy, int cz, int width, int he
 * @returns A pointer to the newly constructed mesh
 */
 mesh_t*     obj_triangle_new           (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color);
-mesh_t*     obj_mesh_from_file         (const char* fpath);
+mesh_t* obj_mesh_from_file(const char* fpath, unsigned width, unsigned height, unsigned depth);
 void        obj_mesh_rotate            (mesh_t* mesh, float angle_x_rad, float angle_y_rad, float angle_z_rad);
 void        obj_mesh_translate         (mesh_t* mesh, float dx, float dy, float dz);
 void        obj_mesh_free              (mesh_t* mesh);

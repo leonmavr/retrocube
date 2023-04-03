@@ -7,6 +7,8 @@
 #include <stdbool.h> // bool
 #include <stddef.h> // size_t 
 #include <stdio.h> // FILE, open, fclose
+#include <ctype.h> // isempty
+#include <string.h> // strtok
 
 
 // TODO: remove cx, cy parameters
@@ -164,26 +166,71 @@ static inline bool obj__starts_with(const char* buffer, char first) {
     return buffer[0] == first;
 }
 
-mesh_t* obj_mesh_from_file(const char* fpath) {
-    mesh_t* new = malloc(sizeof(mesh_t));
-    //new->center = vec_vec3i_new(cx, cy, cz);
-    new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
-    new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
-    //obj__mesh_update_bbox(new, new->center->x, new->center->y, width, height, depth);
-    // allocate 2D array that indicates how vertices are connected at each surface
+static inline bool obj__line_is_comment(const char* buffer) {
+    return buffer[0] == '#';
+}
+
+bool obj__line_is_empty(const char *s)
+{
+  while (*s) {
+    if (!isspace(*s))
+      return false;
+    s++;
+  }
+  return true;
+}
+
+mesh_t* obj_mesh_from_file(const char* fpath, unsigned width, unsigned height, unsigned depth) {
     FILE* file;
     file = fopen(fpath, "r");
-    //Code for reading a file
     char buffer[128];
+    size_t n_verts = 0, n_surfs = 0;
+    //// read numbers of vertices and surfaces
+    // TODO: replace fgets with a safe function
     while((fgets (buffer, 128, file))!= NULL) {
-        printf(buffer);
+        if (obj__starts_with(fpath, 'v'))
+            n_verts++;
+        else if (obj__starts_with(fpath, 'f'))
+            n_surfs++;
     }
-    fclose(file);  //Close the file
-    new->connections = malloc(new->n_faces * sizeof(int*));
-    for (int i = 0; i < new->n_faces; ++i)
-        new->connections[i] = malloc(6 * sizeof(int));
-    //// attributes that depend on number of vertices
-    return new;
+    //// allocate data and prepare for reading
+    mesh_t* new = malloc(sizeof(mesh_t));
+    new->center = vec_vec3i_new(0, 0, 0);
+    new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * n_verts);
+    new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * n_verts);
+    obj__mesh_update_bbox(new, new->center->x, new->center->y, width, height, depth);
+    // TODO: allocate
+    int connections[n_surfs][6];
+
+    //// set vertices and surfaces
+    // go back to beginning of the file
+    fseek(file, 0, SEEK_SET);
+    size_t ivert = 0, isurf = 0;
+    while((fgets (buffer, 128, file)) != NULL) {
+        char* pch = strtok (buffer, " vf");
+        if (obj__starts_with(buffer, 'v')) {
+            const float x = atof(pch);
+            pch = strtok (NULL, " ");
+            const float y = atof(pch);
+            pch = strtok (NULL, " ");
+            const float z = atof(pch);
+            *new->vertices[ivert++] = (vec3i_t) {x, y, z};
+        } else if (obj__starts_with(buffer, 'f')) {
+            new->connections[isurf][0] = atoi(pch);
+            pch = strtok (NULL, " ");
+            new->connections[isurf][1] = atoi(pch);
+            pch = strtok (NULL, " ");
+            new->connections[isurf][2] = atoi(pch);
+            pch = strtok (NULL, " ");
+            new->connections[isurf][3] = atoi(pch);
+            pch = strtok (NULL, " ");
+            new->connections[isurf][4] = pch;
+            pch = strtok (NULL, " ");
+            new->connections[isurf][5] = pch;
+            isurf++;
+        }
+    }
+    fclose(file);
 }
 
 mesh_t* obj_triangle_new(vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color) {
