@@ -188,20 +188,20 @@ mesh_t* obj_mesh_from_file(const char* fpath, unsigned width, unsigned height, u
     //// read numbers of vertices and surfaces
     // TODO: replace fgets with a safe function
     while((fgets (buffer, 128, file))!= NULL) {
-        if (obj__starts_with(fpath, 'v'))
+        if (obj__starts_with(buffer, 'v'))
             n_verts++;
-        else if (obj__starts_with(fpath, 'f'))
+        else if (obj__starts_with(buffer, 'f'))
             n_surfs++;
     }
-	printf("--------");
     //// allocate data and prepare for reading
     mesh_t* new = malloc(sizeof(mesh_t));
     new->center = vec_vec3i_new(0, 0, 0);
 	new->n_vertices = n_verts;
+    new->n_faces = n_surfs;
     new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * n_verts);
     new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * n_verts);
     obj__mesh_update_bbox(new, new->center->x, new->center->y, width, height, depth);
-    new->n_faces = n_surfs;
+	printf("faces = %d, verts = %d\n", new->n_faces, new->n_vertices);
     // allocate 2D array that indicates how vertices are connected at each surface
     new->connections = malloc(new->n_faces * sizeof(int*));
     for (int i = 0; i < new->n_faces; ++i)
@@ -240,6 +240,7 @@ mesh_t* obj_mesh_from_file(const char* fpath, unsigned width, unsigned height, u
         vec_vec3i_copy(new->vertices_backup[i], new->vertices[i]);
     }
     fclose(file);
+	printf("------------------------------------\n");
 
     return new;
 }

@@ -82,6 +82,7 @@ static void draw__get_screen_info() {
 
     //// 2nd way - xrandr command
     // Open the command for reading
+#if 1
     FILE *fp;
     char line[512];
     fp = popen("echo `xrandr --current | grep \'*\' | uniq | awk \'{print $1}\' | cut -d \'x\' -f1` / `xrandr --current | grep \'*\' | uniq | awk \'{print $1}\' | cut -d \'x\' -f2` | bc -l", "r");
@@ -97,6 +98,7 @@ static void draw__get_screen_info() {
             return;
         }
     }
+#endif
     //// 3rd way - assume a common resolution
     g_screen_res = 1920.0/1080.0;
 }
