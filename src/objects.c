@@ -13,13 +13,13 @@
 
 // TODO: remove cx, cy parameters
 static inline void obj__mesh_update_bbox(mesh_t* mesh, int cx, int cy, int width, int height, int depth) {
-    const int m = UT_MAX(UT_MAX(abs(width), abs(height)), abs(depth));
-    mesh->bounding_box.x0 = mesh->center->x - m/UT_SQRT_TWO;
-    mesh->bounding_box.y0 = mesh->center->y - m/UT_SQRT_TWO;
-    mesh->bounding_box.z0 = mesh->center->z - m/UT_SQRT_TWO;
-    mesh->bounding_box.x1 = mesh->center->x + m/UT_SQRT_TWO;
-    mesh->bounding_box.y1 = mesh->center->y + m/UT_SQRT_TWO;
-    mesh->bounding_box.z1 = mesh->center->z + m/UT_SQRT_TWO;
+    const int m = sqrt(width*width + height*height + depth*depth);
+    mesh->bounding_box.x0 = mesh->center->x - m/2;
+    mesh->bounding_box.y0 = mesh->center->y - m/2;
+    mesh->bounding_box.z0 = mesh->center->z - m/2;
+    mesh->bounding_box.x1 = mesh->center->x + m/2;
+    mesh->bounding_box.y1 = mesh->center->y + m/2;
+    mesh->bounding_box.z1 = mesh->center->z + m/2;
 }
 
 //----------------------------------------------------------------------------------------------------------
