@@ -180,7 +180,7 @@ bool obj__line_is_empty(const char *s)
   return true;
 }
 
-mesh_t* obj_mesh_from_file(const char* fpath, unsigned width, unsigned height, unsigned depth) {
+mesh_t* obj_mesh_from_file(const char* fpath, int cx, int cy, int cz, unsigned width, unsigned height, unsigned depth) {
     FILE* file;
     file = fopen(fpath, "r");
     char buffer[128];
@@ -195,13 +195,12 @@ mesh_t* obj_mesh_from_file(const char* fpath, unsigned width, unsigned height, u
     }
     //// allocate data and prepare for reading
     mesh_t* new = malloc(sizeof(mesh_t));
-    new->center = vec_vec3i_new(0, 0, 0);
+    new->center = vec_vec3i_new(cx, cy, cz);
 	new->n_vertices = n_verts;
     new->n_faces = n_surfs;
     new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * n_verts);
     new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * n_verts);
     obj__mesh_update_bbox(new, new->center->x, new->center->y, width, height, depth);
-	printf("faces = %d, verts = %d\n", new->n_faces, new->n_vertices);
     // allocate 2D array that indicates how vertices are connected at each surface
     new->connections = malloc(new->n_faces * sizeof(int*));
     for (int i = 0; i < new->n_faces; ++i)
@@ -219,7 +218,7 @@ mesh_t* obj_mesh_from_file(const char* fpath, unsigned width, unsigned height, u
             const float y = atof(pch);
             pch = strtok (NULL, " ");
             const float z = atof(pch);
-            new->vertices[ivert++] = vec_vec3i_new(width*x, height*y, depth*z);
+            new->vertices[ivert++] = vec_vec3i_new(round(width*x), round(height*y), round(depth*z));
         } else if (obj__starts_with(buffer, 'f')) {
             new->connections[isurf][0] = atoi(pch);
             pch = strtok (NULL, " ");
@@ -229,19 +228,22 @@ mesh_t* obj_mesh_from_file(const char* fpath, unsigned width, unsigned height, u
             pch = strtok (NULL, " ");
             new->connections[isurf][3] = atoi(pch);
             pch = strtok (NULL, " ");
-            new->connections[isurf][4] = *pch;
+			// TODO: more maintainable
+		    if (*pch == 'T')
+		        new->connections[isurf][4] = CONNECTION_TRIANGLE;
+	        else
+		        new->connections[isurf][4] = CONNECTION_RECT;
             pch = strtok (NULL, " ");
             new->connections[isurf][5] = *pch;
             isurf++;
         }
     }
+    fclose(file);
     for (int i = 0; i < new->n_vertices; ++i) {
+        *new->vertices[i] = vec_vec3i_add(new->vertices[i], new->center);
         new->vertices_backup[i] = vec_vec3i_new(0, 0, 0);
         vec_vec3i_copy(new->vertices_backup[i], new->vertices[i]);
     }
-    fclose(file);
-	printf("------------------------------------\n");
-
     return new;
 }
 
