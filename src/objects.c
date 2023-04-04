@@ -25,143 +25,6 @@ static inline void obj__mesh_update_bbox(mesh_t* mesh, int cx, int cy, int width
 //----------------------------------------------------------------------------------------------------------
 // Renderable shapes 
 //----------------------------------------------------------------------------------------------------------
-mesh_t* obj_mesh_new(int cx, int cy, int cz, int width, int height, int depth, int type) {
-
-    mesh_t* new = malloc(sizeof(mesh_t));
-    //// common attributes
-    new->type = type;
-    switch (new->type) {
-        case TYPE_BLOCK:
-            new->n_vertices = 8;
-            new->n_faces = 6;
-            break;
-        case TYPE_RHOMBUS:
-            new->n_vertices = 6;
-            new->n_faces = 8;
-            break;
-        default:
-            // TODO: throw exception
-            new->n_vertices = 0;
-            new->n_faces = 0;
-            break;
-    }
-    new->center = vec_vec3i_new(cx, cy, cz);
-    new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
-    new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * new->n_vertices);
-    obj__mesh_update_bbox(new, new->center->x, new->center->y, width, height, depth);
-    // allocate 2D array that indicates how vertices are connected at each surface
-    new->connections = malloc(new->n_faces * sizeof(int*));
-    for (int i = 0; i < new->n_faces; ++i)
-        new->connections[i] = malloc(6 * sizeof(int));
-    //// attributes that depend on number of vertices
-    if (type == TYPE_BLOCK) {
-       /*
-        *          p3                  p2 
-        *           +-------------------+
-        *           | \                 | \
-        *           |    \              |    \            ^y
-        *           |      \  p7        |       \         |
-        *           |         +-------------------+ p6    |
-        *           |         |         .         |       |
-        *           |         |*(cx,xy,cz)        |       o-------> x
-        *           |         |         .         |        \
-        *           |         |         .         |         \
-        *           |         |         .         |          v z
-        *        p0 +---------|.........+ p1      |
-        *            \        |           .       |
-        *              \      |             .     |
-        *                 \   |                .  |
-        *                    \+-------------------+
-        *                     p4                   p5
-        */
-        const int x = round(width/(2*UT_SQRT_TWO));
-        const int y = round(height/(2*UT_SQRT_TWO));
-        const int z = round(depth/(2*UT_SQRT_TWO));
-        new->vertices[0] = vec_vec3i_new(-x, -y, -z);
-        new->vertices[1] = vec_vec3i_new( x, -y, -z);
-        new->vertices[2] = vec_vec3i_new( x,  y, -z);
-        new->vertices[3] = vec_vec3i_new(-x,  y, -z);
-        new->vertices[4] = vec_vec3i_new(-x, -y,  z);
-        new->vertices[5] = vec_vec3i_new( x, -y,  z);
-        new->vertices[6] = vec_vec3i_new( x,  y,  z);
-        new->vertices[7] = vec_vec3i_new(-x,  y,  z);
-        // define surfaces
-        int connections[6][6] = 
-        {
-            {0, 1, 2, 3, CONNECTION_RECT, '~'},
-            {0, 4, 7, 3, CONNECTION_RECT, '.'},
-            {4, 5, 6, 7, CONNECTION_RECT, '='},
-            {5, 1, 2, 6, CONNECTION_RECT, '@'},
-            {7, 6, 2, 3, CONNECTION_RECT, '?'},
-            {0, 4, 5, 1, CONNECTION_RECT, '+'}
-        };
-        for (int r = 0; r < UT_MATRIX_ROWS(connections); ++r) {
-            for (int c = 0; c < UT_MATRIX_COLS(connections); ++c) {
-                new->connections[r][c] = connections[r][c];
-            }
-        }
-    } else if (type == TYPE_RHOMBUS) {
-        /*
-        *               p5              * center
-        *               X               X vertex
-        *              / \
-        *             /   \             y 
-        *            /     \            ^
-        *           /       \           |
-        *          /    p2   \          |
-        *         /     X     \         |
-        *        /  ..     ..  \        o--------> x 
-        *       /..          .. \        \
-        *   p3 X.       *       .X p1     \
-        *       \__           __/          \
-        *        \  \__   __/  /            v
-        *         \     X     /              z
-        *          \    p0   / 
-        *           \       / 
-        *            \     / 
-        *             \   / 
-        *              \ / 
-        *               X 
-        *               p4
-        */
-        new->vertices[0] = vec_vec3i_new(0       , 0                               , depth/2);
-        new->vertices[1] = vec_vec3i_new(width/2 , 0                               , 0);
-        new->vertices[2] = vec_vec3i_new(0       , 0                               , -depth/2);
-        new->vertices[3] = vec_vec3i_new(-width/2, 0                               , 0);
-        new->vertices[4] = vec_vec3i_new(0       , -round(UT_PHI/(1+UT_PHI)*height), 0);
-        new->vertices[5] = vec_vec3i_new(0       , round(1.0/(1+UT_PHI)*height)    , 0);
-
-        // define surfaces
-        int connections[8][6] = {
-            {3, 4, 0, 0, CONNECTION_TRIANGLE, '~'},
-            {0, 4, 1, 0, CONNECTION_TRIANGLE, '.'},
-            {4, 2, 1, 0, CONNECTION_TRIANGLE, '='},
-            {4, 2, 3, 0, CONNECTION_TRIANGLE, '@'},
-            {3, 0, 5, 0, CONNECTION_TRIANGLE, '%'},
-            {0, 1, 5, 0, CONNECTION_TRIANGLE, '|'},
-            {1, 5, 2, 0, CONNECTION_TRIANGLE, 'O'},
-            {3, 2, 5, 0, CONNECTION_TRIANGLE, '+'}
-        };
-        for (int r = 0; r < UT_MATRIX_ROWS(connections); ++r) {
-            for (int c = 0; c < UT_MATRIX_COLS(connections); ++c) {
-                new->connections[r][c] = connections[r][c];
-            }
-        }
-    } else if (type == TYPE_TRIANGLE) {
-        new->vertices[0] = vec_vec3i_new(-width/2, 0     , 0);
-        new->vertices[1] = vec_vec3i_new( width/2, 0     , 0);
-        new->vertices[2] = vec_vec3i_new(       0, height, 0);
-    }
-
-    // finish creating the vertices - shift the to the mesh's origin, back them up
-    for (int i = 0; i < new->n_vertices; ++i) {
-        *new->vertices[i] = vec_vec3i_add(new->vertices[i], new->center);
-        new->vertices_backup[i] = vec_vec3i_new(0, 0, 0);
-        vec_vec3i_copy(new->vertices_backup[i], new->vertices[i]);
-    }
-    return new;
-}
-
 static inline bool obj__starts_with(const char* buffer, char first) {
     return buffer[0] == first;
 }
@@ -220,6 +83,7 @@ mesh_t* obj_mesh_from_file(const char* fpath, int cx, int cy, int cz, unsigned w
             const float z = atof(pch);
             new->vertices[ivert++] = vec_vec3i_new(round(width*x), round(height*y), round(depth*z));
         } else if (obj__starts_with(buffer, 'f')) {
+            // TODO: assert atoi(pch) <= n_verts
             new->connections[isurf][0] = atoi(pch);
             pch = strtok (NULL, " ");
             new->connections[isurf][1] = atoi(pch);
@@ -239,6 +103,7 @@ mesh_t* obj_mesh_from_file(const char* fpath, int cx, int cy, int cz, unsigned w
         }
     }
     fclose(file);
+    //// shift them to center and back them up
     for (int i = 0; i < new->n_vertices; ++i) {
         *new->vertices[i] = vec_vec3i_add(new->vertices[i], new->center);
         new->vertices_backup[i] = vec_vec3i_new(0, 0, 0);

@@ -87,19 +87,6 @@ typedef struct plane {
 // Renderable objects
 //-------------------------------------------------------------------------------------------------------------
 /**
- * @brief Allocates and sets a 3D shape 
- *
- * @param cx x-coordinate of the center
- * @param cy y-coordinate of the center
- * @param cz z-coordinate of the center
- * @param width of the shape in pixels 
- * @param height of the shape in pixels 
- * @param type of the mesh - supported: TYPE_BLOCK, TYPE_RHOMBUS
- *
- * @return A pointer to the newly constructed mesh
- */
-mesh_t*    obj_mesh_new               (int cx, int cy, int cz, int width, int height, int depth, int type);
-/**
 * @brief Allocates and sets a 2D triangle
 *
 * @param p0 A triangle vertex
