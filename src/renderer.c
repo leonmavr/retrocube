@@ -169,7 +169,7 @@ static inline bool render__is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, 
            (vec_vec3i_dotprod(&am, &ad) < vec_vec3i_dotprod(&ad, &ad));
 }
 
-static vec3i_t rander__ray_plane_intersection(plane_t* plane, ray_t* ray) {
+static vec3i_t render__ray_plane_intersection(plane_t* plane, ray_t* ray) {
    /*
     * The parametric line of a ray from from the origin O through 
     * point B ('end' of the ray) is:
@@ -205,7 +205,7 @@ static bool render__ray_hits_rectangle(ray_t* ray, vec3i_t** points) {
     vec3i_t* p2 = points[2];
     vec3i_t* p3 = points[3];
     obj_plane_set(g_plane_test, p0, p1, p2);
-    vec3i_t ray_plane_intersection = rander__ray_plane_intersection(g_plane_test, ray);
+    vec3i_t ray_plane_intersection = render__ray_plane_intersection(g_plane_test, ray);
     return render__is_point_in_rect(&ray_plane_intersection, p0, p1, p2, p3);
 }
 
@@ -216,7 +216,7 @@ static bool render__ray_hits_triangle(ray_t* ray, vec3i_t** points) {
     vec3i_t* p1 = points[1];
     vec3i_t* p2 = points[2];
     obj_plane_set(g_plane_test, p0, p1, p2);
-    vec3i_t ray_plane_intersection = rander__ray_plane_intersection(g_plane_test, ray);
+    vec3i_t ray_plane_intersection = render__ray_plane_intersection(g_plane_test, ray);
     return render__is_point_in_triangle(&ray_plane_intersection, p0, p1, p2);
 }
 
