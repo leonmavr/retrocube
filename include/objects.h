@@ -163,6 +163,37 @@ void        obj_camera_set              (camera_t* camera, int cam_x0, int cam_y
 plane_t*    obj_plane_new              (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
 /* recompute plane's normal and offset given 3 points */
 void        obj_plane_set              (plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
+bool obj_is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c);
+bool obj_is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d);
+vec3i_t render__ray_plane_intersection(plane_t* plane, ray_t* ray);
+bool obj_ray_hits_rectangle(ray_t* ray, vec3i_t** points);
+bool obj_ray_hits_triangle(ray_t* ray, vec3i_t** points);
 void        obj_plane_free             (plane_t* plane);
+
+/*
+ * Note for programmers:
+ *
+ * The table below maps each connection type (defined as enum in renderer.h)
+ * to a render function. Thefore if you want to render a new 2D shape, define
+ * your connection type and refine your custom rendering function.
+ *
+ * It uses the X macro pattern for the mapping. X macro does not need to be
+ * defined yet. However it needs to be defined every time we want to expand
+ * the table.
+ *
+ * We typically define X one time to expand the first column into an enum
+ * type in order to get the indexes (this is not done in this case as the
+ * indexes are already defined). We then expand the second column to get
+ * an array of pointers to functions.
+ *
+ * After defining the render functions, it generates a function table whose
+ * index is the connection type and the value a pointer to its corresponding
+ * render function. As a final note, all functions must take the same parameter
+ * types.
+ */
+#define CONN_TABLE                             \
+        X('R', CONNECTION_RECT,     obj_ray_hits_rectangle) \
+        X('T', CONNECTION_TRIANGLE, obj_ray_hits_triangle)
+
 
 #endif /* OBJECTS_H */
