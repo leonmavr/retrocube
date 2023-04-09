@@ -6,12 +6,6 @@
 #include <math.h> // round
 #include <stddef.h> // size_t
 
-enum type_t {
-    TYPE_BLOCK=0,
-    TYPE_RHOMBUS,
-    TYPE_TRIANGLE
-};
-
 enum connection_t {
     CONNECTION_RECT=0,
     CONNECTION_TRIANGLE,
@@ -28,8 +22,6 @@ typedef struct mesh {
     size_t n_vertices;
     // number of surfaces
     size_t n_faces;
-    // type of mesh to render, e.g. cube or rhombus
-    enum type_t type;
     struct bounding_box {
         // top left
         int x0, y0, z0;
@@ -97,7 +89,21 @@ typedef struct plane {
 * @returns A pointer to the newly constructed mesh
 */
 mesh_t*     obj_triangle_new           (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color);
-mesh_t* obj_mesh_from_file(const char* fpath, int cx, int cy, int cz, unsigned width, unsigned height, unsigned depth);
+/**
+* @brief
+*
+* @param fpath File path to read vertex and connection info from 
+* @param cx x-coordinate of the center of the mesh to be created
+* @param cy y-coordinate of the center of the mesh to be created
+* @param cz z-coordinate of the center of the mesh to be created
+* @param width Width of the mesh
+* @param height Height of the mesh
+* @param depth Depth of the mesh
+*
+* @returns A pointer to the mesh that has been constructed 
+*/
+mesh_t*     obj_mesh_from_file         (const char* fpath, int cx, int cy, int cz,
+                                        unsigned width, unsigned height, unsigned depth);
 void        obj_mesh_rotate            (mesh_t* mesh, float angle_x_rad, float angle_y_rad, float angle_z_rad);
 void        obj_mesh_translate         (mesh_t* mesh, float dx, float dy, float dz);
 void        obj_mesh_free              (mesh_t* mesh);
@@ -160,38 +166,31 @@ void        obj_camera_set              (camera_t* camera, int cam_x0, int cam_y
  *
  * @return A pointer to the newly constructed plane
  */
-plane_t*    obj_plane_new              (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
+plane_t*    obj_plane_new                  (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
 /* recompute plane's normal and offset given 3 points */
-void        obj_plane_set              (plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
-bool obj_is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c);
-bool obj_is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d);
-vec3i_t render__ray_plane_intersection(plane_t* plane, ray_t* ray);
-bool obj_ray_hits_rectangle(ray_t* ray, vec3i_t** points);
-bool obj_ray_hits_triangle(ray_t* ray, vec3i_t** points);
-void        obj_plane_free             (plane_t* plane);
+void        obj_plane_set                  (plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
+bool        obj_is_point_in_triangle       (vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c);
+bool        obj_is_point_in_rect           (vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d);
+vec3i_t     render__ray_plane_intersection (plane_t* plane, ray_t* ray);
+bool        obj_ray_hits_rectangle         (ray_t* ray, vec3i_t** points);
+bool        obj_ray_hits_triangle          (ray_t* ray, vec3i_t** points);
+void        obj_plane_free                 (plane_t* plane);
 
 /*
  * Note for programmers:
  *
- * The table below maps each connection type (defined as enum in renderer.h)
- * to a render function. Thefore if you want to render a new 2D shape, define
- * your connection type and refine your custom rendering function.
+ * The table below uses a technique called X macro to expand its column.
+ * The table itself is defined as a function is X. X does not need to be
+ * defined yet, but it's defined later according to the expansion we want.
+ * It maps the following information:
+ * <connection letter in .scl file> -> <connection index> -> <intersection function>
  *
- * It uses the X macro pattern for the mapping. X macro does not need to be
- * defined yet. However it needs to be defined every time we want to expand
- * the table.
- *
- * We typically define X one time to expand the first column into an enum
- * type in order to get the indexes (this is not done in this case as the
- * indexes are already defined). We then expand the second column to get
- * an array of pointers to functions.
- *
- * After defining the render functions, it generates a function table whose
- * index is the connection type and the value a pointer to its corresponding
- * render function. As a final note, all functions must take the same parameter
- * types.
+ * Connection types are defined as an enum in objects.h.
+ * Intersection functions define whether the ray intersects a rectangle or
+ * triangle. As a final note, all functions must take the same parameter
+ * types since we later expand them as a function pointer table.
  */
-#define CONN_TABLE                             \
+#define CONN_TABLE                                          \
         X('R', CONNECTION_RECT,     obj_ray_hits_rectangle) \
         X('T', CONNECTION_TRIANGLE, obj_ray_hits_triangle)
 

@@ -107,7 +107,7 @@ mesh_t* obj_mesh_from_file(const char* fpath, int cx, int cy, int cz, unsigned w
             const float y = atof(pch);
             pch = strtok (NULL, " ");
             const float z = atof(pch);
-            new->vertices[ivert++] = vec_vec3i_new(round(width*x), round(height*y), round(depth*z));
+            new->vertices[ivert++] = vec_vec3i_new(round(width/2*x), round(height/2*y), round(depth/2*z));
         } else if (obj__starts_with(buffer, 'f')) {
             assert(atoi(pch) <= new->n_vertices);
             new->connections[isurf][0] = atoi(pch);

@@ -15,7 +15,7 @@ where:
 * T a character  
 * C a character
 
-`v` indicates that a vertex is to be defined. The next 3 numbers that follow (`X X X`) specify the location of the vertex. Each `X` can range from -1.0 to 1.0 and the first `X` specifies the location as a proportion of the width (-1.0 corresponds to -width, -0.25 -width/4, etc.). Likewise for the second and third `X`.  
+`v` indicates that a vertex is to be defined. The next 3 numbers that follow (`X X X`) specify the location of the vertex. Each `X` can range from -1.0 to 1.0 and the first `X` specifies the location as a proportion of the width (-1.0 corresponds to -width/2, -0.25 -width/8, 0.5 to width/4, etc.). Likewise for the second and third `X`.  
 
 When a vertex is defined, it's assigned a unique incremental index under the hood starting from zero. This is how it will be refererenced by the connections.  
 

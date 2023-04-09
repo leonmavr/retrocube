@@ -52,13 +52,6 @@ void render_init();
 void render_write_shape(mesh_t* shape);
 
 /**
- * @brief TODO: render blender object from .obj file 
- *
- * @param filepath Filepath to .obj file to render 
- */
-void render_from_obj_file(char* filepath);
-
-/**
  * @brief Closes the renderer and deallocates its structures 
  */
 void render_end();

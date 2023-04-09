@@ -22,8 +22,6 @@ ray_t* g_ray_test;
 camera_t g_camera;
 // stores the colors of a surfaces after it reflects light - from brightest to darkest
 color_t g_colors_refl[32];
-
-
 // expand the second column of `CONN_TABLE`, mapping connections
 // to intersection functions in an 1-1 manner
 bool (*func_table_intersection[NUM_CONNECTIONS])(ray_t* ray, vec3i_t** points) = {
@@ -239,10 +237,6 @@ void render_write_shape(mesh_t* shape) {
     free(surf_points);
 }
 
-
-void render_from_obj_file(char* filepath) {
-    // TODO
-}
 
 void render_end() {
     obj_plane_free(g_plane_test);
