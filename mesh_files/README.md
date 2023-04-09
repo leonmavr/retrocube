@@ -8,11 +8,11 @@
 
 `.scl` files are parsed by the `obj_mesh_from_file` function declared in `objects.h`. The parser only takes into account two kinds of expressions in an `.scl` file:
 * v X X X  
-* f Y Y Y Y T C
+* f Y Y Y Y T C  
 where:  
-* X is a float from -1.0 to 1.0  
-* Y an integer  
-* T a character  
+* X is a float from -1.0 to 1.0
+* Y an integer
+* T a character
 * C a character
 
 `v` indicates that a vertex is to be defined. The next 3 numbers that follow (`X X X`) specify the location of the vertex. Each `X` can range from -1.0 to 1.0 and the first `X` specifies the location as a proportion of the width (-1.0 corresponds to -width, -0.25 -width/4, etc.). Likewise for the second and third `X`.  
