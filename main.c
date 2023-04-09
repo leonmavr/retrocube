@@ -25,7 +25,7 @@ static int g_cx = 0;
 static int g_cy = 0;
 static int g_cz = 250;
 // size of each face in "pixels" (rendered characters)
-static unsigned g_cube_size = 42;
+static unsigned g_cube_size = 50;
 // how many frames to run the program for
 static unsigned g_max_iterations = UINT_MAX;
 
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
     screen_init();
     render_init();
 
-    mesh_t* shape = obj_mesh_from_file("./mesh_files/coffin.scl", g_cx, g_cy, g_cz, 0.8*g_cube_size, 1.2*g_cube_size, 0.5*g_cube_size);
+    mesh_t* shape = obj_mesh_from_file("./mesh_files/coffin.scl", g_cx, g_cy, g_cz, g_cube_size, 1.2*g_cube_size, g_cube_size);
     // spinning parameters in case random rotation was selected
 #ifndef _WIN32
     const float random_rot_speed_x = 0.002, random_rot_speed_y = 0.002, random_rot_speed_z = 0.002;
