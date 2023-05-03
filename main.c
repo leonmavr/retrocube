@@ -1,6 +1,7 @@
 #include "screen.h"
 #include "objects.h"
 #include "renderer.h"
+#include "utils.h" // UT_MAX
 #include <math.h> // sin, cos
 #include <stdlib.h> // atof, atoi, random, exit
 #include <unistd.h> // for usleep
@@ -28,14 +29,15 @@ static int g_cz = 250;
 static unsigned g_cube_size = 50;
 // how many frames to run the program for
 static unsigned g_max_iterations = UINT_MAX;
-char input_file[256];
+static char g_mesh_file[256] = {'\0'};
 
 
-/* Clears the screen and makes the cursor visible when the user hits Ctr+C */
+/* Callback that clears the screen and makes the cursor visible when the user hits Ctr+C */
 static void interrupt_handler(int int_num) {
     if (int_num == SIGINT) {
         screen_end();
-        exit(0);
+        render_end();
+        exit(SIGINT);
     }            
 }
 
@@ -46,7 +48,7 @@ int main(int argc, char** argv) {
     const float random_bias_x = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
     const float random_bias_y = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
     const float random_bias_z = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
-    strcpy(input_file, "./mesh_files/rhombus.scl");
+    strcpy(g_mesh_file, "./mesh_files/rhombus.scl");
     // TODO: width and height cmd args
     // parse command line arguments - if followed by an argument, e.g. -sx 0.9, increment `i`
     int i = 0;
@@ -79,8 +81,9 @@ int main(int argc, char** argv) {
         } else if ((strcmp(argv[i], "--use-reflection") == 0) || (strcmp(argv[i], "-ur") == 0)) {
             render_use_reflectance();
         } else if ((strcmp(argv[i], "--from-file") == 0) || (strcmp(argv[i], "-ff") == 0)) {
-            // TODO: strncpy
-            strcpy(input_file, argv[++i]);
+            i++;
+            memset(g_mesh_file, '\0', sizeof(g_mesh_file));
+            strncpy(g_mesh_file, argv[i], UT_MAX(strlen(argv[i]), sizeof(g_mesh_file)));
         }
         assert((-1.0 < g_rot_speed_x) && (g_rot_speed_x < 1.0) &&
                (-1.0 < g_rot_speed_y) && (g_rot_speed_y < 1.0) &&
@@ -92,7 +95,7 @@ int main(int argc, char** argv) {
     screen_init();
     render_init();
 
-    mesh_t* shape = obj_mesh_from_file(input_file, g_cx, g_cy, g_cz, g_cube_size, 1.2*g_cube_size, g_cube_size);
+    mesh_t* shape = obj_mesh_from_file(g_mesh_file, g_cx, g_cy, g_cz, g_cube_size, 1.2*g_cube_size, g_cube_size);
     // spinning parameters in case random rotation was selected
 #ifndef _WIN32
     const float random_rot_speed_x = 0.002, random_rot_speed_y = 0.002, random_rot_speed_z = 0.002;
@@ -108,7 +111,7 @@ int main(int argc, char** argv) {
                                    amplitude_y*sin(random_rot_speed_y*random_bias_y*t           + 2*random_bias_y),
                                    amplitude_z*sin(random_rot_speed_z*random_bias_z*t           + 2*random_bias_z));
         else
-            obj_mesh_rotate(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
+        obj_mesh_rotate(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
         // pass &cam instead of NULL to use perspective
         render_write_shape(shape);
         screen_flush();
