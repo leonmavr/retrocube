@@ -52,8 +52,10 @@ static inline int plane_z_at_xy(plane_t* plane, int x, int y) {
 
 /* perspective trasnform to map world point (3D) to screen (2D) */
 static inline vec3i_t render__persp_transform(vec3i_t* xyz) {
+    // to avoid drawing inverted images
+    int signy = (xyz->z > 0) ? -1 : 1;
     return (vec3i_t) {xyz->x*g_camera.focal_length/(xyz->z + 1e-8),
-                      xyz->y*g_camera.focal_length/(xyz->z + 1e-8),
+                      signy*xyz->y*g_camera.focal_length/(xyz->z + 1e-8),
                       xyz->z};
 }
 
@@ -221,8 +223,9 @@ void render_write_shape(mesh_t* shape) {
                 obj_ray_send(g_ray_test, x, y, z_hit);
                 if ((*func_table_intersection[connection_type])(g_ray_test, surf_points) &&
                 (z_hit < rendered_point.z)) {
+                    // to avoid drawing inverted images
                     rendered_color = surf_color;
-                    rendered_point = (vec3i_t) {x, y, z_hit};
+                    rendered_point = (vec3i_t) {x, -y, z_hit};
                     // modern compilers (gcc >= 4.0, clang >= 3.0) know how to optimize this:
                     if (g_use_perspective)
                         rendered_point = render__persp_transform(&rendered_point);

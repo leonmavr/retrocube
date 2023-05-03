@@ -28,6 +28,7 @@ static int g_cz = 250;
 static unsigned g_cube_size = 50;
 // how many frames to run the program for
 static unsigned g_max_iterations = UINT_MAX;
+char input_file[256];
 
 
 /* Clears the screen and makes the cursor visible when the user hits Ctr+C */
@@ -45,6 +46,7 @@ int main(int argc, char** argv) {
     const float random_bias_x = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
     const float random_bias_y = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
     const float random_bias_z = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
+    strcpy(input_file, "./mesh_files/rhombus.scl");
     // TODO: width and height cmd args
     // parse command line arguments - if followed by an argument, e.g. -sx 0.9, increment `i`
     int i = 0;
@@ -76,6 +78,9 @@ int main(int argc, char** argv) {
             render_use_perspective(0, 0, -200);
         } else if ((strcmp(argv[i], "--use-reflection") == 0) || (strcmp(argv[i], "-ur") == 0)) {
             render_use_reflectance();
+        } else if ((strcmp(argv[i], "--from-file") == 0) || (strcmp(argv[i], "-ff") == 0)) {
+            // TODO: strncpy
+            strcpy(input_file, argv[++i]);
         }
         assert((-1.0 < g_rot_speed_x) && (g_rot_speed_x < 1.0) &&
                (-1.0 < g_rot_speed_y) && (g_rot_speed_y < 1.0) &&
@@ -87,7 +92,7 @@ int main(int argc, char** argv) {
     screen_init();
     render_init();
 
-    mesh_t* shape = obj_mesh_from_file("./mesh_files/coffin.scl", g_cx, g_cy, g_cz, g_cube_size, 1.2*g_cube_size, g_cube_size);
+    mesh_t* shape = obj_mesh_from_file(input_file, g_cx, g_cy, g_cz, g_cube_size, 1.2*g_cube_size, g_cube_size);
     // spinning parameters in case random rotation was selected
 #ifndef _WIN32
     const float random_rot_speed_x = 0.002, random_rot_speed_y = 0.002, random_rot_speed_z = 0.002;
