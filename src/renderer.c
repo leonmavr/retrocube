@@ -53,9 +53,9 @@ static inline int plane_z_at_xy(plane_t* plane, int x, int y) {
 /* perspective trasnform to map world point (3D) to screen (2D) */
 static inline vec3i_t render__persp_transform(vec3i_t* xyz) {
     // to avoid drawing inverted images
-    int signy = (xyz->z > 0) ? -1 : 1;
-    return (vec3i_t) {xyz->x*g_camera.focal_length/(xyz->z + 1e-8),
-                      signy*xyz->y*g_camera.focal_length/(xyz->z + 1e-8),
+    int sign = (xyz->z > 0) ? -1 : 1;
+    return (vec3i_t) {sign*xyz->x*g_camera.focal_length/(xyz->z + 1e-8),
+                      sign*xyz->y*g_camera.focal_length/(xyz->z + 1e-8),
                       xyz->z};
 }
 
