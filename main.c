@@ -25,8 +25,10 @@ static bool g_use_random_rotation = true;
 static int g_cx = 0;
 static int g_cy = 0;
 static int g_cz = 250;
-// size of each face in "pixels" (rendered characters)
-static unsigned g_cube_size = 50;
+// size of each dimension in "pixels" (rendered characters)
+static unsigned g_width = 40;
+static unsigned g_height = 60;
+static unsigned g_depth = 60;
 // how many frames to run the program for
 static unsigned g_max_iterations = UINT_MAX;
 static char g_mesh_file[256] = {'\0'};
@@ -72,8 +74,12 @@ int main(int argc, char** argv) {
             g_cy = atoi(argv[++i]);
         } else if ((strcmp(argv[i], "--cz") == 0) || (strcmp(argv[i], "-cz") == 0)) {
             g_cz = atoi(argv[++i]);
-        } else if ((strcmp(argv[i], "--size") == 0) || (strcmp(argv[i], "-s") == 0)) {
-            g_cube_size = atoi(argv[++i]);
+        } else if ((strcmp(argv[i], "--width") == 0) || (strcmp(argv[i], "-wi") == 0)) {
+            g_width = atoi(argv[++i]);
+        } else if ((strcmp(argv[i], "--height") == 0) || (strcmp(argv[i], "-he") == 0)) {
+            g_height = atoi(argv[++i]);
+        } else if ((strcmp(argv[i], "--depth") == 0) || (strcmp(argv[i], "-de") == 0)) {
+            g_depth = atoi(argv[++i]);
         } else if ((strcmp(argv[i], "--max-iterations") == 0) || (strcmp(argv[i], "-mi") == 0)) {
             g_max_iterations = atoi(argv[++i]);
         } else if ((strcmp(argv[i], "--use-perspective") == 0) || (strcmp(argv[i], "-up") == 0)) {
@@ -95,7 +101,7 @@ int main(int argc, char** argv) {
     screen_init();
     render_init();
 
-    mesh_t* shape = obj_mesh_from_file(g_mesh_file, g_cx, g_cy, g_cz, g_cube_size, 1.2*g_cube_size, g_cube_size);
+    mesh_t* shape = obj_mesh_from_file(g_mesh_file, g_cx, g_cy, g_cz, g_width, g_height, g_depth);
     // spinning parameters in case random rotation was selected
 #ifndef _WIN32
     const float random_rot_speed_x = 0.002, random_rot_speed_y = 0.002, random_rot_speed_z = 0.002;
