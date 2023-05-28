@@ -103,17 +103,20 @@ By default the program runs forever so you can stop it with `Ctr+C`. Below are t
 
 | Short specifier | Long specifier            | Argument type | Default | Description                                                                                 |
 |:--------------- |:--------------------------|:--------------|:--------|:--------------------------------------------------------------------------------------------|
-| -sx             | --speedx                  | float         | 0.7     |Rotational speed around the x axis (-1 to 1). If set, disables random rotations.             |
-| -sy             | --speedy                  | float         | 0.4     |Rotational speed around the y axis (-1 to 1). If set, disables random rotations.             |
-| -sz             | --speedz                  | float         | 0.6     |Rotational speed around the z axis (-1 to 1). If set, disables random rotations.             |
-| -f              | --fps                     | int           | 40      |Throttle the fps at which the graphics can be rendered (lower it if high CPU usage or if flicker) | 
-| -r              | --random                  | no argument   | On      |Rotate the cube randomly and sinusoidally.                                                    |
-| -cx             | --cx                      | int           | 0       |x-coordinate of the cube's center in pixels                                                  |
-| -cy             | --cy                      | int           | 0       |y-coordinate of the cube's center in pixels                                                  |
-| -cz             | --cz                      | int           | 0       |z-coordinate of the cube's center in pixels                                                  |
-| -s              | --size                    | int           | 24      |Length of cube's sides in pixels                                                             |
-| -mi             | --maximum-iterations      | int           | Inf/ty  |How many frames to run the program for                                                       |
-| -up             | --use-perspective         | no argument   | Off     |Whether or not to use pinhole camera's perspective transform on rendered pixels              |
+| `-sx`            | `--speedx`                | float         | 0.7     |Rotational speed around the x axis (-1 to 1). If set, disables random rotations.             |
+| `-sy`           | `--speedy`                | float         | 0.4     |Rotational speed around the y axis (-1 to 1). If set, disables random rotations.             |
+| `-sz`           | `--speedz`                | float         | 0.6     |Rotational speed around the z axis (-1 to 1). If set, disables random rotations.             |
+| `-f`            | `--fps`                   | int           | 40      |Throttle the fps at which the graphics can be rendered (lower it if high CPU usage or if flicker) | 
+| `-r`            | `--random`                | no argument   | On      |Rotate the shape randomly and sinusoidally.                                                  |
+| `-cx`           | `--cx`                    | int           | 0       |x-coordinate of the shapes's center in pixels                                                |
+| `-cy`           | `--cy`                    | int           | 0       |y-coordinate of the shapes's center in pixels                                                |
+| `-cz`           | `--cz`                    | int           | 0       |z-coordinate of the shapes's center in pixels                                                |
+| `-wi`           | `--width`                 | int           | 60      |Width of shape in pixels                                                                     |
+| `-he`           | `--height`                | int           | 60      |Height of shape in pixels                                                                    |
+| `-de`           | `--depth`                 | int           | 60      |Depth of shape in pixels                                                                     |
+| `-ff`           | `--from-file`             | string        | `./mesh_files/cube.sci` |The filepath to the mesh file to render. See `mesh_files` directory.           |
+| `-mi`           | `--maximum-iterations`    | int           | Inf/ty  |How many frames to run the program for                                                       |
+| `-up`           | `--use-perspective`       | no argument   | Off     |Whether or not to use pinhole camera's perspective transform on rendered pixels              |
 
 If everyhing works, this is what it looks like on the command line:
 
@@ -132,6 +135,7 @@ random speed | constant speed
 If you'd like to contribute, please follow the codiing guidelines (section 3.1) and make sure that it builds and runs.
 I'll be happy to merge new changes.
 
-List of contributors:
-* [pmarreck](https://github.com/pmarreck) - Nix packaging
-* [IchikaZou](https://github.com/IchikaZou) - porting to Gentoo
+Kudos to:
+* [@pmarreck](https://github.com/pmarreck) - Nix packaging
+* [@IchikaZou](https://github.com/IchikaZou) - porting to Gentoo
+* Anyone else who opened an issue for helping me make this project more robust.
