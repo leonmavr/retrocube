@@ -26,12 +26,12 @@ static int g_cx = 0;
 static int g_cy = 0;
 static int g_cz = 250;
 // size of each dimension in "pixels" (rendered characters)
-static unsigned g_width = 40;
+static unsigned g_width = 60;
 static unsigned g_height = 60;
 static unsigned g_depth = 60;
 // how many frames to run the program for
 static unsigned g_max_iterations = UINT_MAX;
-static char g_mesh_file[256] = {'\0'};
+static char* g_mesh_file;
 
 
 /* Callback that clears the screen and makes the cursor visible when the user hits Ctr+C */
@@ -50,8 +50,8 @@ int main(int argc, char** argv) {
     const float random_bias_x = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
     const float random_bias_y = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
     const float random_bias_z = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
-    strcpy(g_mesh_file, "./mesh_files/rhombus.scl");
-    // TODO: width and height cmd args
+    size_t filename_length;
+    bool render_from_file = true;
     // parse command line arguments - if followed by an argument, e.g. -sx 0.9, increment `i`
     int i = 0;
     while (++i < argc) {
@@ -88,8 +88,17 @@ int main(int argc, char** argv) {
             render_use_reflectance();
         } else if ((strcmp(argv[i], "--from-file") == 0) || (strcmp(argv[i], "-ff") == 0)) {
             i++;
-            memset(g_mesh_file, '\0', sizeof(g_mesh_file));
-            strncpy(g_mesh_file, argv[i], UT_MAX(strlen(argv[i]), sizeof(g_mesh_file)));
+            filename_length = strlen(argv[i]) + 1;
+            g_mesh_file = malloc(filename_length);
+            strcpy(g_mesh_file, argv[i]);
+            render_from_file = true;
+        }
+        // default file to render
+        if (!render_from_file) {
+            const char* fname = "./mesh_files/cube.sci";
+            filename_length = strlen(fname) + 1;
+            g_mesh_file = malloc(filename_length);
+            strcpy(g_mesh_file, fname);
         }
         assert((-1.0 < g_rot_speed_x) && (g_rot_speed_x < 1.0) &&
                (-1.0 < g_rot_speed_y) && (g_rot_speed_y < 1.0) &&
@@ -101,7 +110,7 @@ int main(int argc, char** argv) {
     screen_init();
     render_init();
 
-    mesh_t* shape = obj_mesh_from_file(g_mesh_file, g_cx, g_cy, g_cz, g_width, g_height, g_depth);
+    mesh_t* shape = obj_mesh_from_file("./mesh_files/cube.sci", g_cx, g_cy, g_cz, g_width, g_height, g_depth);
     // spinning parameters in case random rotation was selected
 #ifndef _WIN32
     const float random_rot_speed_x = 0.002, random_rot_speed_y = 0.002, random_rot_speed_z = 0.002;
@@ -126,6 +135,7 @@ int main(int argc, char** argv) {
         nanosleep((const struct timespec[]) {{0, (int)(1.0 / g_fps * 1e9)}}, NULL);
 #endif
     }
+    free(g_mesh_file);
     obj_mesh_free(shape);
     screen_end();
     render_end();
