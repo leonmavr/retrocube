@@ -114,7 +114,7 @@ By default the program runs forever so you can stop it with `Ctr+C`. Below are t
 | `-wi`           | `--width`                 | int           | 60      |Width of shape in pixels                                                                     |
 | `-he`           | `--height`                | int           | 60      |Height of shape in pixels                                                                    |
 | `-de`           | `--depth`                 | int           | 60      |Depth of shape in pixels                                                                     |
-| `-ff`           | `--from-file`             | string        | `./mesh_files/cube.sci` |The filepath to the mesh file to render. See `mesh_files` directory.           |
+| `-ff`           | `--from-file`             | string        | `./mesh_files/cube.scl` |The filepath to the mesh file to render. See `mesh_files` directory.           |
 | `-mi`           | `--maximum-iterations`    | int           | Inf/ty  |How many frames to run the program for                                                       |
 | `-up`           | `--use-perspective`       | no argument   | Off     |Whether or not to use pinhole camera's perspective transform on rendered pixels              |
 
