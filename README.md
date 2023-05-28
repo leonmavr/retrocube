@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ---
-Spinning cube animation via very basic ray tracing on the terminal. Rendered in ASCII.  
+Render 3D meshes in the command line.
 It runs on the standard C library.
 ```
                     +==
@@ -118,7 +118,7 @@ By default the program runs forever so you can stop it with `Ctr+C`. Below are t
 | `-mi`           | `--maximum-iterations`    | int           | Inf/ty  |How many frames to run the program for                                                       |
 | `-up`           | `--use-perspective`       | no argument   | Off     |Whether or not to use pinhole camera's perspective transform on rendered pixels              |
 
-If everyhing works, this is what it looks like on the command line:
+If everyhing works, this is what it looks like on the command line when we want to draw a cube:
 
 random speed | constant speed
 :-------------------------:|:-------------------------:
