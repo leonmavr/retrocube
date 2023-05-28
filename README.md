@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ---
-Render 3D meshes in the command line.
+Render 3D meshes in ASCII on the command line.  
 It runs on the standard C library.
 ```
                     +==
