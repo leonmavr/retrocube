@@ -209,8 +209,8 @@ void render_write_shape(mesh_t* shape) {
     for (int y = ymin;  y <= ymax; y += step) {
         for (int x = xmin; x <= xmax; x += step) {
             // the final pixel and color to render
-            const size_t buffer_ind = screen_xy2ind(x, y);
-            vec3i_t rendered_point = (vec3i_t) {0, 0, g_z_buffer[buffer_ind]};
+            size_t buffer_ind = screen_xy2ind(x, -y);
+            vec3i_t rendered_point = (vec3i_t) {x, -y, g_z_buffer[buffer_ind]};
             color_t rendered_color = background;
             for (size_t isurf = 0; isurf < shape->n_faces; ++isurf) {
                 // unpack surface info, hence define surface from shape->vertices
@@ -230,20 +230,33 @@ void render_write_shape(mesh_t* shape) {
                 // we keep the z to find the furthest one from the origin and we draw its x and y
                 // which z the ray currently hits the plane - can be up to two hits
                 int z_hit = plane_z_at_xy(g_plane_test, x, y);
+                vec3i_t persp_point = {x, -y, z_hit};
+#if 1
+                if (g_use_perspective) {
+                    persp_point = render__persp_transform(&persp_point);
+                    buffer_ind = screen_xy2ind(persp_point.x, persp_point.y);
+                }
+#endif
                 obj_ray_send(g_ray_test, x, y, z_hit);
                 if ((*func_table_intersection[connection_type])(g_ray_test, surf_points) &&
-                (z_hit < rendered_point.z)) {
+                (z_hit < g_z_buffer[buffer_ind])) {
                     // to avoid drawing inverted images
                     rendered_color = surf_color;
                     rendered_point = (vec3i_t) {x, -y, z_hit};
                     // modern compilers (gcc >= 4.0, clang >= 3.0) know how to optimize this:
-                    if (g_use_perspective)
-                        rendered_point = render__persp_transform(&rendered_point);
                     if (g_use_reflectance)
                         rendered_color = render__reflect(g_ray_test, g_plane_test, shape);
+                    if (g_use_perspective) {
+#if 0
+                        rendered_point = render__persp_transform(&rendered_point);
+#else
+                        rendered_point = render__persp_transform(&rendered_point);
+#endif
+                    }
+                    g_z_buffer[buffer_ind] = z_hit;
+                    screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
                 }
             } /* for surfaces */
-            screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
         } /* for x */
     } /* for y */
     render_reset_zbuffer();
