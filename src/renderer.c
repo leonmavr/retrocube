@@ -15,6 +15,7 @@
 
 bool g_use_perspective = false;
 bool g_use_reflectance = false;
+int* g_z_buffer;
 // defines a plane each time we're about to hit a pixel
 plane_t* g_plane_test;
 ray_t* g_ray_test;
@@ -111,10 +112,15 @@ static inline color_t render__reflect(ray_t* ray, plane_t* plane, mesh_t* shape)
                          (size_t)((ray_plane_angle+1)/w_a)*w_c)];
 }
 
-
 //------------------------------------------------------------------------------------
 // External functions
 //------------------------------------------------------------------------------------
+
+void render_reset_zbuffer() {
+    for (size_t i = 0; i < g_screen_buffer_size; ++i)
+        g_z_buffer[i] = INT_MAX;
+}
+
 
 void render_use_perspective(int center_x0, int center_y0, float focal_length) {
     g_use_perspective = true;
@@ -127,6 +133,9 @@ void render_use_reflectance() {
 
 void render_init() {
     vec3i_t dummy = {0, 0, 0};
+    // z buffer that records the depth of each pixel
+    g_z_buffer = malloc(sizeof(int) * g_screen_buffer_size);
+    render_reset_zbuffer();
     g_plane_test = obj_plane_new(&dummy, &dummy, &dummy);
     g_ray_test = obj_ray_new(0, 0, 0, 0, 0, 0);
     // reflection colors from brightest to darkest
@@ -200,7 +209,8 @@ void render_write_shape(mesh_t* shape) {
     for (int y = ymin;  y <= ymax; y += step) {
         for (int x = xmin; x <= xmax; x += step) {
             // the final pixel and color to render
-            vec3i_t rendered_point = (vec3i_t) {0, 0, INT_MAX};
+            const size_t buffer_ind = screen_xy2ind(x, y);
+            vec3i_t rendered_point = (vec3i_t) {0, 0, g_z_buffer[buffer_ind]};
             color_t rendered_color = background;
             for (size_t isurf = 0; isurf < shape->n_faces; ++isurf) {
                 // unpack surface info, hence define surface from shape->vertices
@@ -236,6 +246,7 @@ void render_write_shape(mesh_t* shape) {
             screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
         } /* for x */
     } /* for y */
+    render_reset_zbuffer();
     // free ray-tracing-related constructs
     free(surf_points);
 }

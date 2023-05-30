@@ -5,7 +5,7 @@
 #include "screen.h"
 #include <stdbool.h>
 
-
+extern int* g_z_buffer;
 // checks whether the ray hits each pixel
 extern plane_t* g_plane_test;
 // checks whether the ray hits each pixel
@@ -16,6 +16,8 @@ extern color_t g_colors_refl[32];
 extern bool g_use_perspective;
 extern bool g_use_reflectance;
 
+
+void render_reset_zbuffer();
 
 /**
  * @brief Use perspective transform (pinhole camera model) when rendering shapes. 
