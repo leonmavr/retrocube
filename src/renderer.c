@@ -5,7 +5,7 @@
 #include "utils.h"
 #include <stdio.h>
 #include <stdlib.h> // malloc, free
-#include <string.h>
+#include <string.h> // memset
 #include <limits.h> // INT_MAX, INT_MIN
 
 

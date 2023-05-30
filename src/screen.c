@@ -112,9 +112,18 @@ void screen_init() {
     g_screen_buffer = malloc(sizeof(color_t) * g_screen_buffer_size);
 }
 
+size_t screen_xy2ind(int x, int y) {
+    x += g_cols/2;
+    y += g_rows/2;
+    const int y_scaled = y/(g_cols_over_rows/g_screen_res);
+    const int ind_buffer = y_scaled*g_cols + x;
+    if ((ind_buffer >= g_screen_buffer_size) || (ind_buffer < 0))
+        return 0;
+    return ind_buffer;
+}
+
 void screen_write_pixel(int x, int y, color_t c) {
-    /*
- * Uses the following coordinate system:
+   /* Uses the following coordinate system:
     *
     *      ^ y
     *      |
@@ -125,10 +134,8 @@ void screen_write_pixel(int x, int y, color_t c) {
     *        \
     *         v z
     */
-    const int y_scaled = y/(g_cols_over_rows/g_screen_res) + g_rows/2;
-    const int ind_buffer = y_scaled*g_cols + x +  g_cols/2;
-    if ((ind_buffer < g_screen_buffer_size) && (ind_buffer >= 0))
-        g_screen_buffer[ind_buffer] = c;
+    size_t ind_buffer = screen_xy2ind(x, y);
+    g_screen_buffer[ind_buffer] = c;
 }
 
 void screen_flush() {
