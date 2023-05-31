@@ -227,32 +227,27 @@ void render_write_shape(mesh_t* shape) {
                 
                 // find intersections of ray and surface and set colour accordingly
                 obj_plane_set(g_plane_test, surf_points[0], surf_points[1], surf_points[2]);
-                // we keep the z to find the furthest one from the origin and we draw its x and y
-                // which z the ray currently hits the plane - can be up to two hits
+                // we keep the z to find the closest one to the origin and we draw
+                // its x and y at the z the ray hits the current surface
                 int z_hit = plane_z_at_xy(g_plane_test, x, y);
-                vec3i_t persp_point = {x, -y, z_hit};
-#if 1
+                obj_ray_send(g_ray_test, x, y, z_hit);
+                vec3i_t persp_point; 
+                // if we use perspective, we index the depth buffer at the (x,y)
+                // of the projected point, not the original one
                 if (g_use_perspective) {
+                    persp_point = (vec3i_t) {x, -y, z_hit};
                     persp_point = render__persp_transform(&persp_point);
                     buffer_ind = screen_xy2ind(persp_point.x, persp_point.y);
                 }
-#endif
-                obj_ray_send(g_ray_test, x, y, z_hit);
                 if ((*func_table_intersection[connection_type])(g_ray_test, surf_points) &&
                 (z_hit < g_z_buffer[buffer_ind])) {
                     // to avoid drawing inverted images
                     rendered_color = surf_color;
-                    rendered_point = (vec3i_t) {x, -y, z_hit};
                     // modern compilers (gcc >= 4.0, clang >= 3.0) know how to optimize this:
                     if (g_use_reflectance)
                         rendered_color = render__reflect(g_ray_test, g_plane_test, shape);
-                    if (g_use_perspective) {
-#if 0
-                        rendered_point = render__persp_transform(&rendered_point);
-#else
-                        rendered_point = render__persp_transform(&rendered_point);
-#endif
-                    }
+                    if (g_use_perspective)
+                        rendered_point = persp_point;
                     g_z_buffer[buffer_ind] = z_hit;
                     screen_write_pixel(rendered_point.x, rendered_point.y, rendered_color);
                 }
