@@ -9,9 +9,9 @@
 #include <stdbool.h>
 #include <string.h> // strcmp
 #include <limits.h> // UINT_MAX
-#include <time.h> // time 
+#include <time.h> // time
 #include <signal.h> // signal
-#include <stdio.h> // TODO: remove
+#include <stdio.h> // sprintf
 
 
 //// default command line arguments
@@ -32,7 +32,7 @@ static unsigned g_height = 60;
 static unsigned g_depth = 60;
 // how many frames to run the program for
 static unsigned g_max_iterations = UINT_MAX;
-static char* g_mesh_file;
+static char g_mesh_file[256] = {'\0'};
 
 
 /* Callback that clears the screen and makes the cursor visible when the user hits Ctr+C */
@@ -41,7 +41,7 @@ static void interrupt_handler(int int_num) {
         screen_end();
         render_end();
         exit(SIGINT);
-    }            
+    }
 }
 
 int main(int argc, char** argv) {
@@ -51,7 +51,6 @@ int main(int argc, char** argv) {
     const float random_bias_x = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
     const float random_bias_y = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
     const float random_bias_z = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
-    size_t filename_length;
     bool render_from_file = false;
     // parse command line arguments - if followed by an argument, e.g. -sx 0.9, increment `i`
     int i = 0;
@@ -89,22 +88,27 @@ int main(int argc, char** argv) {
             render_use_reflectance();
         } else if ((strcmp(argv[i], "--from-file") == 0) || (strcmp(argv[i], "-ff") == 0)) {
             i++;
-            filename_length = strlen(argv[i]) + 1;
-            g_mesh_file = malloc(filename_length);
             strcpy(g_mesh_file, argv[i]);
             render_from_file = true;
+        } else {
+            printf("Uknown option: %s\n", argv[i++]);
         }
-        assert((-1.0 < g_rot_speed_x) && (g_rot_speed_x < 1.0) &&
-               (-1.0 < g_rot_speed_y) && (g_rot_speed_y < 1.0) &&
-               (-1.0 < g_rot_speed_z) && (g_rot_speed_z < 1.0));
     }
-    // default file to render
+    assert((-1.0 < g_rot_speed_x) && (g_rot_speed_x < 1.0) &&
+            (-1.0 < g_rot_speed_y) && (g_rot_speed_y < 1.0) &&
+            (-1.0 < g_rot_speed_z) && (g_rot_speed_z < 1.0));
+    // default file to render - found in the config folder at the home directory
+    // at ~/.config/retrocube/*.scl
     if (!render_from_file) {
-        const char* fname = "./mesh_files/cube.scl";
-        filename_length = strlen(fname) + 1;
-        g_mesh_file = malloc(filename_length);
-        strcpy(g_mesh_file, fname);
+        const char* home_dir = getenv("HOME");
+        const char* cfg_dir = ".config/retrocube";
+        const char* mesh_filename = "cube.scl";
+        // TODO: check boundaries
+        sprintf(g_mesh_file, "%s/%s/%s", home_dir, cfg_dir, mesh_filename);
     }
+    // we should have a valid filepath by now
+    assert(access(g_mesh_file, F_OK) == 0);
+
     // make sure we end gracefully if the user hits Ctr+C
     signal(SIGINT, interrupt_handler);
 
@@ -127,8 +131,7 @@ int main(int argc, char** argv) {
                                    amplitude_y*sin(random_rot_speed_y*random_bias_y*t           + 2*random_bias_y),
                                    amplitude_z*sin(random_rot_speed_z*random_bias_z*t           + 2*random_bias_z));
         else
-        obj_mesh_rotate(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
-        // pass &cam instead of NULL to use perspective
+            obj_mesh_rotate(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
         render_write_shape(shape);
         screen_flush();
 #ifndef _WIN32
@@ -136,10 +139,10 @@ int main(int argc, char** argv) {
         nanosleep((const struct timespec[]) {{0, (int)(1.0 / g_fps * 1e9)}}, NULL);
 #endif
     }
-    free(g_mesh_file);
     obj_mesh_free(shape);
     screen_end();
     render_end();
 
     return 0;
 }
+

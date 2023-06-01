@@ -5,8 +5,8 @@
 #include <math.h> // round, abs
 #include <stdlib.h>
 #include <stdbool.h> // bool
-#include <stddef.h> // size_t 
-#include <stdio.h> // FILE, open, fclose
+#include <stddef.h> // size_t
+#include <stdio.h> // FILE, open, fclose, printf
 #include <ctype.h> // isempty
 #include <string.h> // strtok
 #include <assert.h> // assert
@@ -38,7 +38,7 @@ static int conn_names[NUM_CONNECTIONS] = {
 };
 
 //----------------------------------------------------------------------------------------------------------
-// Static functions 
+// Static functions
 //----------------------------------------------------------------------------------------------------------
 static inline bool obj__starts_with(const char* buffer, char first) {
     return buffer[0] == first;
@@ -68,11 +68,15 @@ static inline void obj__mesh_update_bbox(mesh_t* mesh, int width, int height, in
     mesh->bounding_box.z1 = mesh->center->z + m/2;
 }
 //----------------------------------------------------------------------------------------------------------
-// Renderable shapes 
+// Renderable shapes
 //----------------------------------------------------------------------------------------------------------
 mesh_t* obj_mesh_from_file(const char* fpath, int cx, int cy, int cz, unsigned width, unsigned height, unsigned depth) {
     FILE* file;
     file = fopen(fpath, "r");
+    if (file == NULL) {
+        printf("Fatal error: Cannot open file %s\n. Exiting...", fpath);
+        exit(1);
+    }
     char buffer[128];
     size_t n_verts = 0, n_surfs = 0;
     //// read numbers of vertices and surfaces
@@ -85,7 +89,7 @@ mesh_t* obj_mesh_from_file(const char* fpath, int cx, int cy, int cz, unsigned w
     //// allocate data and prepare for reading
     mesh_t* new = malloc(sizeof(mesh_t));
     new->center = vec_vec3i_new(cx, cy, cz);
-	new->n_vertices = n_verts;
+        new->n_vertices = n_verts;
     new->n_faces = n_surfs;
     new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * n_verts);
     new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * n_verts);
@@ -118,7 +122,7 @@ mesh_t* obj_mesh_from_file(const char* fpath, int cx, int cy, int cz, unsigned w
             pch = strtok (NULL, " ");
             new->connections[isurf][3] = atoi(pch);
             pch = strtok (NULL, " ");
-			for (int i = 0; i < NUM_CONNECTIONS; ++i) {
+                        for (int i = 0; i < NUM_CONNECTIONS; ++i) {
                 if (*pch == conn_letters[i])
                     new->connections[isurf][4] = conn_names[i];
             }
@@ -243,12 +247,12 @@ void obj_ray_send(ray_t* ray, int x, int y, int z) {
 
 void obj_ray_free(ray_t* ray) {
     free(ray->orig);
-    free(ray->end); 
+    free(ray->end);
     free(ray);
 }
 
 //-------------------------------------------------------------------------------------------------------------
-// Camera 
+// Camera
 //-------------------------------------------------------------------------------------------------------------
 camera_t* obj_camera_new(int cam_x0, int cam_y0, float focal_length) {
     camera_t* new = malloc(sizeof(camera_t));
@@ -284,7 +288,7 @@ plane_t* obj_plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
     *                 /          \__   /           /
     *                /              \ /           /
     *               /               *p1          /
-    *              /             _/             / 
+    *              /             _/             /
     *             /           _/               /
     *            /           <                /
     *           /         p2*                /
@@ -297,12 +301,12 @@ plane_t* obj_plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
     *
     *                                    normal
     *                                    ^
-    *                                   /     
+    *                                   /
     *                  +---------------/-----------+
     *                 /               /           /
     *                /               /           /
     *               /              *p1          /
-    *              /              /            / 
+    *              /              /            /
     *             /           ___/            /
     *            /           /               /
     *           /       * <_/               /
@@ -311,9 +315,9 @@ plane_t* obj_plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
     * If x = (x,y,z) is any point on the plane, then the normal
     * through p1 is perpendicular to p1x = x - p1 therefore their
     * dot product is zero:
-    * n.(x - p1) = 0 => 
+    * n.(x - p1) = 0 =>
     * n.x - n.p1 = 0
-    * -n.p1 is the offset from the origin 
+    * -n.p1 is the offset from the origin
     */
     plane_t* new = malloc(sizeof(plane_t));
     new->normal = malloc(sizeof(vec3_t));
@@ -345,25 +349,25 @@ bool obj_is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c) {
  * clockwise (cw) or counterclockwise (ccw) of a.   |   \
  * Given vector a(a_x, a_y), its perp vector a_perp |    \                  a(a_x, a_y)
  * is defined as the same vector rotated by 90      |     \             ---->
- * degrees ccw:                                     |     |   ---------/     
- * a_perp = (-a_y, a_x)                             |      \-/               
+ * degrees ccw:                                     |     |   ---------/
+ * a_perp = (-a_y, a_x)                             |      \-/
  *                                                  |
  * The dot product (.) alone doesn't tell us whether|
  * b is (c)cw of a. We need the pdot for that.      |  ^ a_perp        b cw from a
  * As shown in the sketch on the right half:        |  |               angle(a, b) > 90
  *                                                  |   \              a_perp . b < 0
  * a_perp . b < 0 when b is cw from a and the       |   |       ----->
- * angle between a, b is obtuse and                 |    |-----/     a 
+ * angle between a, b is obtuse and                 |    |-----/     a
  * a_perp . b < 0 when b is cw from a and the       |    |
  * angle between a, b is acute.                     |    |
  *                                                  |    v b
- * Therefore a_perp . b < 0 when b is cw from a.    |         
+ * Therefore a_perp . b < 0 when b is cw from a.    |
  * Similarly, a_perp . b > 0 when b is ccw from a.  |  ^ a_perp         b cw from a
  * .                                               .|   \               angle(a, b) < 90
  * .                                               .|   |       ----->  a_perp . b < 0
  * .                                               .|   -------/     a
  * .                                               .|    \
- * .               (cont'ed)                       .|     \-  
+ * .               (cont'ed)                       .|     \-
  * .                                               .|       \
  * .                                               .|        > b
  * .                                               .|
@@ -371,16 +375,16 @@ bool obj_is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c) {
  * inside triangle (ABC) the following condition    | MB needs to be (c)cw from MA, MC
  * must be satisfied:                               | (c)cw from MB and MA (c)cw from MC
  *                                                  |                   A
- * (MB ccw from MA) => MA_perp . MB > 0 and         |                  _+         
- * (MC ccw from MB) => MB_perp . MC > 0 and         |                 / ^\_       
+ * (MB ccw from MA) => MA_perp . MB > 0 and         |                  _+
+ * (MC ccw from MB) => MB_perp . MC > 0 and         |                 / ^\_
  * (MA ccw from MC) => MC_perp . MA > 0 and         |               _/ /   \
- * or                                               |              /   |    \_    
+ * or                                               |              /   |    \_
  * (MB cw from MA) => MA_perp . MB < 0 and          |             /   /       \
- * (MC cw from MB) => MB_perp . MC < 0 and          |           _/  M*------   \_ 
+ * (MC cw from MB) => MB_perp . MC < 0 and          |           _/  M*------   \_
  * (MA cw from MC) => MC_perp . MA < 0 and          |          /  --/       \---->
- * .                                               .|         / -/     ______/   + 
+ * .                                               .|         / -/     ______/   +
  * .                                               .|       _--/______/           C
- * .                                               .|      </_/                   
+ * .                                               .|      </_/
  * .                                               .|      +
  * .                                               .|      B
  */
@@ -398,20 +402,20 @@ bool obj_is_point_in_triangle(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c) {
 }
 
 bool obj_is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_t* d) {
-   /* 
+   /*
     * The diagram below visualises the conditions for M to be inside rectangle ABCD:
     *
     *                  A        (AM.AB).unit(AB)     B    AM.AB > 0
-    *                  +---------->-----------------+     AM.AB < AB.AB 
+    *                  +---------->-----------------+     AM.AB < AB.AB
     *                  |          .                 |
     *                  |          .                 |
     *                  |          .                 |
     *                  |          .                 |     AM.AD > 0
-    * (AD.AM).unit(AD) v. . . . . *M                |     AM.AD < AD.AD 
+    * (AD.AM).unit(AD) v. . . . . *M                |     AM.AD < AD.AD
     *                  |                            |
     *                  |                            |
     *                  |                            |
-    *                  +----------------------------+ 
+    *                  +----------------------------+
     *                  D                            C
     *
     */
@@ -426,7 +430,7 @@ bool obj_is_point_in_rect(vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c, vec3i_
 
 vec3i_t render__ray_plane_intersection(plane_t* plane, ray_t* ray) {
    /*
-    * The parametric line of a ray from from the origin O through 
+    * The parametric line of a ray from from the origin O through
     * point B ('end' of the ray) is:
     * R(t) = O + t(B - O) = tB
     * This ray meets the plane for some t=t0 such that:
@@ -478,5 +482,5 @@ bool obj_ray_hits_triangle(ray_t* ray, vec3i_t** points) {
 
 void obj_plane_free (plane_t* plane) {
     free(plane->normal);
-    free(plane); 
+    free(plane);
 }

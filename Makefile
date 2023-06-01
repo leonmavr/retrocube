@@ -10,7 +10,10 @@ LDFLAGS = -lm
 SOURCES = $(wildcard $(SRC_DIR)/*.c) \
 	main.c
 OBJECTS = $(SOURCES:%.c=%.o)
+MKDIR = mkdir -p
+CP = cp
 RM = rm -rf
+CFG_DIR = ${HOME}/.config/retrocube
 
 
 ###############################################
@@ -20,6 +23,8 @@ all: $(EXEC)
 
 $(EXEC): $(OBJECTS)
 	$(CC) $(OBJECTS) -o $(EXEC) $(LDFLAGS) 
+	$(MKDIR) $(CFG_DIR)
+	$(CP) ./mesh_files/*.scl $(CFG_DIR)
 
 %.o: %.cpp
 	$(CC) $(CFLAGS) -c $^ -o $@
@@ -28,18 +33,3 @@ $(EXEC): $(OBJECTS)
 clean:
 	$(RM) $(OBJECTS) 
 	$(RM) $(EXEC)
-
-###################################################
-# release                                         #
-###################################################
-PREFIX = /usr
-
-.PHONY: install
-install: $(EXEC) 
-	mkdir -p $(DESTDIR)$(PREFIX)/bin
-	cp $< $(DESTDIR)$(PREFIX)/bin/$(EXEC)
-
-.PHONY: uninstall
-uninstall:
-	$(RM) $(DESTDIR)$(PREFIX)/bin/$(EXEC)
-	# remove configs too if necessary
