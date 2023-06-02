@@ -114,7 +114,7 @@ void screen_init() {
 
 size_t screen_xy2ind(int x, int y) {
     x += g_cols/2;
-    y += g_rows/2;
+    y += g_rows;
     const int y_scaled = round(y/(g_cols_over_rows/g_screen_res));
     const int ind_buffer = round(y_scaled*g_cols + x);
     if ((ind_buffer >= g_screen_buffer_size) || (ind_buffer < 0))

@@ -130,6 +130,7 @@ int main(int argc, char** argv) {
         obj_mesh_rotate(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
         // pass &cam instead of NULL to use perspective
         render_write_shape(shape);
+        render_reset_zbuffer();
         screen_flush();
 #ifndef _WIN32
         // nanosleep does not work on Windows

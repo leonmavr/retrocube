@@ -16,6 +16,7 @@
 bool g_use_perspective = false;
 bool g_use_reflectance = false;
 int* g_z_buffer;
+vec3i_t** g_surf_points;
 // defines a plane each time we're about to hit a pixel
 plane_t* g_plane_test;
 ray_t* g_ray_test;
@@ -137,6 +138,7 @@ void render_init() {
     g_z_buffer = malloc(sizeof(int) * g_screen_buffer_size);
     render_reset_zbuffer();
     g_plane_test = obj_plane_new(&dummy, &dummy, &dummy);
+    g_surf_points = malloc(sizeof(vec3i_t*) * 4);
     g_ray_test = obj_ray_new(0, 0, 0, 0, 0, 0);
     // reflection colors from brightest to darkest
     strncpy(g_colors_refl, "#OT&=@$x%><)(nc+:;qy\"/?|+.,-v^!`", 32);
@@ -198,8 +200,6 @@ void render_write_shape(mesh_t* shape) {
         xmax = UT_MIN(g_cols/2, shape->bounding_box.x1);
         ymax = UT_MIN(g_rows+1, shape->bounding_box.y1);
     }
-    // stores the 4 surface points to connect together
-    vec3i_t** surf_points = malloc(sizeof(vec3i_t*) * 4);
     // downscale by subsampling if we use perspective
     unsigned step = (g_use_perspective) ?
         abs(UT_MIN(abs(shape->bounding_box.z0), abs(shape->bounding_box.z1))/g_camera.focal_length) :
@@ -220,13 +220,13 @@ void render_write_shape(mesh_t* shape) {
                 const size_t ipoint3 = shape->connections[isurf][3];
                 const int connection_type = shape->connections[isurf][4];
                 const color_t surf_color = shape->connections[isurf][5];
-                surf_points[0] = shape->vertices[ipoint0];
-                surf_points[1] = shape->vertices[ipoint1];
-                surf_points[2] = shape->vertices[ipoint2];
-                surf_points[3] = shape->vertices[ipoint3];
+                g_surf_points[0] = shape->vertices[ipoint0];
+                g_surf_points[1] = shape->vertices[ipoint1];
+                g_surf_points[2] = shape->vertices[ipoint2];
+                g_surf_points[3] = shape->vertices[ipoint3];
                 
                 // find intersections of ray and surface and set colour accordingly
-                obj_plane_set(g_plane_test, surf_points[0], surf_points[1], surf_points[2]);
+                obj_plane_set(g_plane_test, g_surf_points[0], g_surf_points[1], g_surf_points[2]);
                 // we keep the z to find the closest one to the origin and we draw
                 // its x and y at the z the ray hits the current surface
                 int z_hit = plane_z_at_xy(g_plane_test, x, y);
@@ -239,7 +239,7 @@ void render_write_shape(mesh_t* shape) {
                     persp_point = render__persp_transform(&persp_point);
                     buffer_ind = screen_xy2ind(persp_point.x, persp_point.y);
                 }
-                if ((*func_table_intersection[connection_type])(g_ray_test, surf_points) &&
+                if ((*func_table_intersection[connection_type])(g_ray_test, g_surf_points) &&
                 (z_hit < g_z_buffer[buffer_ind])) {
                     // to avoid drawing inverted images
                     rendered_color = surf_color;
@@ -254,12 +254,10 @@ void render_write_shape(mesh_t* shape) {
             } /* for surfaces */
         } /* for x */
     } /* for y */
-    render_reset_zbuffer();
-    // free ray-tracing-related constructs
-    free(surf_points);
 }
 
 
 void render_end() {
+    free(g_surf_points);
     obj_plane_free(g_plane_test);
 }

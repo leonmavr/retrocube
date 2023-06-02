@@ -8,6 +8,8 @@
 extern int* g_z_buffer;
 // checks whether the ray hits each pixel
 extern plane_t* g_plane_test;
+// the 4 points that define the surface to render
+extern vec3i_t** g_surf_points;
 // checks whether the ray hits each pixel
 extern ray_t* g_ray_test;
 // camera where rays are shot from 
