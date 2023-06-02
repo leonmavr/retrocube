@@ -112,6 +112,7 @@ int main(int argc, char** argv) {
     render_init();
 
     mesh_t* shape = obj_mesh_from_file(g_mesh_file, g_cx, g_cy, g_cz, g_width, g_height, g_depth);
+    mesh_t* shape2 = obj_mesh_from_file("mesh_files/cube.scl", g_cx, g_cy, g_cz, .8*g_width, .8*g_height, .8*g_depth);
     // spinning parameters in case random rotation was selected
 #ifndef _WIN32
     const float random_rot_speed_x = 0.002, random_rot_speed_y = 0.002, random_rot_speed_z = 0.002;
@@ -127,9 +128,11 @@ int main(int argc, char** argv) {
                                    amplitude_y*sin(random_rot_speed_y*random_bias_y*t           + 2*random_bias_y),
                                    amplitude_z*sin(random_rot_speed_z*random_bias_z*t           + 2*random_bias_z));
         else
-        obj_mesh_rotate(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
+            obj_mesh_rotate(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
+        obj_mesh_rotate(shape2, g_rot_speed_x/24*t, g_rot_speed_y/14*t, g_rot_speed_z/18*t);
         // pass &cam instead of NULL to use perspective
         render_write_shape(shape);
+        render_write_shape(shape2);
         render_reset_zbuffer();
         screen_flush();
 #ifndef _WIN32
@@ -139,6 +142,7 @@ int main(int argc, char** argv) {
     }
     free(g_mesh_file);
     obj_mesh_free(shape);
+    obj_mesh_free(shape2);
     screen_end();
     render_end();
 
