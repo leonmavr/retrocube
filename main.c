@@ -122,6 +122,7 @@ int main(int argc, char** argv) {
     const float random_rot_speed_x = 0.01, random_rot_speed_y = 0.01, random_rot_speed_z = 0.01;
     const float amplitude_x = 6.0, amplitude_y = 6.0, amplitude_z = 6.0;
 #endif
+    obj_mesh_translate(shape, 25, 15, 0);
     for (size_t t = 0; t < g_max_iterations; ++t) {
         if (g_use_random_rotation)
             obj_mesh_rotate(shape, amplitude_x*sin(random_rot_speed_x*sin(random_rot_speed_x*t) + 2*random_bias_x),

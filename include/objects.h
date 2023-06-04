@@ -30,7 +30,7 @@ typedef struct mesh {
     } bounding_box;
     /*
      * 2D array that defines the surfaces of the solid.
-     * Its rows consist of the following data:
+     * Its rows consist of the following data:a
      *   -- 4 indexes
      *   -- connection type (connection_t enum)
      *   -- a character that indicates the color of the current surface
