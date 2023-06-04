@@ -139,11 +139,6 @@ void screen_write_pixel(int x, int y, color_t c) {
 }
 
 void screen_flush() {
-    // BUG: central pixel is colored as background - mitigate it by copying from the left
-    for (size_t i = 1; i < g_screen_buffer_size - 1; ++i)
-        if ((g_screen_buffer[i-1] != ' ') && (g_screen_buffer[i] == ' ') && (g_screen_buffer[i+1]  != ' ')) {
-            g_screen_buffer[i] = g_screen_buffer[i-1];
-    }
     // render the screen buffer
     for (size_t i = 0; i < g_screen_buffer_size; ++i)
         putchar(g_screen_buffer[i]);
