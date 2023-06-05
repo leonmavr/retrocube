@@ -1,5 +1,3 @@
-# If you run with Nix and you have "flakes" enabled,
-# you can just run "nix run" and it will run the default executable here ("cube").
 {
 	inputs = {
 		nixpkgs.url = github:nixos/nixpkgs/release-23.05;
@@ -13,6 +11,9 @@
 		flake-utils.lib.eachDefaultSystem (system: let
 			pkgs = nixpkgs.legacyPackages.${system};
 		in {
+			# usable with nix when flake are enabled with
+			# `nix build` # to build the default package
+			# `nix run` # to run the default executable (cube) in the default package
 			packages = rec {
 				retrocube = pkgs.callPackage ./package.nix {};
 				default = retrocube;

@@ -1,13 +1,13 @@
-# To run this on nix/nixos, just run `nix-build` in the directory containing this file
+# To build this with on nix, just run
+# nix build # with flakes
+# nix-build --expr "with import <nixpkgs> {}; callPackage ./package.nix {}" # without flakes
 {
 	lib,
-	fastStdenv,
-	pkg-config,
+	# override this with fastStdenv for optimization/faster running times (8-12%) BUT... nondeterministic builds :(
+	stdenv,
 	...
 }:
-# fastStdenv.mkDerivation for optimization/faster running times (8-12%) BUT... nondeterministic builds :(
-# Otherwise just use stdenv.mkDerivation
-fastStdenv.mkDerivation rec {
+stdenv.mkDerivation rec {
 	pname = "retrocube";
 	version = "1.0";
 	# dont include nix and version control files in the source
@@ -19,20 +19,16 @@ fastStdenv.mkDerivation rec {
 			&& !(lib.hasSuffix ".lock" n);
 		src = lib.cleanSource ./.;
 	};
+	# disable the buildPhase, because make will install the meshes while building,
+	# which won't work in the buildPhase, so we will build in the installPhase
+	dontBuild = true;
+	# build and install retrocube
+	installPhase = ''
+		make PREFIX=$out
+		mkdir $out/bin
+		cp cube $out/bin
+	'';
 
-	enableParallelBuilding = true;
-
-	# any dependencies/build tools needed at compilation/build time
-	# gcc is already part of stdenv
-	nativeBuildInputs = [pkg-config];
-
-	# any dependencies needed at runtime
-	# (why is it not called "runtimeInputs"? and the build time inputs just called "buildInputs"?)
-	# because of legacy reasons
-	# https://web.archive.org/web/20230529002701/https://nixos.org/manual/nixpkgs/stable/#variables-specifying-dependencies
-	buildInputs = [];
-
-	makeFlags = ["PREFIX=$(out)"];
 	meta = with lib; {
 		mainProgram = "cube";
 		license = licenses.mit;
