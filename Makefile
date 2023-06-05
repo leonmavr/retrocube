@@ -26,7 +26,7 @@ all: $(EXEC)
 
 $(EXEC): $(OBJECTS)
 	$(CC) $(OBJECTS) -o $(EXEC) $(LDFLAGS) 
-	# copy config files into a CFG_DIR 
+	# copy config files into CFG_DIR 
 	if [ ! -d $(CFG_DIR) ]; then\
 		$(CP) mesh_files $(CFG_DIR);\
 	fi
@@ -39,7 +39,7 @@ $(EXEC): $(OBJECTS)
 ###############################################
 .PHONY: cfg
 cfg:
-	# copy config files into a CFG_DIR 
+	# copy config files into CFG_DIR 
 	$(CP) mesh_files $(CFG_DIR)
 
 .PHONY: clean
