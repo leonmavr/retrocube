@@ -13,6 +13,12 @@
 #include <signal.h> // signal
 #include <stdio.h> // sprintf
 
+#ifndef CFG_DIR
+#define CFG_DIR "/usr/share/retrocube"
+#endif
+
+#define STRINGIFY(x) STRINGIFY2(x)
+#define STRINGIFY2(x) #x
 
 //// default command line arguments
 // rotation speed around x, y, z axes (-1 to 1)
@@ -97,14 +103,13 @@ int main(int argc, char** argv) {
     assert((-1.0 < g_rot_speed_x) && (g_rot_speed_x < 1.0) &&
             (-1.0 < g_rot_speed_y) && (g_rot_speed_y < 1.0) &&
             (-1.0 < g_rot_speed_z) && (g_rot_speed_z < 1.0));
-    // default file to render - found in the config folder at the home directory
-    // at ~/.config/retrocube/*.scl
+    // default file to render
+    // define in preprocessor constant CFG_DIR
     if (!render_from_file) {
-        const char* home_dir = getenv("HOME");
-        const char* cfg_dir = ".config/retrocube";
+        const char* cfg_dir = STRINGIFY(CFG_DIR);
         const char* mesh_filename = "cube.scl";
         // TODO: check boundaries
-        sprintf(g_mesh_file, "%s/%s/%s", home_dir, cfg_dir, mesh_filename);
+        sprintf(g_mesh_file, "%s/%s", cfg_dir, mesh_filename);
     }
     // we should have a valid filepath by now
     assert(access(g_mesh_file, F_OK) == 0);
