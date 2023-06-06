@@ -184,7 +184,6 @@ void render_write_shape(mesh_t* shape) {
     // whether we want to use the perspective transform or not
     vec3i_t ray_origin = (vec3i_t) {g_camera.x0, g_camera.y0, g_camera.focal_length};
     vec_vec3i_copy(g_ray_test->orig, &ray_origin);
-    const color_t background = ' ';
     // screen boundaries
     int xmin, xmax, ymin, ymax;
     if (g_use_perspective) {
@@ -202,16 +201,16 @@ void render_write_shape(mesh_t* shape) {
     }
     // downscale by subsampling if we use perspective
     unsigned step = (g_use_perspective) ?
-        abs(UT_MIN(abs(shape->bounding_box.z0), abs(shape->bounding_box.z1))/g_camera.focal_length) :
+        UT_MIN(abs(shape->bounding_box.z0), abs(shape->bounding_box.z1))/g_camera.focal_length :
         1;
     step = (step < 1) ? 1 : step;
 
     for (int y = ymin;  y <= ymax; y += step) {
         for (int x = xmin; x <= xmax; x += step) {
-            // the final pixel and color to render
+            // -y to avoid drawing inverted images
             size_t buffer_ind = screen_xy2ind(x, -y);
+            // the final pixel and color to render
             vec3i_t rendered_point = (vec3i_t) {x, -y, g_z_buffer[buffer_ind]};
-            color_t rendered_color = background;
             for (size_t isurf = 0; isurf < shape->n_faces; ++isurf) {
                 // unpack surface info, hence define surface from shape->vertices
                 const size_t ipoint0 = shape->connections[isurf][0];
@@ -233,7 +232,7 @@ void render_write_shape(mesh_t* shape) {
                 obj_ray_send(g_ray_test, x, y, z_hit);
                 vec3i_t persp_point; 
                 // if we use perspective, we index the depth buffer at the (x,y)
-                // of the projected point, not the original one
+                // of the projected point, not the original one (`persp_point`)
                 if (g_use_perspective) {
                     persp_point = (vec3i_t) {x, -y, z_hit};
                     persp_point = render__persp_transform(&persp_point);
@@ -241,8 +240,7 @@ void render_write_shape(mesh_t* shape) {
                 }
                 if ((*func_table_intersection[connection_type])(g_ray_test, g_surf_points) &&
                 (z_hit < g_z_buffer[buffer_ind])) {
-                    // to avoid drawing inverted images
-                    rendered_color = surf_color;
+                    color_t rendered_color = surf_color;
                     // modern compilers (gcc >= 4.0, clang >= 3.0) know how to optimize this:
                     if (g_use_reflectance)
                         rendered_color = render__reflect(g_ray_test, g_plane_test, shape);
