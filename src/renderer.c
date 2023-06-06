@@ -56,8 +56,8 @@ static inline int plane_z_at_xy(plane_t* plane, int x, int y) {
 static inline vec3i_t render__persp_transform(vec3i_t* xyz) {
     // to avoid drawing inverted images
     int sign = (xyz->z > 0) ? -1 : 1;
-    return (vec3i_t) {sign*xyz->x*g_camera.focal_length/(xyz->z + 1e-8),
-                      sign*xyz->y*g_camera.focal_length/(xyz->z + 1e-8),
+    return (vec3i_t) {UT_CLIP(sign*xyz->x*g_camera.focal_length/(xyz->z + 1e-8), -g_cols/2, g_cols/2),
+                      UT_CLIP(sign*xyz->y*g_camera.focal_length/(xyz->z + 1e-8), -g_rows, g_rows),
                       xyz->z};
 }
 
