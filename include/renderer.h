@@ -1,6 +1,5 @@
 #ifndef RENDERER_H
 #define RENDERER_H
-#include "renderer.h"
 #include "objects.h"
 #include "screen.h"
 #include <stdbool.h>
