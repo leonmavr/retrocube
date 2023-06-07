@@ -137,5 +137,6 @@ I'll be happy to merge new changes.
 
 Kudos to:
 * [@pmarreck](https://github.com/pmarreck) - Nix packaging
+* [@Quantenzitrone](https://github.com/Quantenzitrone) - Fixing and competing nix packaging, including the mesh text files properly, tidying up the make build
 * [@IchikaZou](https://github.com/IchikaZou) - porting to Gentoo
 * Anyone else who opened an issue for helping me make this project more robust.
