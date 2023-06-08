@@ -19,8 +19,6 @@ extern bool g_use_perspective;
 extern bool g_use_reflectance;
 
 
-void render_reset_zbuffer();
-
 /**
  * @brief Use perspective transform (pinhole camera model) when rendering shapes. 
  *        After calling this function, call `render_init()` for the changes to
