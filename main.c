@@ -134,8 +134,7 @@ int main(int argc, char** argv) {
         // pass &cam instead of NULL to use perspective
         render_write_shape(shape);
         render_write_shape(shape2);
-        render_reset_zbuffer();
-        screen_flush();
+        render_flush();
 #ifndef _WIN32
         // nanosleep does not work on Windows
         nanosleep((const struct timespec[]) {{0, (int)(1.0 / g_fps * 1e9)}}, NULL);

@@ -56,6 +56,12 @@ void render_init();
 void render_write_shape(mesh_t* shape);
 
 /**
+ * @brief Sets the depth (z) buffer to INT_MAX and flushes the screen,
+ *        drawing the pixels 
+ */
+void render_flush();
+
+/**
  * @brief Closes the renderer and deallocates its structures 
  */
 void render_end();

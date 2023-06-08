@@ -113,16 +113,14 @@ static inline color_t render__reflect(ray_t* ray, plane_t* plane, mesh_t* shape)
                          (size_t)((ray_plane_angle+1)/w_a)*w_c)];
 }
 
-//------------------------------------------------------------------------------------
-// External functions
-//------------------------------------------------------------------------------------
-
-void render_reset_zbuffer() {
+static void render_reset_zbuffer() {
     for (size_t i = 0; i < g_screen_buffer_size; ++i)
         g_z_buffer[i] = INT_MAX;
 }
 
-
+//------------------------------------------------------------------------------------
+// External functions
+//------------------------------------------------------------------------------------
 void render_use_perspective(int center_x0, int center_y0, float focal_length) {
     g_use_perspective = true;
     obj_camera_set(&g_camera, center_x0, center_y0, focal_length);
@@ -252,6 +250,11 @@ void render_write_shape(mesh_t* shape) {
             } /* for surfaces */
         } /* for x */
     } /* for y */
+}
+
+void render_flush() {
+    render_reset_zbuffer();
+    screen_flush();
 }
 
 
