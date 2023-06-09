@@ -114,7 +114,7 @@ static inline color_t render__reflect(ray_t* ray, plane_t* plane, mesh_t* shape)
 }
 
 static void render_reset_zbuffer() {
-    for (size_t i = 0; i < g_screen_buffer_size; ++i)
+    for (size_t i = 0; i < g_buffer_size; ++i)
         g_z_buffer[i] = INT_MAX;
 }
 
@@ -135,7 +135,7 @@ void render_init() {
     screen_init();
     vec3i_t dummy = {0, 0, 0};
     // z buffer that records the depth of each pixel
-    g_z_buffer = malloc(sizeof(int) * g_screen_buffer_size);
+    g_z_buffer = malloc(sizeof(int) * g_buffer_size);
     render_reset_zbuffer();
     g_plane_test = obj_plane_new(&dummy, &dummy, &dummy);
     g_surf_points = malloc(sizeof(vec3i_t*) * 4);

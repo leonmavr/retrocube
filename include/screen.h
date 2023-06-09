@@ -9,7 +9,7 @@ extern int g_rows;
 extern int g_cols;
 // stores the pixels to be drawn on the screen
 extern color_t* g_screen_buffer;
-extern size_t g_screen_buffer_size;
+extern size_t g_buffer_size;
 
 /**
  * @brief Conver some pixel coordinates from (x, y) to an 1D index given

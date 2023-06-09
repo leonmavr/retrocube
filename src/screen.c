@@ -56,7 +56,7 @@ static float g_cols_over_rows;
 // screen resolution (pixels over pixels) 
 static float g_screen_res;
 color_t* g_screen_buffer;
-size_t g_screen_buffer_size;
+size_t g_buffer_size;
 
 
 /**
@@ -108,8 +108,8 @@ void screen_init() {
     SCREEN_CLEAR();
     // get terminal's size info
     draw__get_screen_info();
-    g_screen_buffer_size = g_rows*g_cols;
-    g_screen_buffer = malloc(sizeof(color_t) * g_screen_buffer_size);
+    g_buffer_size = g_rows*g_cols;
+    g_screen_buffer = malloc(sizeof(color_t) * g_buffer_size);
 }
 
 size_t screen_xy2ind(int x, int y) {
@@ -117,7 +117,7 @@ size_t screen_xy2ind(int x, int y) {
     y += g_rows;
     const int y_scaled = round(y/(g_cols_over_rows/g_screen_res));
     const int ind_buffer = round(y_scaled*g_cols + x);
-    if ((ind_buffer >= g_screen_buffer_size) || (ind_buffer < 0))
+    if ((ind_buffer >= g_buffer_size) || (ind_buffer < 0))
         return 0;
     return ind_buffer;
 }
@@ -140,9 +140,9 @@ void screen_write_pixel(int x, int y, color_t c) {
 
 void screen_flush() {
     // render the screen buffer
-    for (size_t i = 0; i < g_screen_buffer_size; ++i)
+    for (size_t i = 0; i < g_buffer_size; ++i)
         putchar(g_screen_buffer[i]);
-    memset(g_screen_buffer, ' ', sizeof(color_t) * g_screen_buffer_size);
+    memset(g_screen_buffer, ' ', sizeof(color_t) * g_buffer_size);
     SCREEN_GOTO_TOPLEFT();
 }
 
