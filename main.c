@@ -44,7 +44,6 @@ static char g_mesh_file[256] = {'\0'};
 /* Callback that clears the screen and makes the cursor visible when the user hits Ctr+C */
 static void interrupt_handler(int int_num) {
     if (int_num == SIGINT) {
-        screen_end();
         render_end();
         exit(SIGINT);
     }
@@ -117,7 +116,6 @@ int main(int argc, char** argv) {
     // make sure we end gracefully if the user hits Ctr+C
     signal(SIGINT, interrupt_handler);
 
-    screen_init();
     render_init();
 
     mesh_t* shape = obj_mesh_from_file(g_mesh_file, g_cx, g_cy, g_cz, g_width, g_height, g_depth);
@@ -138,14 +136,13 @@ int main(int argc, char** argv) {
         else
             obj_mesh_rotate(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
         render_write_shape(shape);
-        screen_flush();
+        render_flush();
 #ifndef _WIN32
         // nanosleep does not work on Windows
         nanosleep((const struct timespec[]) {{0, (int)(1.0 / g_fps * 1e9)}}, NULL);
 #endif
     }
     obj_mesh_free(shape);
-    screen_end();
     render_end();
 
     return 0;

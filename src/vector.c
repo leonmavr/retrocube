@@ -80,23 +80,23 @@ void vec_vec3_rotate(vec3_t* src, float angle_x_rad, float angle_y_rad, float an
     int x = src->x;
     int y = src->y;
     int z = src->z;
-    src->x = round(matrix_rotx[0][0]*x + matrix_rotx[0][1]*y + matrix_rotx[0][2]*z);
-    src->y = round(matrix_rotx[1][0]*x + matrix_rotx[1][1]*y + matrix_rotx[1][2]*z);
-    src->z = round(matrix_rotx[2][0]*x + matrix_rotx[2][1]*y + matrix_rotx[2][2]*z);
+    src->x = matrix_rotx[0][0]*x + matrix_rotx[0][1]*y + matrix_rotx[0][2]*z;
+    src->y = matrix_rotx[1][0]*x + matrix_rotx[1][1]*y + matrix_rotx[1][2]*z;
+    src->z = matrix_rotx[2][0]*x + matrix_rotx[2][1]*y + matrix_rotx[2][2]*z;
     // Ry
     x = src->x;
     y = src->y;
     z = src->z;
-    src->x = round(matrix_roty[0][0]*x + matrix_roty[0][1]*y + matrix_roty[0][2]*z);
-    src->y = round(matrix_roty[1][0]*x + matrix_roty[1][1]*y + matrix_roty[1][2]*z);
-    src->z = round(matrix_roty[2][0]*x + matrix_roty[2][1]*y + matrix_roty[2][2]*z);
+    src->x = matrix_roty[0][0]*x + matrix_roty[0][1]*y + matrix_roty[0][2]*z;
+    src->y = matrix_roty[1][0]*x + matrix_roty[1][1]*y + matrix_roty[1][2]*z;
+    src->z = matrix_roty[2][0]*x + matrix_roty[2][1]*y + matrix_roty[2][2]*z;
     // Rz
     x = src->x;
     y = src->y;
     z = src->z;
-    src->x = round(matrix_rotz[0][0]*x + matrix_rotz[0][1]*y + matrix_rotz[0][2]*z);
-    src->y = round(matrix_rotz[1][0]*x + matrix_rotz[1][1]*y + matrix_rotz[1][2]*z);
-    src->z = round(matrix_rotz[2][0]*x + matrix_rotz[2][1]*y + matrix_rotz[2][2]*z);
+    src->x = matrix_rotz[0][0]*x + matrix_rotz[0][1]*y + matrix_rotz[0][2]*z;
+    src->y = matrix_rotz[1][0]*x + matrix_rotz[1][1]*y + matrix_rotz[1][2]*z;
+    src->z = matrix_rotz[2][0]*x + matrix_rotz[2][1]*y + matrix_rotz[2][2]*z;
 
     // +(x0, y0, z0)
     // reset original offset 

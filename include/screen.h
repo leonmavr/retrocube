@@ -9,7 +9,19 @@ extern int g_rows;
 extern int g_cols;
 // stores the pixels to be drawn on the screen
 extern color_t* g_screen_buffer;
-extern size_t g_screen_buffer_size;
+extern size_t g_buffer_size;
+
+/**
+ * @brief Conver some pixel coordinates from (x, y) to an 1D index given
+ *        the rows and columns of the screen. This is done to index the
+ *        pixel and depth (z) buffers. 
+ *
+ * @param x x-coordinate of pixel to index 
+ * @param y y-coordinate of pixel to index 
+ *
+ * @retun the 1D buffer index corrsponding to coordinates (x,y)
+ */
+size_t screen_xy2ind(int x, int y);
 
 /**
  * @brief Initialises the screen buffer and prepares terminal for writing

@@ -202,8 +202,10 @@ void obj_mesh_translate(mesh_t* mesh, float dx, float dy, float dz) {
     const unsigned depth = abs(mesh->bounding_box.z0 - mesh->bounding_box.z1);
     vec3i_t translation = {round(dx), round(dy), round(dz)};
     *mesh->center = vec_vec3i_add(mesh->center, &translation);
-    for (size_t i = 0; i < mesh->n_vertices; ++i)
+    for (size_t i = 0; i < mesh->n_vertices; ++i) {
         *mesh->vertices[i] = vec_vec3i_add(mesh->vertices[i], &translation);
+        vec_vec3i_copy(mesh->vertices_backup[i], mesh->vertices[i]);
+    }
 
     obj__mesh_update_bbox(mesh, width, height, depth);
 }
