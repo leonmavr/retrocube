@@ -259,6 +259,7 @@ void render_flush() {
 
 
 void render_end() {
+    screen_end();
     free(g_surf_points);
     obj_plane_free(g_plane_test);
 }

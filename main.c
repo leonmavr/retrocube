@@ -38,7 +38,6 @@ static char* g_mesh_file;
 /* Callback that clears the screen and makes the cursor visible when the user hits Ctr+C */
 static void interrupt_handler(int int_num) {
     if (int_num == SIGINT) {
-        screen_end();
         render_end();
         exit(SIGINT);
     }            
@@ -143,7 +142,6 @@ int main(int argc, char** argv) {
     free(g_mesh_file);
     obj_mesh_free(shape);
     obj_mesh_free(shape2);
-    screen_end();
     render_end();
 
     return 0;
