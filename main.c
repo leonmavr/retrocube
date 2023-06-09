@@ -107,7 +107,6 @@ int main(int argc, char** argv) {
     // make sure we end gracefully if the user hits Ctr+C
     signal(SIGINT, interrupt_handler);
 
-    screen_init();
     render_init();
 
     mesh_t* shape = obj_mesh_from_file(g_mesh_file, g_cx, g_cy, g_cz, g_width, g_height, g_depth);

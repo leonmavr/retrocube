@@ -131,6 +131,8 @@ void render_use_reflectance() {
 }
 
 void render_init() {
+    // initialize screen (pixel) buffer
+    screen_init();
     vec3i_t dummy = {0, 0, 0};
     // z buffer that records the depth of each pixel
     g_z_buffer = malloc(sizeof(int) * g_screen_buffer_size);
