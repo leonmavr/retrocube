@@ -99,9 +99,9 @@ int main(int argc, char** argv) {
             printf("Uknown option: %s\n", argv[i++]);
         }
     }
-    assert((-1.0 < g_rot_speed_x) && (g_rot_speed_x < 1.0) &&
-            (-1.0 < g_rot_speed_y) && (g_rot_speed_y < 1.0) &&
-            (-1.0 < g_rot_speed_z) && (g_rot_speed_z < 1.0));
+    assert((-1.0001 < g_rot_speed_x) && (g_rot_speed_x < 1.0001) &&
+            (-1.0001 < g_rot_speed_y) && (g_rot_speed_y < 1.0001) &&
+            (-1.0001 < g_rot_speed_z) && (g_rot_speed_z < 1.0001));
     // default file to render
     // define in preprocessor constant CFG_DIR
     if (!render_from_file) {
