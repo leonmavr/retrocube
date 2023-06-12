@@ -93,9 +93,7 @@ mesh_t* obj_mesh_from_file(const char* fpath, int cx, int cy, int cz, unsigned w
     new->height = height;
     new->depth = depth;
     new->center = vec_vec3i_new();
-    new->center_backup = vec_vec3i_new();
     vec_vec3i_set(new->center, cx, cy, cz);
-    vec_vec3i_set(new->center_backup, cx, cy, cz);
     new->n_vertices = n_verts;
     new->n_faces = n_surfs;
     new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * n_verts);
@@ -211,12 +209,6 @@ void obj_mesh_rotate (mesh_t* mesh, float angle_x_rad, float angle_y_rad, float 
 }
 
 void obj_mesh_translate(mesh_t* mesh, float dx, float dy, float dz) {
-#if 0
-    for (size_t i = 0; i < mesh->n_vertices; ++i) {
-        vec_vec3i_copy(mesh->vertices[i], mesh->vertices_backup[i]);
-    }
-    vec_vec3i_copy(mesh->center, mesh->center_backup);
-#endif
     // to update bounding box after the translation
     const unsigned width = abs(mesh->bounding_box.x0 - mesh->bounding_box.x1);
     const unsigned height = abs(mesh->bounding_box.y0 - mesh->bounding_box.y1);

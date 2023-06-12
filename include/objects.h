@@ -18,7 +18,6 @@ typedef struct mesh {
     vec3i_t** vertices;
     vec3i_t** vertices_backup;
     vec3i_t* center;
-    vec3i_t* center_backup;
     // number of vertices
     size_t n_vertices;
     // number of surfaces
