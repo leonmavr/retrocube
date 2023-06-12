@@ -18,6 +18,7 @@ typedef struct mesh {
     vec3i_t** vertices;
     vec3i_t** vertices_backup;
     vec3i_t* center;
+    vec3i_t* center_backup;
     // number of vertices
     size_t n_vertices;
     // number of surfaces
@@ -28,6 +29,7 @@ typedef struct mesh {
         // bottop right
         int x1, y1, z1;
     } bounding_box;
+    unsigned width, height, depth;
     /*
      * 2D array that defines the surfaces of the solid.
      * Its rows consist of the following data:a

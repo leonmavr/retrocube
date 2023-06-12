@@ -135,6 +135,10 @@ int main(int argc, char** argv) {
                                    amplitude_z*sin(random_rot_speed_z*random_bias_z*t           + 2*random_bias_z));
         else
             obj_mesh_rotate(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
+        if ((t % 100) < 50)
+            obj_mesh_translate(shape, 1, 1, 1);
+        else
+            obj_mesh_translate(shape, -1, -1, -1);
         render_write_shape(shape);
         render_flush();
 #ifndef _WIN32
