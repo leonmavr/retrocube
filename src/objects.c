@@ -58,7 +58,7 @@ bool obj__line_is_empty(const char *s)
   return true;
 }
 
-static inline void obj__mesh_update_bbox(mesh_t* mesh, int width, int height, int depth) {
+static inline void obj__mesh_update_bbox(mesh_t* mesh) {
     const int m = 2*sqrt(mesh->width*mesh->width + mesh->height*mesh->height + mesh->depth*mesh->depth);
     mesh->bounding_box.x0 = mesh->center->x - m/2;
     mesh->bounding_box.y0 = mesh->center->y - m/2;
@@ -98,7 +98,7 @@ mesh_t* obj_mesh_from_file(const char* fpath, int cx, int cy, int cz, unsigned w
     new->n_faces = n_surfs;
     new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * n_verts);
     new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * n_verts);
-    obj__mesh_update_bbox(new, width, height, depth);
+    obj__mesh_update_bbox(new);
     // allocate 2D array that indicates how vertices are connected at each surface
     new->connections = malloc(new->n_faces * sizeof(int*));
     for (int i = 0; i < new->n_faces; ++i)
@@ -162,15 +162,18 @@ mesh_t* obj_triangle_new(vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color) {
                              UT_MAX(abs(p0->x - p1->x), abs(p1->x - p2->x)));
     unsigned height = UT_MAX(UT_MAX(abs(p0->y - p1->y), abs(p0->y - p2->y)),
                              UT_MAX(abs(p0->y - p1->y), abs(p1->y - p2->y)));
+    new->width = width;
+    new->height = height;
+    new->depth = 1;
     new->vertices[0] = vec_vec3i_new();
     new->vertices[1] = vec_vec3i_new();
     new->vertices[2] = vec_vec3i_new();
     vec_vec3i_set(new->vertices[0], p0->x, p0->y, p0->z);
     vec_vec3i_set(new->vertices[1], p1->x, p1->y, p1->z);
     vec_vec3i_set(new->vertices[2], p2->x, p2->y, p2->z);
-    obj__mesh_update_bbox(new, width, height, 1);
-    obj__mesh_update_bbox(new, width, height, 1);
-    obj__mesh_update_bbox(new, width, height, 1);
+    obj__mesh_update_bbox(new);
+    obj__mesh_update_bbox(new);
+    obj__mesh_update_bbox(new);
 
     // allocate 2D array that indicates how vertices are connected at each surface
     new->connections = malloc(new->n_faces * sizeof(int*));
@@ -209,15 +212,11 @@ void obj_mesh_rotate (mesh_t* mesh, float angle_x_rad, float angle_y_rad, float 
 }
 
 void obj_mesh_translate(mesh_t* mesh, float dx, float dy, float dz) {
-    // to update bounding box after the translation
-    const unsigned width = abs(mesh->bounding_box.x0 - mesh->bounding_box.x1);
-    const unsigned height = abs(mesh->bounding_box.y0 - mesh->bounding_box.y1);
-    const unsigned depth = abs(mesh->bounding_box.z0 - mesh->bounding_box.z1);
     vec3i_t translation = {round(dx), round(dy), round(dz)};
     *mesh->center = vec_vec3i_add(mesh->center, &translation);
     for (size_t i = 0; i < mesh->n_vertices; ++i)
         *mesh->vertices[i] = vec_vec3i_add(mesh->vertices[i], &translation);
-    obj__mesh_update_bbox(mesh, width, height, depth);
+    obj__mesh_update_bbox(mesh);
 }
 
 void obj_mesh_free(mesh_t* mesh) {
