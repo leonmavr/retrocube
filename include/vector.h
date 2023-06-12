@@ -15,7 +15,8 @@ typedef struct vec3f {
 typedef vec3f_t vec3_t;
 
 // basic operations between floating vectors
-vec3_t*  vec_vec3_new           (float x, float y, float z);
+vec3_t*  vec_vec3_new           ();
+void     vec_vec3_set           (vec3_t* vec, float x, float y, float z);
 void     vec_vec3_copy          (vec3f_t* dest, vec3f_t* src);
 bool     vec_vec3_are_equal     (vec3_t* vec1, vec3_t* vec2);
 vec3_t   vec_vec3_add           (vec3_t* src1, vec3_t* src2);
@@ -37,7 +38,8 @@ vec3_t   vec_vec3_crossprod     (vec3_t* src1, vec3_t* src2);
 void     vec_vec3_rotate        (vec3_t* src, float angle_x_rad, float angle_y_rad, float angle_z_rad,
                                  int x0, int y0, int z0);
 // basic operations between integral vectors
-vec3i_t* vec_vec3i_new          (int x, int y, int z);
+vec3i_t* vec_vec3i_new          ();
+void     vec_vec3i_set          (vec3i_t* vec, int x, int y, int z);
 void     vec_vec3i_copy         (vec3i_t* dest, vec3i_t* src);
 bool     vec_vec3i_are_equal    (vec3i_t* vec1, vec3i_t* vec2);
 vec3i_t  vec_vec3i_add          (vec3i_t* src1, vec3i_t* src2);

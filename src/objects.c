@@ -87,9 +87,11 @@ mesh_t* obj_mesh_from_file(const char* fpath, int cx, int cy, int cz, unsigned w
             n_surfs++;
     }
     //// allocate data and prepare for reading
+    // this is what we want to return
     mesh_t* new = malloc(sizeof(mesh_t));
-    new->center = vec_vec3i_new(cx, cy, cz);
-        new->n_vertices = n_verts;
+    new->center = vec_vec3i_new();
+    vec_vec3i_set(new->center, cx, cy, cz);
+    new->n_vertices = n_verts;
     new->n_faces = n_surfs;
     new->vertices = (vec3i_t**) malloc(sizeof(vec3i_t*) * n_verts);
     new->vertices_backup = (vec3i_t**) malloc(sizeof(vec3i_t*) * n_verts);
@@ -111,7 +113,8 @@ mesh_t* obj_mesh_from_file(const char* fpath, int cx, int cy, int cz, unsigned w
             const float y = atof(pch);
             pch = strtok (NULL, " ");
             const float z = atof(pch);
-            new->vertices[ivert++] = vec_vec3i_new(round(width/2*x), round(height/2*y), round(depth/2*z));
+            new->vertices[ivert] = vec_vec3i_new();
+            vec_vec3i_set(new->vertices[ivert++], round(width/2*x), round(height/2*y), round(depth/2*z));
         } else if (obj__starts_with(buffer, 'f')) {
             assert(atoi(pch) <= new->n_vertices);
             new->connections[isurf][0] = atoi(pch);
@@ -122,7 +125,7 @@ mesh_t* obj_mesh_from_file(const char* fpath, int cx, int cy, int cz, unsigned w
             pch = strtok (NULL, " ");
             new->connections[isurf][3] = atoi(pch);
             pch = strtok (NULL, " ");
-                        for (int i = 0; i < NUM_CONNECTIONS; ++i) {
+            for (int i = 0; i < NUM_CONNECTIONS; ++i) {
                 if (*pch == conn_letters[i])
                     new->connections[isurf][4] = conn_names[i];
             }
@@ -135,7 +138,8 @@ mesh_t* obj_mesh_from_file(const char* fpath, int cx, int cy, int cz, unsigned w
     //// shift them to center and back them up
     for (int i = 0; i < new->n_vertices; ++i) {
         *new->vertices[i] = vec_vec3i_add(new->vertices[i], new->center);
-        new->vertices_backup[i] = vec_vec3i_new(0, 0, 0);
+        new->vertices_backup[i] = vec_vec3i_new();
+        vec_vec3i_set(new->vertices_backup[i], 0, 0, 0);
         vec_vec3i_copy(new->vertices_backup[i], new->vertices[i]);
     }
     return new;
@@ -155,9 +159,14 @@ mesh_t* obj_triangle_new(vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color) {
                              UT_MAX(abs(p0->x - p1->x), abs(p1->x - p2->x)));
     unsigned height = UT_MAX(UT_MAX(abs(p0->y - p1->y), abs(p0->y - p2->y)),
                              UT_MAX(abs(p0->y - p1->y), abs(p1->y - p2->y)));
-    new->vertices[0] = vec_vec3i_new(p0->x, p0->y, p0->z);
-    new->vertices[1] = vec_vec3i_new(p1->x, p1->y, p1->z);
-    new->vertices[2] = vec_vec3i_new(p2->x, p2->y, p2->z);
+    new->vertices[0] = vec_vec3i_new();
+    new->vertices[1] = vec_vec3i_new();
+    new->vertices[2] = vec_vec3i_new();
+    vec_vec3i_set(new->vertices[0], p0->x, p0->y, p0->z);
+    vec_vec3i_set(new->vertices[1], p1->x, p1->y, p1->z);
+    vec_vec3i_set(new->vertices[2], p2->x, p2->y, p2->z);
+    obj__mesh_update_bbox(new, width, height, 1);
+    obj__mesh_update_bbox(new, width, height, 1);
     obj__mesh_update_bbox(new, width, height, 1);
 
     // allocate 2D array that indicates how vertices are connected at each surface
@@ -175,7 +184,8 @@ mesh_t* obj_triangle_new(vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color) {
     // finish creating the vertices - shift the to the mesh's origin, back them up
     for (int i = 0; i < new->n_vertices; ++i) {
         *new->vertices[i] = vec_vec3i_add(new->vertices[i], new->center);
-        new->vertices_backup[i] = vec_vec3i_new(0, 0, 0);
+        new->vertices_backup[i] = vec_vec3i_new();
+        vec_vec3i_set(new->vertices_backup[i], 0, 0, 0);
         vec_vec3i_copy(new->vertices_backup[i], new->vertices[i]);
     }
     return new;
@@ -236,8 +246,10 @@ ray_t* obj_ray_new() {
 }
 
 void obj_ray_set(ray_t* ray, int x0, int y0, int z0, int x1, int y1, int z1) {
-    ray->orig = vec_vec3i_new(x0, y0, z0);
-    ray->end = vec_vec3i_new(x1, y1, z1);
+    ray->orig = vec_vec3i_new();
+    ray->end = vec_vec3i_new();
+    vec_vec3i_set(ray->orig, x0, y0, z0);
+    vec_vec3i_set(ray->end, x1, y1, z1);
 
 }
 

@@ -10,12 +10,15 @@
 //-----------------------------------------------------------------------------------
 //  Floating point vectors
 //-----------------------------------------------------------------------------------
-vec3_t* vec_vec3_new(float x, float y, float z) {
+vec3_t* vec_vec3_new() {
     vec3_t* new = malloc(sizeof(vec3_t));
-    new->x = x;
-    new->y = y;
-    new->z = z;
     return new;
+}
+
+void vec_vec3_set(vec3_t* vec, float x, float y, float z) {
+    vec->x = x; 
+    vec->y = y; 
+    vec->z = z; 
 }
 
 void vec_vec3_copy(vec3f_t* dest, vec3f_t* src) {
@@ -108,12 +111,15 @@ void vec_vec3_rotate(vec3_t* src, float angle_x_rad, float angle_y_rad, float an
 //-----------------------------------------------------------------------------------
 // Integral vectors
 //-----------------------------------------------------------------------------------
-vec3i_t* vec_vec3i_new(int x, int y, int z) {
+vec3i_t* vec_vec3i_new() {
     vec3i_t* new = malloc(sizeof(vec3i_t));
-    new->x = x;
-    new->y = y;
-    new->z = z;
     return new;
+}
+
+void vec_vec3i_set(vec3i_t* vec, int x, int y, int z) {
+    vec->x = x; 
+    vec->y = y; 
+    vec->z = z; 
 }
 
 void vec_vec3i_copy(vec3i_t* dest, vec3i_t* src) {
