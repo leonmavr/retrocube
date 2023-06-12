@@ -113,18 +113,11 @@ void        obj_mesh_free              (mesh_t* mesh);
 //-------------------------------------------------------------------------------------------------------------
 // the pixel in the screen where the ray points to
 /**
- * @brief Allocates and sets a ray structure starting from the origin to the point (x, y, z)
- *
- * @param x0 x-coordinate of ray's origin 
- * @param y0 y-coordinate of ray's origin 
- * @param z0 z-coordinate of ray's origin 
- * @param x1 x-coordinate of ray's destination
- * @param y1 y-coordinate of ray's destination
- * @param z1 z-coordinate of ray's destination
+ * @brief Allocates a ray structure containing an origin and end vector 
  *
  * @return A pointer to the newly constructed ray
  */
-ray_t*      obj_ray_new                 (int x0, int y0, int z0, int x1, int y1, int z1);
+ray_t*      obj_ray_new                 ();
 /**
  * @brief Sets the destination (`end` member) of a ray
  *
@@ -151,7 +144,7 @@ void        obj_ray_free                (ray_t* ray);
 //-------------------------------------------------------------------------------------------------------------
 // Camera 
 //-------------------------------------------------------------------------------------------------------------
-camera_t*   obj_camera_new              (int cam_x0, int cam_y0, float focal_length);
+camera_t*   obj_camera_new              ();
 void        obj_camera_set              (camera_t* camera, int cam_x0, int cam_y0, float focal_length);
 
 //-------------------------------------------------------------------------------------------------------------
@@ -166,7 +159,7 @@ void        obj_camera_set              (camera_t* camera, int cam_x0, int cam_y
  *
  * @return A pointer to the newly constructed plane
  */
-plane_t*    obj_plane_new                  (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
+plane_t*    obj_plane_new                  ();
 /* recompute plane's normal and offset given 3 points */
 void        obj_plane_set                  (plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2);
 bool        obj_is_point_in_triangle       (vec3i_t* m, vec3i_t* a, vec3i_t* b, vec3i_t* c);

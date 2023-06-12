@@ -228,10 +228,10 @@ void obj_mesh_free(mesh_t* mesh) {
 //----------------------------------------------------------------------------------------------------------
 // Ray
 //----------------------------------------------------------------------------------------------------------
-ray_t* obj_ray_new(int x0, int y0, int z0, int x1, int y1, int z1) {
+ray_t* obj_ray_new() {
     ray_t* new = malloc(sizeof(ray_t));
-    new->orig = vec_vec3i_new(x0, y0, z0);
-    new->end = vec_vec3i_new(x1, y1, z1);
+    new->orig = malloc(sizeof(vec3i_t));
+    new->end = malloc(sizeof(vec3i_t));
     return new;
 }
 
@@ -256,11 +256,8 @@ void obj_ray_free(ray_t* ray) {
 //-------------------------------------------------------------------------------------------------------------
 // Camera
 //-------------------------------------------------------------------------------------------------------------
-camera_t* obj_camera_new(int cam_x0, int cam_y0, float focal_length) {
+camera_t* obj_camera_new() {
     camera_t* new = malloc(sizeof(camera_t));
-    new->x0 = cam_x0;
-    new->y0 = cam_y0;
-    new->focal_length = focal_length;
     return new;
 }
 
@@ -275,8 +272,16 @@ void obj_camera_set(camera_t* camera, int cam_x0, int cam_y0, float focal_length
 // Plane
 //----------------------------------------------------------------------------------------------------------
 
-plane_t* obj_plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
-    /*
+plane_t* obj_plane_new () {
+    plane_t* new = malloc(sizeof(plane_t));
+    new->normal = malloc(sizeof(vec3_t));
+    return new;
+}
+
+
+
+void obj_plane_set(plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
+   /**
     * Determine the plane through 3 3D points p0, p1, p2 by determining:
     *     1. the normal vector
     *     2. the offset
@@ -321,19 +326,6 @@ plane_t* obj_plane_new (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
     * n.x - n.p1 = 0
     * -n.p1 is the offset from the origin
     */
-    plane_t* new = malloc(sizeof(plane_t));
-    new->normal = malloc(sizeof(vec3_t));
-    vec3i_t p1p2 = vec_vec3i_sub(p2, p1);
-    vec3i_t p1p0 = vec_vec3i_sub(p0, p1);
-    *new->normal = vec_vec3i_crossprod(&p1p2, &p1p0);
-    new->offset = -vec_vec3i_dotprod(new->normal, p1);
-    return new;
-}
-
-
-
-void obj_plane_set(plane_t* plane, vec3i_t* p0, vec3i_t* p1, vec3i_t* p2) {
-    // reset plane's normal and offset like obj_plane_new function computes them
     vec3i_t p1p2 = vec_vec3i_sub(p2, p1);
     vec3i_t p1p0 = vec_vec3i_sub(p0, p1);
     *plane->normal = vec_vec3i_crossprod(&p1p2, &p1p0);

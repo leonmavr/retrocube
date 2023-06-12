@@ -133,13 +133,13 @@ void render_use_reflectance() {
 void render_init() {
     // initialize screen (pixel) buffer
     screen_init();
-    vec3i_t dummy = {0, 0, 0};
     // z buffer that records the depth of each pixel
     g_z_buffer = malloc(sizeof(int) * g_buffer_size);
     render_reset_zbuffer();
-    g_plane_test = obj_plane_new(&dummy, &dummy, &dummy);
+    g_plane_test = obj_plane_new();
     g_surf_points = malloc(sizeof(vec3i_t*) * 4);
-    g_ray_test = obj_ray_new(0, 0, 0, 0, 0, 0);
+    g_ray_test = obj_ray_new();
+    obj_ray_set(g_ray_test, 0, 0, 0, 0, 0, 0);
     // reflection colors from brightest to darkest
     strncpy(g_colors_refl, "#OT&=@$x%><)(nc+:;qy\"/?|+.,-v^!`", 32);
 }
