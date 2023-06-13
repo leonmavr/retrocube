@@ -27,8 +27,8 @@ typedef struct mesh {
         int x0, y0, z0;
         // bottop right
         int x1, y1, z1;
+        unsigned width, height, depth;
     } bounding_box;
-    unsigned width, height, depth;
     /*
      * 2D array that defines the surfaces of the solid.
      * Its rows consist of the following data:a

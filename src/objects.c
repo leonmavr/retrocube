@@ -59,7 +59,10 @@ bool obj__line_is_empty(const char *s)
 }
 
 static inline void obj__mesh_update_bbox(mesh_t* mesh) {
-    const int m = 2*sqrt(mesh->width*mesh->width + mesh->height*mesh->height + mesh->depth*mesh->depth);
+    const int w = mesh->bounding_box.width;
+    const int h = mesh->bounding_box.height;
+    const int d = mesh->bounding_box.depth;
+    const int m = 2*sqrt(w*w + h*h + d*d);
     mesh->bounding_box.x0 = mesh->center->x - m/2;
     mesh->bounding_box.y0 = mesh->center->y - m/2;
     mesh->bounding_box.z0 = mesh->center->z - m/2;
@@ -89,9 +92,9 @@ mesh_t* obj_mesh_from_file(const char* fpath, int cx, int cy, int cz, unsigned w
     //// allocate data and prepare for reading
     // this is what we want to return
     mesh_t* new = malloc(sizeof(mesh_t));
-    new->width = width;
-    new->height = height;
-    new->depth = depth;
+    new->bounding_box.width = width;
+    new->bounding_box.height = height;
+    new->bounding_box.depth = depth;
     new->center = vec_vec3i_new();
     vec_vec3i_set(new->center, cx, cy, cz);
     new->n_vertices = n_verts;
@@ -162,9 +165,9 @@ mesh_t* obj_triangle_new(vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color) {
                              UT_MAX(abs(p0->x - p1->x), abs(p1->x - p2->x)));
     unsigned height = UT_MAX(UT_MAX(abs(p0->y - p1->y), abs(p0->y - p2->y)),
                              UT_MAX(abs(p0->y - p1->y), abs(p1->y - p2->y)));
-    new->width = width;
-    new->height = height;
-    new->depth = 1;
+    new->bounding_box.width = width;
+    new->bounding_box.height = height;
+    new->bounding_box.depth = 1;
     new->vertices[0] = vec_vec3i_new();
     new->vertices[1] = vec_vec3i_new();
     new->vertices[2] = vec_vec3i_new();
