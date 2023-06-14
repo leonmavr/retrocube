@@ -156,10 +156,12 @@ vec3i_t vec_vec3i_crossprod(vec3i_t* src1, vec3i_t* src2) {
 
 void vec_vec3i_rotate(vec3i_t* src, float angle_x_rad, float angle_y_rad, float angle_z_rad, int x0, int y0, int z0) {
     // -(x0, y0, z0)
-    // bring it to zero so we can do the rotation
-    src->x -= x0;
-    src->y -= y0;
-    src->z -= z0;
+    // bring vector to rotate to zero so we can do the rotation
+    // contains input vector as float so we can do the operations precisely
+    vec3_t rotated = (vec3_t) {src->x, src->y, src->z};
+    rotated.x -= x0;
+    rotated.y -= y0;
+    rotated.z -= z0;
 
     const float a = angle_x_rad, b = angle_y_rad, c = angle_z_rad;
     const float ca = cos(a), cb = cos(b), cc = cos(c);
@@ -180,30 +182,34 @@ void vec_vec3i_rotate(vec3i_t* src, float angle_x_rad, float angle_y_rad, float 
         {0,  0,   1},
     };
     // x, y, z store the previous coordinates as computed by the previous operation
-    int x = src->x;
-    int y = src->y;
-    int z = src->z;
-    src->x = round(matrix_rotx[0][0]*x + matrix_rotx[0][1]*y + matrix_rotx[0][2]*z);
-    src->y = round(matrix_rotx[1][0]*x + matrix_rotx[1][1]*y + matrix_rotx[1][2]*z);
-    src->z = round(matrix_rotx[2][0]*x + matrix_rotx[2][1]*y + matrix_rotx[2][2]*z);
+    int x = rotated.x;
+    int y = rotated.y;
+    int z = rotated.z;
+    rotated.x = matrix_rotx[0][0]*x + matrix_rotx[0][1]*y + matrix_rotx[0][2]*z;
+    rotated.y = matrix_rotx[1][0]*x + matrix_rotx[1][1]*y + matrix_rotx[1][2]*z;
+    rotated.z = matrix_rotx[2][0]*x + matrix_rotx[2][1]*y + matrix_rotx[2][2]*z;
     // Ry
-    x = src->x;
-    y = src->y;
-    z = src->z;
-    src->x = round(matrix_roty[0][0]*x + matrix_roty[0][1]*y + matrix_roty[0][2]*z);
-    src->y = round(matrix_roty[1][0]*x + matrix_roty[1][1]*y + matrix_roty[1][2]*z);
-    src->z = round(matrix_roty[2][0]*x + matrix_roty[2][1]*y + matrix_roty[2][2]*z);
+    x = rotated.x;
+    y = rotated.y;
+    z = rotated.z;
+    rotated.x = matrix_roty[0][0]*x + matrix_roty[0][1]*y + matrix_roty[0][2]*z;
+    rotated.y = matrix_roty[1][0]*x + matrix_roty[1][1]*y + matrix_roty[1][2]*z;
+    rotated.z = matrix_roty[2][0]*x + matrix_roty[2][1]*y + matrix_roty[2][2]*z;
     // Rz
-    x = src->x;
-    y = src->y;
-    z = src->z;
-    src->x = round(matrix_rotz[0][0]*x + matrix_rotz[0][1]*y + matrix_rotz[0][2]*z);
-    src->y = round(matrix_rotz[1][0]*x + matrix_rotz[1][1]*y + matrix_rotz[1][2]*z);
-    src->z = round(matrix_rotz[2][0]*x + matrix_rotz[2][1]*y + matrix_rotz[2][2]*z);
+    x = rotated.x;
+    y = rotated.y;
+    z = rotated.z;
+    rotated.x = matrix_rotz[0][0]*x + matrix_rotz[0][1]*y + matrix_rotz[0][2]*z;
+    rotated.y = matrix_rotz[1][0]*x + matrix_rotz[1][1]*y + matrix_rotz[1][2]*z;
+    rotated.z = matrix_rotz[2][0]*x + matrix_rotz[2][1]*y + matrix_rotz[2][2]*z;
 
     // +(x0, y0, z0)
     // reset original offset 
-    src->x += x0;
-    src->y += y0;
-    src->z += z0;
+    rotated.x += x0;
+    rotated.y += y0;
+    rotated.z += z0;
+
+    src->x = round(rotated.x);
+    src->y = round(rotated.y);
+    src->z = round(rotated.z);
 }
