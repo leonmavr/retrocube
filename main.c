@@ -1,17 +1,12 @@
-#include "screen.h"
 #include "objects.h"
 #include "renderer.h"
 #include "arg_parser.h"
 #include "utils.h" // UT_MAX
 #include <math.h> // sin, cos
-#include <stdlib.h> // atof, atoi, random, exit
 #include <unistd.h> // for usleep
-#include <assert.h> // assert
-#include <stdbool.h>
-#include <string.h> // strcmp
+#include <stdlib.h> // exit
 #include <time.h> // time
 #include <signal.h> // signal
-#include <stdio.h> // sprintf
 
 /* Callback that clears the screen and makes the cursor visible when the user hits Ctr+C */
 static void interrupt_handler(int int_num) {
