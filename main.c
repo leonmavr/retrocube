@@ -1,6 +1,7 @@
 #include "screen.h"
 #include "objects.h"
 #include "renderer.h"
+#include "arg_parser.h"
 #include "utils.h" // UT_MAX
 #include <math.h> // sin, cos
 #include <stdlib.h> // atof, atoi, random, exit
@@ -8,38 +9,9 @@
 #include <assert.h> // assert
 #include <stdbool.h>
 #include <string.h> // strcmp
-#include <limits.h> // UINT_MAX
 #include <time.h> // time
 #include <signal.h> // signal
 #include <stdio.h> // sprintf
-
-#ifndef CFG_DIR
-#define CFG_DIR "/usr/share/retrocube"
-#endif
-
-#define STRINGIFY(x) STRINGIFY2(x)
-#define STRINGIFY2(x) #x
-
-//// default command line arguments
-// rotation speed around x, y, z axes (-1 to 1)
-static float g_rot_speed_x = 0.7;
-static float g_rot_speed_y = 0.4;
-static float g_rot_speed_z = 0.6;
-// maximum fps at which to render the cube
-static unsigned g_fps = 40;
-static bool g_use_random_rotation = true;
-// centre (x, y, z) of the cube
-static int g_cx = 0;
-static int g_cy = 0;
-static int g_cz = 250;
-// size of each dimension in "pixels" (rendered characters)
-static unsigned g_width = 60;
-static unsigned g_height = 60;
-static unsigned g_depth = 60;
-// how many frames to run the program for
-static unsigned g_max_iterations = UINT_MAX;
-static char g_mesh_file[256] = {'\0'};
-
 
 /* Callback that clears the screen and makes the cursor visible when the user hits Ctr+C */
 static void interrupt_handler(int int_num) {
@@ -50,68 +22,7 @@ static void interrupt_handler(int int_num) {
 }
 
 int main(int argc, char** argv) {
-    // initialise pseudo randomness generator for random rotations
-    srand(time(NULL));
-    const float rand_min = 0.75, rand_max = 2.25;
-    const float random_bias_x = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
-    const float random_bias_y = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
-    const float random_bias_z = rand_min + (rand_max - rand_min)*rand() / (double)RAND_MAX;
-    bool render_from_file = false;
-    // parse command line arguments - if followed by an argument, e.g. -sx 0.9, increment `i`
-    int i = 0;
-    while (++i < argc) {
-        if ((strcmp(argv[i], "--speedx") == 0) || (strcmp(argv[i], "-sx") == 0)) {
-            g_rot_speed_x = atof(argv[++i]);
-            g_use_random_rotation = false;
-        } else if ((strcmp(argv[i], "--speedy") == 0) || (strcmp(argv[i], "-sy") == 0)) {
-            g_rot_speed_y = atof(argv[++i]);
-            g_use_random_rotation = false;
-        } else if ((strcmp(argv[i], "--speedz") == 0) || (strcmp(argv[i], "-sz") == 0)) {
-            g_rot_speed_z = atof(argv[++i]);
-            g_use_random_rotation = false;
-        } else if ((strcmp(argv[i], "--fps") == 0) || (strcmp(argv[i], "-f") == 0)) {
-            g_fps = atoi(argv[++i]);
-        } else if ((strcmp(argv[i], "--random") == 0) || (strcmp(argv[i], "-r") == 0)) {
-            g_use_random_rotation = true;
-        } else if ((strcmp(argv[i], "--cx") == 0) || (strcmp(argv[i], "-cx") == 0)) {
-            g_cx = atoi(argv[++i]);
-        } else if ((strcmp(argv[i], "--cy") == 0) || (strcmp(argv[i], "-cy") == 0)) {
-            g_cy = atoi(argv[++i]);
-        } else if ((strcmp(argv[i], "--cz") == 0) || (strcmp(argv[i], "-cz") == 0)) {
-            g_cz = atoi(argv[++i]);
-        } else if ((strcmp(argv[i], "--width") == 0) || (strcmp(argv[i], "-wi") == 0)) {
-            g_width = atoi(argv[++i]);
-        } else if ((strcmp(argv[i], "--height") == 0) || (strcmp(argv[i], "-he") == 0)) {
-            g_height = atoi(argv[++i]);
-        } else if ((strcmp(argv[i], "--depth") == 0) || (strcmp(argv[i], "-de") == 0)) {
-            g_depth = atoi(argv[++i]);
-        } else if ((strcmp(argv[i], "--max-iterations") == 0) || (strcmp(argv[i], "-mi") == 0)) {
-            g_max_iterations = atoi(argv[++i]);
-        } else if ((strcmp(argv[i], "--use-perspective") == 0) || (strcmp(argv[i], "-up") == 0)) {
-            render_use_perspective(0, 0, -200);
-        } else if ((strcmp(argv[i], "--use-reflection") == 0) || (strcmp(argv[i], "-ur") == 0)) {
-            render_use_reflectance();
-        } else if ((strcmp(argv[i], "--from-file") == 0) || (strcmp(argv[i], "-ff") == 0)) {
-            i++;
-            strcpy(g_mesh_file, argv[i]);
-            render_from_file = true;
-        } else {
-            printf("Uknown option: %s\n", argv[i++]);
-        }
-    }
-    assert((-1.0001 < g_rot_speed_x) && (g_rot_speed_x < 1.0001) &&
-            (-1.0001 < g_rot_speed_y) && (g_rot_speed_y < 1.0001) &&
-            (-1.0001 < g_rot_speed_z) && (g_rot_speed_z < 1.0001));
-    // default file to render
-    // define in preprocessor constant CFG_DIR
-    if (!render_from_file) {
-        const char* cfg_dir = STRINGIFY(CFG_DIR);
-        const char* mesh_filename = "cube.scl";
-        // TODO: check boundaries
-        sprintf(g_mesh_file, "%s/%s", cfg_dir, mesh_filename);
-    }
-    // we should have a valid filepath by now
-    assert(access(g_mesh_file, F_OK) == 0);
+    arg_parse(argc, argv);
 
     // make sure we end gracefully if the user hits Ctr+C
     signal(SIGINT, interrupt_handler);
@@ -135,7 +46,7 @@ int main(int argc, char** argv) {
                                    amplitude_z*sin(random_rot_speed_z*random_bias_z*t           + 2*random_bias_z));
         else
             obj_mesh_rotate(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
-        if ((t % 100) < 50)
+        if ((t % 100) >= 50)
             obj_mesh_translate(shape, 1, 1, 1);
         else
             obj_mesh_translate(shape, -1, -1, -1);
