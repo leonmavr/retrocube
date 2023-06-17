@@ -200,7 +200,7 @@ mesh_t* obj_triangle_new(vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, color_t color) {
     return new;
 }
 
-void obj_mesh_rotate (mesh_t* mesh, float angle_x_rad, float angle_y_rad, float angle_z_rad) {
+void obj_mesh_rotate_to (mesh_t* mesh, float angle_x_rad, float angle_y_rad, float angle_z_rad) {
     for (size_t i = 0; i < mesh->n_vertices; ++i) {
         // first, reset each vertex so no floating point error is accumulated
         vec_vec3i_copy(mesh->vertices[i], mesh->vertices_backup[i]);
@@ -214,7 +214,7 @@ void obj_mesh_rotate (mesh_t* mesh, float angle_x_rad, float angle_y_rad, float 
     }
 }
 
-void obj_mesh_translate(mesh_t* mesh, float dx, float dy, float dz) {
+void obj_mesh_translate_by(mesh_t* mesh, float dx, float dy, float dz) {
     vec3i_t translation = {round(dx), round(dy), round(dz)};
     *mesh->center = vec_vec3i_add(mesh->center, &translation);
     for (size_t i = 0; i < mesh->n_vertices; ++i)

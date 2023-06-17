@@ -105,8 +105,8 @@ mesh_t*     obj_triangle_new           (vec3i_t* p0, vec3i_t* p1, vec3i_t* p2, c
 */
 mesh_t*     obj_mesh_from_file         (const char* fpath, int cx, int cy, int cz,
                                         unsigned width, unsigned height, unsigned depth);
-void        obj_mesh_rotate            (mesh_t* mesh, float angle_x_rad, float angle_y_rad, float angle_z_rad);
-void        obj_mesh_translate         (mesh_t* mesh, float dx, float dy, float dz);
+void        obj_mesh_rotate_to            (mesh_t* mesh, float angle_x_rad, float angle_y_rad, float angle_z_rad);
+void        obj_mesh_translate_by         (mesh_t* mesh, float dx, float dy, float dz);
 void        obj_mesh_free              (mesh_t* mesh);
 
 //-------------------------------------------------------------------------------------------------------------
