@@ -28,7 +28,7 @@ all: $(EXEC)
 $(EXEC): $(OBJECTS) cfg
 	$(CC) $(OBJECTS) -o $(EXEC) $(LDFLAGS)
 
-%.o: %.cpp
+%.o: %.c
 	$(CC) $(CFLAGS) -c $^ -o $@
 
 ###############################################
