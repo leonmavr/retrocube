@@ -26,7 +26,7 @@ print-%  : ; @echo $* = $($*)
 ###############################################
 # Compilation
 ###############################################
-all: $(DEMO_EXECS)
+all: $(DEMO_EXECS) cfg
 
 
 $(OBJECTS): $(SOURCES)

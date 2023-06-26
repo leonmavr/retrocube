@@ -43,9 +43,9 @@ int main(int argc, char** argv) {
     // do the actual rendering
     render_init();
     for (size_t t = 0; t < g_max_iterations; ++t) {
-        obj_mesh_rotate_to(obj1, 1.0/20*t, 0*t, 1.0/30*t);
-        obj_mesh_rotate_to(obj2, 1.0/20*t, 0*t, 1.0/30*t);
-        obj_mesh_rotate_to(obj3, 1.0/20*t, 0*t, 1.0/30*t);
+        obj_mesh_rotate_to(obj1, 1.0/10*t, 0*t, 1.0/15*t);
+        obj_mesh_rotate_to(obj2, 1.0/10*t, 0*t, 1.0/15*t);
+        obj_mesh_rotate_to(obj3, 1.0/10*t, 0*t, 1.0/15*t);
         render_write_shape(obj1);
         render_write_shape(obj2);
         render_write_shape(obj3);
