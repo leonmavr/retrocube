@@ -1,4 +1,3 @@
-//#include "screen.h"
 #include "objects.h"
 #include "renderer.h"
 #include "arg_parser.h"
