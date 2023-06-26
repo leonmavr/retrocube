@@ -1,6 +1,6 @@
+#include "arg_parser.h" // CFG_DIR
 #include "objects.h"
 #include "renderer.h"
-#include "arg_parser.h"
 #include "utils.h" // UT_MAX
 #include <math.h> // sin, cos
 #include <unistd.h> // for usleep
@@ -36,7 +36,7 @@ int main(int argc, char** argv) {
     mesh_t* obj = obj_mesh_from_file(mesh_filepath, 0, 0, 250, 60, 80, 60);
     // do the actual rendering
     render_init();
-    for (size_t t = 0; t < g_max_iterations; ++t) {
+    for (size_t t = 0; t < UINT_MAX; ++t) {
         obj_mesh_rotate_to(obj, 1.0/60*t, 1.0/100*t, 1.0/100*t);
         render_write_shape(obj);
         render_flush();
