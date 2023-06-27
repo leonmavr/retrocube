@@ -24,6 +24,6 @@ jobs:
       run: sudo apt-get install libxrandr-dev
 
     - name: build
-      run: make
+      run: make && cd demos && make
       
     # NOTE: running it in CI as ./cube -mi 5 doesn't work as CI redirects the stdout to a file
