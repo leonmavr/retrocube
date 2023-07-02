@@ -50,12 +50,12 @@ int main(int argc, char** argv) {
  *                _/  \_               *: cube
  *              _/      \            v,^: movement directions
  *            _/          \_        
- *          _^              v_      
- *        _/                  \_    
- *      _/                      \_  
- *    _/                          \_
- *  * __            C             __ *
- *      \_                      _/  
+ *          _^              v_            ^y
+ *        _/                  \_          |
+ *      _/                      \_        o-----> x
+ *    _/                          \_       \
+ *  * __            C             __ *      \
+ *      \_                      _/           V z
  *        \_                 __/    
  *          \__            v/       
  *             ^_       __/         
@@ -68,19 +68,19 @@ int main(int argc, char** argv) {
  */
 
     // create 1 coffin and 4 cubes at 12, 3, 6 and 9 o' clock
-    int coffinx = 0, coffiny = 0, coffinz = 700;
-    unsigned dist = 300;
+    int coffinx = 0, coffiny = 0, coffinz = 900;
+    unsigned dist = 120;
     int cubex = coffinx + dist, cubey = coffiny;
     // coffin
-    mesh_t* obj1 = obj_mesh_from_file(coffin_filepath, coffinx, coffiny, coffinz, w, 1.3*h, 0.8*d);
+    mesh_t* obj1 = obj_mesh_from_file(coffin_filepath, coffinx, coffiny+50, coffinz, w, 1.3*h, 0.8*d);
     // 3 o'clock cube
-    mesh_t* obj2 = obj_mesh_from_file(cube_filepath, coffinx, cubey, coffinz, w, h, d);
+    mesh_t* obj2 = obj_mesh_from_file(cube_filepath, dist, 0, coffinz, w, h, d);
     // 9 o'clock cube
-    mesh_t* obj3 = obj_mesh_from_file(cube_filepath, -coffinx, cubey, coffinz, w, h, d);
+    mesh_t* obj3 = obj_mesh_from_file(cube_filepath, 0, 0, coffinz+200, w, h, d);
     // 12 o'clock cube
-    mesh_t* obj4 = obj_mesh_from_file(cube_filepath, 200, cubey, coffinz+200, w, h, d);
+    mesh_t* obj4 = obj_mesh_from_file(cube_filepath, -dist, 0, coffinz, w, h, d);
     // 6 o'clock cube
-    mesh_t* obj5 = obj_mesh_from_file(cube_filepath, -200, cubey, coffinz-200, w, h, d);
+    mesh_t* obj5 = obj_mesh_from_file(cube_filepath, 0, cubey-30, coffinz-200, w, h, d);
 
     render_use_perspective(0, 0, focal_length);
     // do the actual rendering
