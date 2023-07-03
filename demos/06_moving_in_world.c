@@ -7,20 +7,47 @@
 #include <stdlib.h> // exit
 #include <time.h> // time
 #include <signal.h> // signal
-#include <assert.h> // assert 
+#include <assert.h> // assert
 #include <stdio.h> // sprintf
+#include <stdio.h>
+#include <termios.h>
+#include <sys/select.h>
+#include <unistd.h>
+#include <string.h>
 
 // absolute path to cube file
 char cube_filepath[256];
 // absolute path to coffin file
 char coffin_filepath[256];
 
+struct termios old_terminal_settings;
+struct termios new_terminal_settings;
+
 /* Callback that clears the screen and makes the cursor visible when the user hits Ctr+C */
 static void interrupt_handler(int int_num) {
+	// restore the terminal settings to their prvious state
+	if (tcsetattr(0, TCSANOW, &old_terminal_settings) < 0)
+		perror("tcsetattr ICANON");
+	// TODO: free objects
     if (int_num == SIGINT) {
         render_end();
         exit(SIGINT);
     }
+}
+
+/* Credits to @supirman from https://ubuntuforums.org */
+static int is_key_pressed(void)
+{
+     struct timeval tv;
+     fd_set fds;
+     tv.tv_sec = 0;
+     tv.tv_usec = 0;
+
+     FD_ZERO(&fds);
+     FD_SET(STDIN_FILENO, &fds);
+
+     select(STDIN_FILENO+1, &fds, NULL, NULL, &tv);
+     return FD_ISSET(STDIN_FILENO, &fds);
 }
 
 int main(int argc, char** argv) {
@@ -41,31 +68,39 @@ int main(int argc, char** argv) {
     sprintf(coffin_filepath, "%s/%s", mesh_dir, coffin_filename);
     assert(access(cube_filepath, F_OK) == 0);
     assert(access(coffin_filepath, F_OK) == 0);
-
-
-
 /**
  *                  *                  V: viewer
  *                  __                 C: coffin
  *                _/  \_               *: cube
  *              _/      \            v,^: movement directions
- *            _/          \_        
+ *            _/          \_
  *          _^              v_            ^y
  *        _/                  \_          |
  *      _/                      \_        o-----> x
  *    _/                          \_       \
  *  * __            C             __ *      \
  *      \_                      _/           V z
- *        \_                 __/    
- *          \__            v/       
- *             ^_       __/         
- *               \_   _/            
- *                 \_/              
+ *        \_                 __/
+ *          \__            v/
+ *             ^_       __/
+ *               \_   _/
+ *                 \_/
  *                  *
  *
  *
  *                  V(0,0,0)
  */
+	// Get the current terminal settings
+	if (tcgetattr(0, &old_terminal_settings) < 0)
+		perror("tcgetattr()");
+	memcpy(&new_terminal_settings, &old_terminal_settings, sizeof(struct termios));
+	// disable canonical mode processing in the line discipline driver,
+	// disable echoing chracters
+	new_terminal_settings.c_lflag &= ~ICANON;
+	new_terminal_settings.c_lflag &= ~ECHO;
+	// apply our new settings
+	if (tcsetattr(0, TCSANOW, &new_terminal_settings) < 0)
+		perror("tcsetattr ICANON");
 
     // create 1 coffin and 4 cubes at 12, 3, 6 and 9 o' clock
     int coffinx = 0, coffiny = 0, coffinz = 900;
@@ -86,6 +121,19 @@ int main(int argc, char** argv) {
     // do the actual rendering
     render_init();
     for (size_t t = 0; t < UINT_MAX; ++t) {
+		// Check if a key is pressed.  If it is, call getchar to fetch it.
+		if (is_key_pressed())
+		{
+			char ch = getchar();
+			if (ch == 'a')
+				obj_mesh_translate_by(obj2, 0, 10, 0);
+			else if (ch == 's')
+				obj_mesh_translate_by(obj2, 0, 0, -10);
+			else if (ch == 'd')
+				obj_mesh_translate_by(obj2, 0, -10, 0);
+			else if (ch == 'w')
+				obj_mesh_translate_by(obj2, 0, 0, 10);
+		}
         obj_mesh_rotate_to(obj1, 1.0/10*t, 0*t, 1.0/15*t);
         obj_mesh_rotate_to(obj2, 1.0/10*t, 0*t, 1.0/15*t);
         obj_mesh_rotate_to(obj3, 1.0/10*t, 0*t, 1.0/15*t);
