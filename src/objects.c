@@ -217,8 +217,10 @@ void obj_mesh_rotate_to (mesh_t* mesh, float angle_x_rad, float angle_y_rad, flo
 void obj_mesh_translate_by(mesh_t* mesh, float dx, float dy, float dz) {
     vec3i_t translation = {round(dx), round(dy), round(dz)};
     *mesh->center = vec_vec3i_add(mesh->center, &translation);
-    for (size_t i = 0; i < mesh->n_vertices; ++i)
+    for (size_t i = 0; i < mesh->n_vertices; ++i) {
         *mesh->vertices[i] = vec_vec3i_add(mesh->vertices[i], &translation);
+        *mesh->vertices_backup[i] = vec_vec3i_add(mesh->vertices_backup[i], &translation);
+	}
     obj__mesh_update_bbox(mesh);
 }
 
