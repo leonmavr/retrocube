@@ -23,12 +23,16 @@ char coffin_filepath[256];
 struct termios old_terminal_settings;
 struct termios new_terminal_settings;
 
+mesh_t** obj;
+size_t n_objects;
+
 /* Callback that clears the screen and makes the cursor visible when the user hits Ctr+C */
 static void interrupt_handler(int int_num) {
 	// restore the terminal settings to their prvious state
 	if (tcsetattr(0, TCSANOW, &old_terminal_settings) < 0)
 		perror("tcsetattr ICANON");
-	// TODO: free objects
+	for (int i = 0; i < 5; ++i)
+		obj_mesh_free(obj[i]);
     if (int_num == SIGINT) {
         render_end();
         exit(SIGINT);
@@ -59,6 +63,7 @@ int main(int argc, char** argv) {
     // make sure we end gracefully if the user hits Ctr+C
     signal(SIGINT, interrupt_handler);
 
+	obj = malloc(sizeof(mesh_t*) * 5);
     // path to directory where meshes are stored - stored in CFG_DIR prep. constant
     const char* mesh_dir = STRINGIFY(CFG_DIR);
     // select file from mesh directory
@@ -116,43 +121,47 @@ int main(int argc, char** argv) {
     mesh_t* obj4 = obj_mesh_from_file(cube_filepath, -dist, 0, coffinz, w, h, d);
     // 6 o'clock cube
     mesh_t* obj5 = obj_mesh_from_file(cube_filepath, 0, cubey-30, coffinz-200, w, h, d);
+	obj[0] = obj1;
+	obj[1] = obj2;
+	obj[2] = obj3;
+	obj[3] = obj4;
+	obj[4] = obj5;
 
     render_use_perspective(0, 0, focal_length);
     // do the actual rendering
     render_init();
     for (size_t t = 0; t < UINT_MAX; ++t) {
 		// Check if a key is pressed.  If it is, call getchar to fetch it.
+		int dx = 0, dy = 0, dz = 0;
 		if (is_key_pressed())
 		{
 			char ch = getchar();
 			if (ch == 'a')
-				obj_mesh_translate_by(obj2, 0, 10, 0);
+				dx += 10;
 			else if (ch == 's')
-				obj_mesh_translate_by(obj2, 0, 0, -10);
+				dz -= 10;
 			else if (ch == 'd')
-				obj_mesh_translate_by(obj2, 0, -10, 0);
+				dx -= 10;
 			else if (ch == 'w')
-				obj_mesh_translate_by(obj2, 0, 0, 10);
+				dz += 10;
 		}
+		for (int i = 0; i < 5; ++i)
+			obj_mesh_translate_by(obj[i], dx, dy, dz);
         obj_mesh_rotate_to(obj1, 1.0/10*t, 0*t, 1.0/15*t);
         obj_mesh_rotate_to(obj2, 1.0/10*t, 0*t, 1.0/15*t);
         obj_mesh_rotate_to(obj3, 1.0/10*t, 0*t, 1.0/15*t);
         obj_mesh_rotate_to(obj4, 1.0/10*t, 0*t, 1.0/15*t);
         obj_mesh_rotate_to(obj5, 1.0/10*t, 0*t, 1.0/15*t);
-        render_write_shape(obj1);
-        render_write_shape(obj2);
-        render_write_shape(obj3);
-        render_write_shape(obj4);
-        render_write_shape(obj5);
+		for (int i = 0; i < 5; ++i)
+			render_write_shape(obj[i]);
         render_flush();
 #ifndef _WIN32
         // nanosleep does not work on Windows
-        nanosleep((const struct timespec[]) {{0, (int)(1.0 / g_fps * 1e9)}}, NULL);
+        nanosleep((const struct timespec[]) {{0, (int)(1.0 / 60 * 1e9)}}, NULL);
 #endif
     }
-    obj_mesh_free(obj1);
-    obj_mesh_free(obj2);
-    obj_mesh_free(obj3);
+	for (int i = 0; i < 5; ++i)
+		obj_mesh_free(obj[i]);
 
     render_end();
 }
