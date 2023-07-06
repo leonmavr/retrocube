@@ -137,16 +137,17 @@ int main(int argc, char** argv) {
 		{
 			char ch = getchar();
 			if (ch == 'a')
-				dx += 10;
+				dx = 10;
 			else if (ch == 's')
-				dz -= 10;
+				dz = -10;
 			else if (ch == 'd')
-				dx -= 10;
+				dx = -10;
 			else if (ch == 'w')
-				dz += 10;
+				dz = 10;
 		}
 		for (int i = 0; i < 5; ++i)
 			obj_mesh_translate_by(obj[i], dx, dy, dz);
+
         obj_mesh_rotate_to(obj1, 1.0/10*t, 0*t, 1.0/15*t);
         obj_mesh_rotate_to(obj2, 1.0/10*t, 0*t, 1.0/15*t);
         obj_mesh_rotate_to(obj3, 1.0/10*t, 0*t, 1.0/15*t);
