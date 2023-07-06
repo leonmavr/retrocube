@@ -139,20 +139,21 @@ int main(int argc, char** argv) {
 			if (ch == 'a')
 				dx = 10;
 			else if (ch == 's')
-				dz = -10;
+				dz = 10;
 			else if (ch == 'd')
 				dx = -10;
 			else if (ch == 'w')
-				dz = 10;
+				dz = -10;
 		}
+
 		for (int i = 0; i < 5; ++i)
 			obj_mesh_translate_by(obj[i], dx, dy, dz);
+		for (int i = 0; i < 5; ++i) {
+			if (obj[i]->center->x != 0)
+				obj_mesh_rotate_to(obj[i], atan(obj[i]->center->y/obj[i]->center->x), 0, 0);
+		}
 
-        obj_mesh_rotate_to(obj1, 1.0/10*t, 0*t, 1.0/15*t);
-        obj_mesh_rotate_to(obj2, 1.0/10*t, 0*t, 1.0/15*t);
-        obj_mesh_rotate_to(obj3, 1.0/10*t, 0*t, 1.0/15*t);
-        obj_mesh_rotate_to(obj4, 1.0/10*t, 0*t, 1.0/15*t);
-        obj_mesh_rotate_to(obj5, 1.0/10*t, 0*t, 1.0/15*t);
+        //obj_mesh_rotate_to(obj1, 0.0/10*t, 0*t, 0.0/15*t);
 		for (int i = 0; i < 5; ++i)
 			render_write_shape(obj[i]);
         render_flush();
