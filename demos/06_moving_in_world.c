@@ -54,6 +54,20 @@ static int is_key_pressed(void)
      return FD_ISSET(STDIN_FILENO, &fds);
 }
 
+static void set_terminal() {
+	// Get the current terminal settings
+	if (tcgetattr(0, &old_terminal_settings) < 0)
+		perror("tcgetattr()");
+	memcpy(&new_terminal_settings, &old_terminal_settings, sizeof(struct termios));
+	// disable canonical mode processing in the line discipline driver,
+	// disable echoing chracters
+	new_terminal_settings.c_lflag &= ~ICANON;
+	new_terminal_settings.c_lflag &= ~ECHO;
+	// apply our new settings
+	if (tcsetattr(0, TCSANOW, &new_terminal_settings) < 0)
+		perror("tcsetattr ICANON");
+}
+
 int main(int argc, char** argv) {
     // width, height, depth of the four cubes
     const unsigned w =  100, h = 100, d = 100;
@@ -73,6 +87,8 @@ int main(int argc, char** argv) {
     sprintf(coffin_filepath, "%s/%s", mesh_dir, coffin_filename);
     assert(access(cube_filepath, F_OK) == 0);
     assert(access(coffin_filepath, F_OK) == 0);
+
+	set_terminal();
 /**
  *                  *                  V: viewer
  *                  __                 C: coffin
@@ -95,37 +111,20 @@ int main(int argc, char** argv) {
  *
  *                  V(0,0,0)
  */
-	// Get the current terminal settings
-	if (tcgetattr(0, &old_terminal_settings) < 0)
-		perror("tcgetattr()");
-	memcpy(&new_terminal_settings, &old_terminal_settings, sizeof(struct termios));
-	// disable canonical mode processing in the line discipline driver,
-	// disable echoing chracters
-	new_terminal_settings.c_lflag &= ~ICANON;
-	new_terminal_settings.c_lflag &= ~ECHO;
-	// apply our new settings
-	if (tcsetattr(0, TCSANOW, &new_terminal_settings) < 0)
-		perror("tcsetattr ICANON");
-
     // create 1 coffin and 4 cubes at 12, 3, 6 and 9 o' clock
     int coffinx = 0, coffiny = 0, coffinz = 900;
     unsigned dist = 120;
     int cubex = coffinx + dist, cubey = coffiny;
     // coffin
-    mesh_t* obj1 = obj_mesh_from_file(coffin_filepath, coffinx, coffiny+50, coffinz, w, 1.3*h, 0.8*d);
+    obj[0] = obj_mesh_from_file(coffin_filepath, coffinx, coffiny+50, coffinz, w, 1.3*h, 0.8*d);
     // 3 o'clock cube
-    mesh_t* obj2 = obj_mesh_from_file(cube_filepath, dist, 0, coffinz, w, h, d);
+    obj[1] = obj_mesh_from_file(cube_filepath, dist, 0, coffinz, w, h, d);
     // 9 o'clock cube
-    mesh_t* obj3 = obj_mesh_from_file(cube_filepath, 0, 0, coffinz+200, w, h, d);
+    obj[2] = obj_mesh_from_file(cube_filepath, 0, 0, coffinz+200, w, h, d);
     // 12 o'clock cube
-    mesh_t* obj4 = obj_mesh_from_file(cube_filepath, -dist, 0, coffinz, w, h, d);
+    obj[3] = obj_mesh_from_file(cube_filepath, -dist, 0, coffinz, w, h, d);
     // 6 o'clock cube
-    mesh_t* obj5 = obj_mesh_from_file(cube_filepath, 0, cubey-30, coffinz-200, w, h, d);
-	obj[0] = obj1;
-	obj[1] = obj2;
-	obj[2] = obj3;
-	obj[3] = obj4;
-	obj[4] = obj5;
+    obj[4] = obj_mesh_from_file(cube_filepath, 0, cubey-30, coffinz-200, w, h, d);
 
     render_use_perspective(0, 0, focal_length);
     // do the actual rendering
