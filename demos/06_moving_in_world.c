@@ -33,6 +33,7 @@ static void interrupt_handler(int int_num) {
         perror("tcsetattr ICANON");
     for (int i = 0; i < 5; ++i)
         obj_mesh_free(obj[i]);
+    free(obj);
     if (int_num == SIGINT) {
         render_end();
         exit(SIGINT);
@@ -68,10 +69,6 @@ static void set_terminal() {
         perror("tcsetattr ICANON");
 }
 
-static int sign(int x) {
-    return (x >= 0) - (x < 0);
-}
-
 int main(int argc, char** argv) {
     // width, height, depth of the four cubes
     const unsigned w =  100, h = 100, d = 100;
@@ -92,31 +89,32 @@ int main(int argc, char** argv) {
     assert(access(coffin_filepath, F_OK) == 0);
 
     set_terminal();
-/**
- *                  *                  V: viewer
- *                  __                 C: coffin
- *                _/  \_               *: cube
- *              _/      \            v,^: movement directions
- *            _/          \_
- *          _^              v_
- *        _/                  \_        y ^
- *      _/                      \_       |
- *    _/                          \_     |
- *  * __            C             __ *   o------>x
- *      \_                      _/       \
- *        \_                 __/          \
- *          \__            v/              v
- *             ^_       __/                 z
- *               \_   _/
- *                 \_/
- *                  *
- *
- *
- *                  V(0,0,0)
- */
+    /**
+    *                  *                  V: viewer
+    *                  __                 C: coffin
+    *                _/  \_               *: cube
+    *              _/      \            v,^: movement directions
+    *            _/          \_
+    *          _^              v_
+    *        _/                  \_              y ^   ^z
+    *      _/                      \_              |  /
+    *    _/                          \_            | /
+    *  * __            C             __ *   <------o/
+    *      \_                      _/       x
+    *        \_                 __/
+    *          \__            v/
+    *             ^_       __/
+    *               \_   _/
+    *                 \_/
+    *                  *
+    *
+    *
+    *                  V(0,0,0)
+    */
     // create 1 coffin and 4 cubes at 12, 3, 6 and 9 o' clock
     int coffinx = 0, coffiny = 0, coffinz = 900;
-    unsigned dist = 120;
+    const unsigned dist = 120;
+    unsigned motion_width = 2*dist;
     obj = malloc(sizeof(mesh_t*) * 5);
     // coffin
     obj[0] = obj_mesh_from_file(coffin_filepath, coffinx, coffiny+50, coffinz, w, 1.3*h, 0.8*d);
@@ -130,74 +128,74 @@ int main(int argc, char** argv) {
     render_use_perspective(0, 0, focal_length);
     render_init();
 
-    unsigned rad = 2*dist;
-    int sign_x = 1, sign_y = 1;
+    int sign_x = 1, sign_z = 1;
     for (size_t t = 0; t < UINT_MAX; ++t) {
         int dx[5] = {0}, dy[5] = {0}, dz[5] = {0};
 		// Check if a key is pressed.  If it is, call getchar to fetch it.
 		if (is_key_pressed()) {
 			char ch = getchar();
-			if (ch == 'a') {
+			if ((ch == 'a') || (ch == 'h')) {
                 for (int i = 0; i < 5; i++)
                     dx[i] += 10;
             }
-			else if (ch == 's') {
+			else if ((ch == 's') || (ch == 'j')) {
                 for (int i = 0; i < 5; i++)
                     dz[i] += 10;
             }
-			else if (ch == 'd') {
+			else if ((ch == 'd') || (ch == 'l')) {
                 for (int i = 0; i < 5; i++)
                     dx[i] -= 10;
             }
-			else if (ch == 'w') {
+			else if ((ch == 'w') || (ch == 'k')) {
                 for (int i = 0; i < 5; i++)
                     dz[i] -= 10;
-            }
+            } else if (ch == 'q')
+                interrupt_handler(SIGINT);
 		}
 
-		sign_x = (t % rad == 0) ? -sign_x: sign_x;
-		sign_y = ((t + rad/2) % rad == 0) ? -sign_y: sign_y;
-        //      .
-		//  ^>    v>
-		//  ^<    v<
-		//      .
+        // directions of first cube's motions - every other cube is relatve to it
+        // change x and z direction every `motion_width` frames
+		sign_x = (t % motion_width == 0) ? -sign_x: sign_x;
+		sign_z = ((t + motion_width/2) % motion_width == 0) ? -sign_z: sign_z;
+        // dx and dz for first cube - every other cube's motion is relative to it
 		dx[1] += sign_x;
-		dz[1] += sign_y;
-		// 1st cube at 1st quarter
-		//printf("%d, %d\n", sign_x, sign_y);
-        if ((obj[1]->center->x > obj[0]->center->x) && (obj[1]->center->z > obj[0]->center->z)) {
+		dz[1] += sign_z;
+        /*  motion in quadrants:
+		 *  ^>    v>
+		 *  ^<    v<
+         */
+        // center of motion
+        coffinx = obj[0]->center->x, coffinz = obj[0]->center->z;
+		// 1st cube at 1st quadrant
+        if ((obj[1]->center->x > coffinx) && (obj[1]->center->z > coffinz)) {
 			dx[2] += sign_x;
-			dz[2] += -sign_y;
+			dz[2] += -sign_z;
 			dx[3] += -sign_x;
-			dz[3] += -sign_y;
+			dz[3] += -sign_z;
 			dx[4] += -sign_x;
-			dz[4] += sign_y;
-        } else if ((obj[1]->center->x > obj[0]->center->x) && (obj[1]->center->z > obj[0]->center->z)) {
+			dz[4] += sign_z;
+        } else if ((obj[1]->center->x < coffinx) && (obj[1]->center->z > coffinz)) {
 			dx[2] += -sign_x;
-			dz[2] += sign_y;
+			dz[2] += sign_z;
 			dx[3] += -sign_x;
-			dz[3] += -sign_y;
+			dz[3] += -sign_z;
 			dx[4] += sign_x;
-			dz[4] += -sign_y;
-        } else if ((obj[1]->center->x > obj[0]->center->x) && (obj[1]->center->z > obj[0]->center->z)) {
+			dz[4] += -sign_z;
+        } else if ((obj[1]->center->x < coffinx) && (obj[1]->center->z < coffinz)) {
 			dx[2] += sign_x;
-			dz[2] += -sign_y;
+			dz[2] += -sign_z;
 			dx[3] += -sign_x;
-			dz[3] += -sign_y;
+			dz[3] += -sign_z;
 			dx[4] += -sign_x;
-			dz[4] += sign_y;
+			dz[4] += sign_z;
         } else {
 			dx[2] += -sign_x;
-			dz[2] += sign_y;
+			dz[2] += sign_z;
 			dx[3] += -sign_x;
-			dz[3] += -sign_y;
+			dz[3] += -sign_z;
 			dx[4] += sign_x;
-			dz[4] += -sign_y;
+			dz[4] += -sign_z;
         }
-        //      .
-		//  ^>    v>
-		//  ^<    v<
-		//      .
 		for (int i = 0; i < 5; i++)
 			obj_mesh_translate_by(obj[i], dx[i], dy[i], dz[i]);
         for (int i = 0; i < 5; ++i) {
@@ -216,6 +214,8 @@ int main(int argc, char** argv) {
     }
     for (int i = 0; i < 5; ++i)
         obj_mesh_free(obj[i]);
+    free(obj);
 
     render_end();
+
 }
