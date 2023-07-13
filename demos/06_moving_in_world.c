@@ -133,18 +133,26 @@ int main(int argc, char** argv) {
     unsigned rad = 2*dist;
     int sign_x = 1, sign_y = 1;
     for (size_t t = 0; t < UINT_MAX; ++t) {
-        int dx[4] = {0}, dy[4] = {0}, dz[4] = {0};
+        int dx[5] = {0}, dy[5] = {0}, dz[5] = {0};
 		// Check if a key is pressed.  If it is, call getchar to fetch it.
 		if (is_key_pressed()) {
 			char ch = getchar();
-			if (ch == 'a')
-				dx[0] += 10;
-			else if (ch == 's')
-				dz[0] += 10;
-			else if (ch == 'd')
-				dx[0] -= 10;
-			else if (ch == 'w')
-				dz[0] -= 10;
+			if (ch == 'a') {
+                for (int i = 0; i < 5; i++)
+                    dx[i] += 10;
+            }
+			else if (ch == 's') {
+                for (int i = 0; i < 5; i++)
+                    dz[i] += 10;
+            }
+			else if (ch == 'd') {
+                for (int i = 0; i < 5; i++)
+                    dx[i] -= 10;
+            }
+			else if (ch == 'w') {
+                for (int i = 0; i < 5; i++)
+                    dz[i] -= 10;
+            }
 		}
 
 		sign_x = (t % rad == 0) ? -sign_x: sign_x;
@@ -153,49 +161,45 @@ int main(int argc, char** argv) {
 		//  ^>    v>
 		//  ^<    v<
 		//      .
-		dx[0] += sign_x;
-		dz[0] += sign_y;
+		dx[1] += sign_x;
+		dz[1] += sign_y;
 		// 1st cube at 1st quarter
-		printf("%d, %d\n", sign_x, sign_y);
-		if ((sign_x <= 0) && (sign_y >= 0)) {
-			dx[1] = dx[0];
-			dz[1] = -dz[0];
-			dx[2] = -dx[0];
-			dz[2] = -dz[0];
-			dx[3] = -dx[0];
-			dz[3] = dz[0];
-		// 1st cube at 2nd quarter
-		} else if ((sign_x <= 0) && (sign_y < 0)) {
-			dx[1] = -dx[0];
-			dz[1] = dz[0];
-			dx[2] = -dx[0];
-			dz[2] = -dz[0];
-			dx[3] = dx[0];
-			dz[3] = -dz[0];
-		// 1st cube at 3rd quarter
-		} else if ((sign_x <= 0) && (sign_y >= 0)) {
-			dx[1] = dx[0];
-			dz[1] = -dz[0];
-			dx[2] = -dx[0];
-			dz[2] = -dz[0];
-			dx[3] = -dx[0];
-			dz[3] = dz[0];
-		} else {
+		//printf("%d, %d\n", sign_x, sign_y);
+        if ((obj[1]->center->x > obj[0]->center->x) && (obj[1]->center->z > obj[0]->center->z)) {
+			dx[2] += sign_x;
+			dz[2] += -sign_y;
+			dx[3] += -sign_x;
+			dz[3] += -sign_y;
+			dx[4] += -sign_x;
+			dz[4] += sign_y;
+        } else if ((obj[1]->center->x > obj[0]->center->x) && (obj[1]->center->z > obj[0]->center->z)) {
+			dx[2] += -sign_x;
+			dz[2] += sign_y;
+			dx[3] += -sign_x;
+			dz[3] += -sign_y;
+			dx[4] += sign_x;
+			dz[4] += -sign_y;
+        } else if ((obj[1]->center->x > obj[0]->center->x) && (obj[1]->center->z > obj[0]->center->z)) {
+			dx[2] += sign_x;
+			dz[2] += -sign_y;
+			dx[3] += -sign_x;
+			dz[3] += -sign_y;
+			dx[4] += -sign_x;
+			dz[4] += sign_y;
+        } else {
+			dx[2] += -sign_x;
+			dz[2] += sign_y;
+			dx[3] += -sign_x;
+			dz[3] += -sign_y;
+			dx[4] += sign_x;
+			dz[4] += -sign_y;
+        }
         //      .
 		//  ^>    v>
 		//  ^<    v<
 		//      .
-			dx[1] = -dx[0];
-			dz[1] = dz[0];
-			dx[2] = -dx[0];
-			dz[2] = -dz[0];
-			dx[3] = dx[0];
-			dz[3] = -dz[0];
-		}
-		for (int i = 0; i < 4; i++)
-			obj_mesh_translate_by(obj[i+1], dx[i], dy[i], dz[i]);
-		if ((obj[1]->center->x <= coffinx) && (obj[1]->center->z <= coffinz + rad))
-			printf("dz = %d, z = %d/%d\n", dz[0], obj[1]->center->z, coffinz);
+		for (int i = 0; i < 5; i++)
+			obj_mesh_translate_by(obj[i], dx[i], dy[i], dz[i]);
         for (int i = 0; i < 5; ++i) {
             if (obj[i]->center->x != 0)
                 obj_mesh_rotate_to(obj[i], atan(obj[i]->center->y/obj[i]->center->x), 0, 0);
