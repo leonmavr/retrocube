@@ -1,5 +1,5 @@
 #ifndef UTILS_H
-#define UTILS_H 
+#define UTILS_H
 
 #include <stdbool.h>
 
@@ -7,9 +7,11 @@
 // #define INLINE inline __attribute__((always_inline))
 
 #define UT_SQRT_TWO      1.414213
-#define UT_HALF_SQRT_TWO 0.7071065 
+#define UT_HALF_SQRT_TWO 0.7071065
 // the golden ratio
 #define UT_PHI           1.6180
+#define UT_PI            3.1416
+#define UT_HALF_PI       1.5708
 
 // the min below is generic and avoids double evaluation by redefining `a`, `b`
 #define UT_MIN(a, b) (       \
