@@ -8,6 +8,7 @@
 #include <stdbool.h> // bool
 #include <stdlib.h> // exit
 #include <time.h> // time
+#include <sys/time.h>
 #include <signal.h> // signal
 #include <assert.h> // assert
 #include <stdio.h> // sprintf
@@ -15,6 +16,7 @@
 #include <sys/select.h> // select
 #include <unistd.h>
 #include <string.h> // strcpy
+
 
 // absolute path to cube file
 char cube_filepath[256];
@@ -50,6 +52,12 @@ static void interrupt_handler(int int_num) {
     }
 }
 
+static long timediff(clock_t t1, clock_t t2) {
+    long elapsed;
+    elapsed = ((double)t2 - t1) / CLOCKS_PER_SEC * 1000;
+    return elapsed;
+}
+
 /**
  * @brief Detects whether any key is pressed.
  *        Credits to @supirman from https://ubuntuforums.org
@@ -70,7 +78,7 @@ static bool is_key_pressed(void)
 }
 
 /**
- * @brief Change terminal properties to prepare it for rendering 
+ * @brief Change terminal properties to prepare it for rendering
  */
 static void set_terminal(void) {
     // Get the current terminal settings
@@ -150,6 +158,7 @@ int main(void) {
     // translation due to keystroke
     //----------------------------------------------------------------------------
     int sign_x = 1, sign_z = 1;
+	clock_t time_before = 0, time_after = 0;
     for (size_t t = 0; t < UINT_MAX; ++t) {
         int dx[5] = {0}, dy[5] = {0}, dz[5] = {0};
 		// Check if a key is pressed.  If it is, call getchar to fetch it.
@@ -175,7 +184,7 @@ int main(void) {
 		}
 
         //----------------------------------------------------------------------------
-        // translation due to orbiting around the coffin 
+        // translation due to orbiting around the coffin
         //----------------------------------------------------------------------------
         // directions of first cube's motions - every other cube is relatve to it
         // change x and z direction every `motion_width` frames
@@ -229,30 +238,36 @@ int main(void) {
         obj_mesh_translate_by(obj[0], 0, 0.25*motion_width*sin(2*UT_PI*sin(0.05*(t+1))) - 0.25*motion_width*sin(2*UT_PI*sin(0.05*t)), 0);
 
         //----------------------------------------------------------------------------
-        // rotation 
+        // rotation
         //----------------------------------------------------------------------------
-        float t_norm = (t % 150)/150.0;
+        const float t_norm = (t % 150)/150.0;
         // smoothstep interpolation function value - https://en.wikipedia.org/wiki/Smoothstep
-        float smoothstep = 3*t_norm*t_norm - 2*t_norm*t_norm*t_norm;
-        obj_mesh_rotate_to(obj[0], 0, UT_PI + 2*UT_PI*(3*t_norm*t_norm - 2*t_norm*t_norm*t_norm), UT_PI);
+        const float smoothstep = 3*t_norm*t_norm - 2*t_norm*t_norm*t_norm;
+        obj_mesh_rotate_to(obj[0], 0, UT_PI + 2*UT_PI*smoothstep, UT_PI);
 
+		time_after = clock();
+		int time_diff_ms = timediff(time_before, time_after);
         for (int i = 1; i < 5; ++i) {
+			printf("%ld\n", timediff(time_before, time_after));
             // uniform rotation about z axis (first, third cube)
-            float rot_z_uniform = (i == 1) ? 0 : 0.15*t;
-            rot_z_uniform =       (i == 3) ? 0 : 0.15*t + UT_HALF_PI;
+            float rot_z_uniform = (i == 1) ? 0 : 0.00025*t*time_diff_ms;
+            rot_z_uniform =       (i == 3) ? 0 : 0.00025*t*time_diff_ms + UT_PI;
+			printf("speed = %.2f per %d ms\n", 0.0005*time_diff_ms, time_diff_ms);
             // uniform rotation about y axis (second, fourth cube)
-            float rot_y_uniform = (i == 2) ? 0 : 0.1*t;
-            rot_y_uniform =       (i == 4) ? 0 : 0.1*t + UT_HALF_PI;
+            float rot_y_uniform = (i == 2) ? 0 : 0.00035*t*time_diff_ms;
+            rot_y_uniform =       (i == 4) ? 0 : 0.00035*t*time_diff_ms + UT_PI;
             // rotation to simulate changing the POV
             float rot_x_pov = (obj[i]->center->x != 0) ? 2*atan(obj[i]->center->y/obj[i]->center->x) : 0;
             obj_mesh_rotate_to(obj[i], rot_x_pov, rot_y_uniform, rot_z_uniform);
         }
+		time_before = clock();
         for (int i = 0; i < 5; ++i)
             render_write_shape(obj[i]);
         render_flush();
 #ifndef _WIN32
         // nanosleep does not work on Windows
-        nanosleep((const struct timespec[]) {{0, (int)(1.0 / 60 * 1e9)}}, NULL);
+		const unsigned fps = 60;
+        nanosleep((const struct timespec[]) {{0, (int)(1.0 / fps * 1e9)}}, NULL);
 #endif
     }
     // close renderer and reset terminal
