@@ -250,6 +250,7 @@ int main(void) {
         for (int i = 1; i < 5; ++i) {
 			printf("%ld\n", timediff(time_before, time_after));
             // uniform rotation about z axis (first, third cube)
+			// TODO: * max(timediff, 2000)/2000, * 0.005
             float rot_z_uniform = (i == 1) ? 0 : 0.00025*t*time_diff_ms;
             rot_z_uniform =       (i == 3) ? 0 : 0.00025*t*time_diff_ms + UT_PI;
 			printf("speed = %.2f per %d ms\n", 0.0005*time_diff_ms, time_diff_ms);
