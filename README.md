@@ -133,7 +133,7 @@ By default the program runs forever so you can stop it with `Ctr+C`. Below are t
 | `-mi`           | `--maximum-iterations`    | int           | Inf/ty  |How many frames to run the program for                                                       |
 | `-up`           | `--use-perspective`       | no argument   | Off     |Whether or not to use pinhole camera's perspective transform on rendered pixels              |
 
-If everyhing works, this is what it looks like on the command line when we want to draw a cube:
+If everyhing works, this is what it looks like on the command line will draw a cube that bounces around the screen and rotates.
 
 random speed | constant speed
 :-------------------------:|:-------------------------:
