@@ -59,12 +59,16 @@ Currenctly there is no Windows support. You only need gcc and make:
 
 #### 3.1 Development
 
+##### 3.1.1 Compiling the project
+
 The naming convention follows the one of [stb](https://github.com/nothings/stb).  
 Source files are found in `src` and headers in `include`.
 
-You can compile the project with:
+When compiling the from project from a clean state, you need to specify where the mesh files  
+(those that specify how shapes are rendereed) shall be stored. You can do this by setting the  
+`PREFIX` variable to your directory of choice, e.g.:
 ```
-make
+make PREFIX=~/.config/retrocube
 ```
 You can run the binary with (a list of command line arguments is provided in the next section):
 ```
@@ -74,6 +78,17 @@ You can delete the binary and object files with:
 ```
 make clean
 ```
+##### 3.1.2 Compiling the demos
+
+Several demos that showcase various usages of the libraries are found in the `demos` directory.  
+These are compiled independently from their own file. To compile them you need to set the `PREFIX`
+once again:
+```
+cd demos
+make PREFIX=~/.config/retrocube
+# then you will see some binaries and run the binary of your choice
+```
+
 
 #### 3.2 General installation
 
