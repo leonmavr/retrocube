@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ---
-Render 3D meshes in ASCII on the command line.  
+Render 3D meshes in ASCII on the command line.
 It runs on the standard C library.
 ```
                     +==
@@ -51,7 +51,7 @@ for (r in rows):
 
 ### 2. Requirements
 
-Currenctly there is no Windows support. You only need gcc and make:  
+Currenctly there is no Windows support. You only need gcc and make:
 1. **gcc**
 2. **make**
 
@@ -61,11 +61,11 @@ Currenctly there is no Windows support. You only need gcc and make:
 
 ##### 3.1.1 Compiling the project
 
-The naming convention follows the one of [stb](https://github.com/nothings/stb).  
+The naming convention follows the one of [stb](https://github.com/nothings/stb).
 Source files are found in `src` and headers in `include`.
 
-When compiling the from project from a clean state, you need to specify where the mesh files  
-(those that specify how shapes are rendereed) shall be stored. You can do this by setting the  
+When compiling the from project from a clean state, you need to specify where the mesh files
+(those that specify how shapes are rendereed) shall be stored. You can do this by setting the
 `PREFIX` variable to your directory of choice, e.g.:
 ```
 make PREFIX=~/.config/retrocube
@@ -80,7 +80,7 @@ make clean
 ```
 ##### 3.1.2 Compiling the demos
 
-Several demos that showcase various usages of the libraries are found in the `demos` directory.  
+Several demos that showcase various usages of the libraries are found in the `demos` directory.
 These are compiled independently from their own file. To compile them you need to set the `PREFIX`
 once again:
 ```
@@ -118,10 +118,10 @@ By default the program runs forever so you can stop it with `Ctr+C`. Below are t
 
 | Short specifier | Long specifier            | Argument type | Default | Description                                                                                 |
 |:--------------- |:--------------------------|:--------------|:--------|:--------------------------------------------------------------------------------------------|
-| `-sx`            | `--speedx`                | float         | 0.7     |Rotational speed around the x axis (-1 to 1). If set, disables random rotations.             |
+| `-sx`           | `--speedx`                | float         | 0.7     |Rotational speed around the x axis (-1 to 1). If set, disables random rotations.             |
 | `-sy`           | `--speedy`                | float         | 0.4     |Rotational speed around the y axis (-1 to 1). If set, disables random rotations.             |
 | `-sz`           | `--speedz`                | float         | 0.6     |Rotational speed around the z axis (-1 to 1). If set, disables random rotations.             |
-| `-f`            | `--fps`                   | int           | 40      |Throttle the fps at which the graphics can be rendered (lower it if high CPU usage or if flicker) | 
+| `-f`            | `--fps`                   | int           | 40      |Throttle the fps at which the graphics can be rendered (lower it if high CPU usage or if flicker) |
 | `-r`            | `--random`                | no argument   | On      |Rotate the shape randomly and sinusoidally.                                                  |
 | `-cx`           | `--cx`                    | int           | 0       |x-coordinate of the shapes's center in pixels                                                |
 | `-cy`           | `--cy`                    | int           | 0       |y-coordinate of the shapes's center in pixels                                                |
@@ -129,9 +129,18 @@ By default the program runs forever so you can stop it with `Ctr+C`. Below are t
 | `-wi`           | `--width`                 | int           | 60      |Width of shape in pixels                                                                     |
 | `-he`           | `--height`                | int           | 60      |Height of shape in pixels                                                                    |
 | `-de`           | `--depth`                 | int           | 60      |Depth of shape in pixels                                                                     |
-| `-ff`           | `--from-file`             | string        | `./mesh_files/cube.scl` |The filepath to the mesh file to render. See `mesh_files` directory.           |
+| `-ff`           | `--from-file`             | string        | `./mesh_files/cube.scl` |The filepath to the mesh file to render. See `mesh_files` directory.         |
 | `-mi`           | `--maximum-iterations`    | int           | Inf/ty  |How many frames to run the program for                                                       |
 | `-up`           | `--use-perspective`       | no argument   | Off     |Whether or not to use pinhole camera's perspective transform on rendered pixels              |
+| `-be`           | `--bounce-every`          | int           | 0       |If non-zero (`-be N` or `--bounce-every N`), changes moving direction every N frames         |
+| `-mx`           | `--movex`                 | int           | 2       |Move the object by this many pixels along x axis per frame if bounce (`-b`/`--bounce`) is enabled. |
+| `-my`           | `--movey`                 | int           | 1       |Move the object by this many pixels along y axis per frame if bounce (`-b`/`--bounce`) is enabled. |
+| `-mz`           | `--movez`                 | int           | 1       |Move the object by this many pixels along z axis per frame if bounce (`-b`/`--bounce`) is enabled. |
+unsigned g_bounce_every = 0;
+// how many pixels to move per frame along x, y, z axes
+int g_move_x = 1;
+int g_move_y = 1;
+int g_move_z = 1;
 
 If everyhing works, this is what it looks like on the command line will draw a cube that bounces around the screen and rotates.
 
