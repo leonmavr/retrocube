@@ -29,10 +29,17 @@ extern unsigned g_max_iterations;
 extern char g_mesh_file[256];
 // defines the max and min values of random rotation bias
 extern float rand_min;
-// random rotation biases - the higher, the faster the rotation around x, y, 
+// random rotation biases - the higher, the faster the rotation around x, y,
 extern float random_bias_x;
 extern float random_bias_y;
 extern float random_bias_z;
 extern bool render_from_file;
+// controls whether the cube bounces around the screen
+// 0 = keep the cube centered, N (!= 0) = change direction every N frames
+extern unsigned g_bounce_every;
+// how many pixels to move per frame along x, y, z axes
+extern int g_move_x;
+extern int g_move_y;
+extern int g_move_z;
 
 void arg_parse(int argc, char** argv);

@@ -31,11 +31,17 @@ unsigned g_max_iterations = UINT_MAX;
 char g_mesh_file[256] = {'\0'};
 // defines the max and min values of random rotation bias
 float rand_min = 0.75, rand_max = 2.25;
-// random rotation biases - the higher, the faster the rotation around x, y, 
+// random rotation biases - the higher, the faster the rotation around x, y,
 float random_bias_x = 0;
 float random_bias_y = 0;
 float random_bias_z = 0;
 bool render_from_file = false;
+
+unsigned g_bounce_every = 0;
+// how many pixels to move per frame along x, y, z axes
+int g_move_x = 2;
+int g_move_y = 1;
+int g_move_z = 1;
 
 
 void arg_parse(int argc, char** argv) {
@@ -84,6 +90,14 @@ void arg_parse(int argc, char** argv) {
             i++;
             strcpy(g_mesh_file, argv[i]);
             render_from_file = true;
+        } else if ((strcmp(argv[i], "--bounce") == 0) || (strcmp(argv[i], "-b") == 0)) {
+            g_bounce_every = atoi(argv[++i]);
+        } else if ((strcmp(argv[i], "--movex") == 0) || (strcmp(argv[i], "-mx") == 0)) {
+            g_move_x = atoi(argv[++i]);
+        } else if ((strcmp(argv[i], "--movey") == 0) || (strcmp(argv[i], "-my") == 0)) {
+            g_move_y = atoi(argv[++i]);
+        } else if ((strcmp(argv[i], "--movez") == 0) || (strcmp(argv[i], "-mz") == 0)) {
+            g_move_z = atoi(argv[++i]);
         } else {
             printf("Uknown option: %s\n", argv[i++]);
         }

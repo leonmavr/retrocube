@@ -37,14 +37,16 @@ int main(int argc, char** argv) {
     for (size_t t = 0; t < g_max_iterations; ++t) {
         if (g_use_random_rotation)
             obj_mesh_rotate_to(shape, amplitude_x*sin(random_rot_speed_x*sin(random_rot_speed_x*t) + 2*random_bias_x),
-                                   amplitude_y*sin(random_rot_speed_y*random_bias_y*t           + 2*random_bias_y),
-                                   amplitude_z*sin(random_rot_speed_z*random_bias_z*t           + 2*random_bias_z));
+                                      amplitude_y*sin(random_rot_speed_y*random_bias_y*t           + 2*random_bias_y),
+                                      amplitude_z*sin(random_rot_speed_z*random_bias_z*t           + 2*random_bias_z));
         else
             obj_mesh_rotate_to(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
-        if ((t % 100) >= 50)
-            obj_mesh_translate_by(shape, 1, 1, 1);
-        else
-            obj_mesh_translate_by(shape, -1, -1, -1);
+		if (g_bounce_every != 0) {
+			if ((t % (2*g_bounce_every)) >= g_bounce_every)
+				obj_mesh_translate_by(shape, g_move_x, g_move_y, g_move_z);
+			else
+				obj_mesh_translate_by(shape, -g_move_x, -g_move_y, -g_move_z);
+		}
         render_write_shape(shape);
         render_flush();
 #ifndef _WIN32
