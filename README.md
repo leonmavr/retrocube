@@ -139,7 +139,7 @@ By default the program runs forever so you can stop it with `Ctr+C`. Below are t
 
 Below are two examples of running the demo binary `./cube`:
 
-`./cube` | `./cube -b 100 -cz 300 -my -1 -mz 1`
+`./cube` | `./cube -b 100 -cz 300 -my -1 -mz 1 -up`
 :-------------------------:|:-------------------------:
 ![](https://github.com/leonmavr/retrocube/blob/master/assets/demo_still.gif?raw=true)  |  ![](https://raw.githubusercontent.com/leonmavr/retrocube/master/assets/demo_moving.gif)
 
