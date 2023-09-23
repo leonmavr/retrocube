@@ -107,7 +107,7 @@ On Nix (with flakes enabled) you don't need to install it and you can directly r
 ```
 nix run github:leonmavr/retrocube
 ```
-Credits for the Nix packaging to [Peter Marreck (pmarreck)](https://github.com/pmarreck).
+Credits for the Nix packaging @pmarreck and @Quantenzitrone.
 
 ### 4. Usage
 
@@ -136,17 +136,12 @@ By default the program runs forever so you can stop it with `Ctr+C`. Below are t
 | `-mx`           | `--movex`                 | int           | 2       |Move the object by this many pixels along x axis per frame if bounce (`-b`/`--bounce`) is enabled. |
 | `-my`           | `--movey`                 | int           | 1       |Move the object by this many pixels along y axis per frame if bounce (`-b`/`--bounce`) is enabled. |
 | `-mz`           | `--movez`                 | int           | 1       |Move the object by this many pixels along z axis per frame if bounce (`-b`/`--bounce`) is enabled. |
-unsigned g_bounce_every = 0;
-// how many pixels to move per frame along x, y, z axes
-int g_move_x = 1;
-int g_move_y = 1;
-int g_move_z = 1;
 
-If everyhing works, this is what it looks like on the command line will draw a cube that bounces around the screen and rotates.
+Below are two examples of running the demo binary `./cube`:
 
-random speed | constant speed
+`./cube` | `./cube -b 100 -cz 300 -my -1 -mz 1`
 :-------------------------:|:-------------------------:
-![](https://github.com/leonmavr/retrocube/blob/master/assets/demo_constant.gif?raw=true)  |  ![](https://raw.githubusercontent.com/leonmavr/retrocube/master/assets/demo_random.gif)
+![](https://github.com/leonmavr/retrocube/blob/master/assets/demo_still.gif?raw=true)  |  ![](https://raw.githubusercontent.com/leonmavr/retrocube/master/assets/demo_moving.gif)
 
 
 #### 4.2 Tips
