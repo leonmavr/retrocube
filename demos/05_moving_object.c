@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
     // make sure we end gracefully if the user hits Ctr+C
     signal(SIGINT, interrupt_handler);
 
-    init_lookup_tables();
+    ftrig_init_lut();
     render_init();
 
     mesh_t* shape = obj_mesh_from_file(g_mesh_file, g_cx, g_cy, g_cz, g_width, g_height, g_depth);
@@ -40,9 +40,9 @@ int main(int argc, char** argv) {
 #endif
     for (size_t t = 0; t < g_max_iterations; ++t) {
         if (g_use_random_rotation)
-            obj_mesh_rotate_to(shape, amplitude_x*xsin(random_rot_speed_x*xsin(random_rot_speed_x*t) + 2*random_bias_x),
-                                   amplitude_y*xsin(random_rot_speed_y*random_bias_y*t               + 2*random_bias_y),
-                                   amplitude_z*xsin(random_rot_speed_z*random_bias_z*t               + 2*random_bias_z));
+            obj_mesh_rotate_to(shape, amplitude_x*fsin(random_rot_speed_x*fsin(random_rot_speed_x*t) + 2*random_bias_x),
+                                   amplitude_y*fsin(random_rot_speed_y*random_bias_y*t               + 2*random_bias_y),
+                                   amplitude_z*fsin(random_rot_speed_z*random_bias_z*t               + 2*random_bias_z));
         else
             obj_mesh_rotate_to(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
         if ((t % 100) >= 50)

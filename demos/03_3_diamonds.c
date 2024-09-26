@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     const char* mesh_filename = "rhombus.scl";
     sprintf(mesh_filepath, "%s/%s", mesh_dir, mesh_filename);
     assert(access(mesh_filepath, F_OK) == 0);
-    init_lookup_tables();
+    ftrig_init_lut();
 
     // draw the same object in 3 different depths to showcase perspective
     mesh_t* obj1 = obj_mesh_from_file(mesh_filepath, -80, 0, 600, w, h, d);
