@@ -1,6 +1,7 @@
 #include "objects.h"
 #include "renderer.h"
 #include "arg_parser.h" // args_parse, CFG_DIR
+#include "xtrig.h"
 #include <math.h> // sin, cos
 #include <unistd.h> // for usleep
 #include <stdbool.h> // bool
@@ -27,6 +28,7 @@ int main(int argc, char** argv) {
     // make sure we end gracefully if the user hits Ctr+C
     signal(SIGINT, interrupt_handler);
 
+    init_lookup_tables();
     render_init();
 
     // path to directory where meshes are stored - dir stored in CFG_DIR prep. constant
@@ -53,9 +55,9 @@ int main(int argc, char** argv) {
 #endif
     for (size_t t = 0; t < UINT_MAX; ++t) {
         obj_mesh_rotate_to(obj1, 1.0/80*t, 1.0/40*t, 1.0/60*t);
-        obj_mesh_rotate_to(obj2, amplitude_x*sin(random_rot_speed_x*sin(random_rot_speed_x*t) + 2*random_bias_x),
-                                    amplitude_y*sin(random_rot_speed_y*random_bias_y*t           + 2*random_bias_y),
-                                    amplitude_z*sin(random_rot_speed_z*random_bias_z*t           + 2*random_bias_z));
+        obj_mesh_rotate_to(obj2, amplitude_x*xsin(random_rot_speed_x*xsin(random_rot_speed_x*t) + 2*random_bias_x),
+                                    amplitude_y*xsin(random_rot_speed_y*random_bias_y*t         + 2*random_bias_y),
+                                    amplitude_z*xsin(random_rot_speed_z*random_bias_z*t         + 2*random_bias_z));
         render_write_shape(obj1);
         render_write_shape(obj2);
         render_flush();

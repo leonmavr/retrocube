@@ -1,3 +1,4 @@
+#include "xtrig.h"
 #include "vector.h"
 #include <stdbool.h> // true/false
 #include <stdlib.h> // malloc
@@ -61,8 +62,8 @@ void vec_vec3_rotate(vec3_t* src, float angle_x_rad, float angle_y_rad, float an
     src->z -= z0;
 
     float a = angle_x_rad, b = angle_y_rad, c = angle_z_rad;
-    float ca = cos(a), cb = cos(b), cc = cos(c);
-    float sa = sin(a), sb = sin(b), sc = sin(c);
+    float ca = xcos(a), cb = xcos(b), cc = xcos(c);
+    float sa = xsin(a), sb = xsin(b), sc = xsin(c);
     float matrix_rotx[3][3] = {
         {1, 0,  0  },
         {0, ca, -sa},
@@ -164,8 +165,8 @@ void vec_vec3i_rotate(vec3i_t* src, float angle_x_rad, float angle_y_rad, float 
     rotated.z -= z0;
 
     const float a = angle_x_rad, b = angle_y_rad, c = angle_z_rad;
-    const float ca = cos(a), cb = cos(b), cc = cos(c);
-    const float sa = sin(a), sb = sin(b), sc = sin(c);
+    const float ca = xcos(a), cb = xcos(b), cc = xcos(c);
+    const float sa = xsin(a), sb = xsin(b), sc = xsin(c);
     const float matrix_rotx[3][3] = {
         {1, 0,  0  },
         {0, ca, -sa},

@@ -1,6 +1,7 @@
 #include "objects.h"
 #include "renderer.h"
 #include "arg_parser.h"
+#include "xtrig.h"
 #include "utils.h" // UT_MAX
 #include <math.h> // sin, cos
 #include <unistd.h> // for usleep
@@ -23,6 +24,7 @@ int main(int argc, char** argv) {
     signal(SIGINT, interrupt_handler);
 
     render_init();
+    init_lookup_tables();
 
     mesh_t* shape = obj_mesh_from_file(g_mesh_file, g_cx, g_cy, g_cz, g_width, g_height, g_depth);
     // spinning parameters in case random rotation was selected
@@ -36,9 +38,9 @@ int main(int argc, char** argv) {
 #endif
     for (size_t t = 0; t < g_max_iterations; ++t) {
         if (g_use_random_rotation)
-            obj_mesh_rotate_to(shape, amplitude_x*sin(random_rot_speed_x*sin(random_rot_speed_x*t) + 2*random_bias_x),
-                                      amplitude_y*sin(random_rot_speed_y*random_bias_y*t           + 2*random_bias_y),
-                                      amplitude_z*sin(random_rot_speed_z*random_bias_z*t           + 2*random_bias_z));
+            obj_mesh_rotate_to(shape, amplitude_x*xsin(random_rot_speed_x*xsin(random_rot_speed_x*t) + 2*random_bias_x),
+                                      amplitude_y*xsin(random_rot_speed_y*random_bias_y*t            + 2*random_bias_y),
+                                      amplitude_z*xsin(random_rot_speed_z*random_bias_z*t            + 2*random_bias_z));
         else
             obj_mesh_rotate_to(shape, g_rot_speed_x/20*t, g_rot_speed_y/20*t, g_rot_speed_z/20*t);
 		if (g_bounce_every != 0) {

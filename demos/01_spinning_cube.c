@@ -1,3 +1,4 @@
+#include "xtrig.h"
 #include "objects.h"
 #include "renderer.h"
 #include "arg_parser.h"
@@ -23,6 +24,7 @@ int main(int argc, char** argv) {
     signal(SIGINT, interrupt_handler);
     // initialise objects to render
     mesh_t* shape = obj_mesh_from_file(g_mesh_file, g_cx, g_cy, g_cz, g_width, g_height, g_depth);
+    init_lookup_tables();
     // do the actual rendering
     render_init();
     for (size_t t = 0; t < g_max_iterations; ++t) {

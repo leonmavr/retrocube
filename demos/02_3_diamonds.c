@@ -1,6 +1,7 @@
 #include "objects.h"
 #include "renderer.h"
 #include "arg_parser.h"
+#include "xtrig.h"
 #include "utils.h" // UT_MAX
 #include <math.h> // sin, cos
 #include <unistd.h> // for usleep
@@ -33,6 +34,7 @@ int main(int argc, char** argv) {
     sprintf(mesh_filepath, "%s/%s", mesh_dir, mesh_filename);
     assert(access(mesh_filepath, F_OK) == 0);
 
+    init_lookup_tables();
     mesh_t* obj1 = obj_mesh_from_file(mesh_filepath, -40, 0, 150, 60, 80, 60);
     mesh_t* obj2 = obj_mesh_from_file(mesh_filepath, 0, 0, 250, 60, 80, 60);
     mesh_t* obj3 = obj_mesh_from_file(mesh_filepath, 40, 0, 350, 60, 80, 60);

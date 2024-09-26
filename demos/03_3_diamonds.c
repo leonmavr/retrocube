@@ -2,6 +2,7 @@
 #include "objects.h"
 #include "renderer.h"
 #include "arg_parser.h"
+#include "xtrig.h"
 #include "utils.h" // UT_MAX
 #include <math.h> // sin, cos
 #include <unistd.h> // for usleep
@@ -39,6 +40,7 @@ int main(int argc, char** argv) {
     const char* mesh_filename = "rhombus.scl";
     sprintf(mesh_filepath, "%s/%s", mesh_dir, mesh_filename);
     assert(access(mesh_filepath, F_OK) == 0);
+    init_lookup_tables();
 
     // draw the same object in 3 different depths to showcase perspective
     mesh_t* obj1 = obj_mesh_from_file(mesh_filepath, -80, 0, 600, w, h, d);

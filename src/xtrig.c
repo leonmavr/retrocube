@@ -16,14 +16,15 @@ double xsin(double rad) {
     // use the period and symmetry to compute based off [0, pi/2]
     rad = fmod(rad, 2*M_PI);
     if (rad < 0) rad += 2*M_PI;
-    if (rad < HALF_PI)
+    if (rad <= HALF_PI) {
         return sine_lookup[get_lookup_index(rad)];
-    else if (rad < M_PI)
+    } else if (rad <= M_PI) {
         return sine_lookup[get_lookup_index(M_PI - rad)];
-    else if (rad < 3*HALF_PI)
+    } else if (rad <= 3*HALF_PI) {
         return -sine_lookup[get_lookup_index(rad - M_PI)];
-    else
+    } else {
         return -sine_lookup[get_lookup_index(2*M_PI - rad)];
+    }
 }
 
 double xcos(double rad) {
